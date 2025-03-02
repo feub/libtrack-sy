@@ -62,6 +62,13 @@ class ArtistFixtures extends Fixture
                 'artist' => 'Septic Flesh'
             ],
             [
+                'title' => 'Esoptron',
+                'release_date' => 1995,
+                'cover' => null,
+                'barcode' => '1233367899',
+                'artist' => 'Septic Flesh'
+            ],
+            [
                 'title' => 'Opéra Sauvage',
                 'release_date' => 1979,
                 'cover' => null,
