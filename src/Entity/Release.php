@@ -33,11 +33,11 @@ class Release
      * @var Collection<int, Artist>
      */
     #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'releases')]
-    private Collection $artist;
+    private Collection $artists;
 
     public function __construct()
     {
-        $this->artist = new ArrayCollection();
+        $this->artists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -96,15 +96,15 @@ class Release
     /**
      * @return Collection<int, Artist>
      */
-    public function getArtist(): Collection
+    public function getArtists(): Collection
     {
-        return $this->artist;
+        return $this->artists;
     }
 
-    public function addArtist(Artist $artist): static
+    public function addArtist(Artist $artists): static
     {
-        if (!$this->artist->contains($artist)) {
-            $this->artist->add($artist);
+        if (!$this->artists->contains($artists)) {
+            $this->artists->add($artists);
         }
 
         return $this;
@@ -112,7 +112,7 @@ class Release
 
     public function removeArtist(Artist $artist): static
     {
-        $this->artist->removeElement($artist);
+        $this->artists->removeElement($artist);
 
         return $this;
     }
