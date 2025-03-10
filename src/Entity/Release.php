@@ -26,7 +26,7 @@ class Release
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $cover = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 100, unique: true)]
     private ?string $barcode = null;
 
     /**
@@ -34,6 +34,15 @@ class Release
      */
     #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'releases')]
     private Collection $artists;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(length: 150)]
+    private ?string $slug = null;
 
     public function __construct()
     {
@@ -113,6 +122,42 @@ class Release
     public function removeArtist(Artist $artist): static
     {
         $this->artists->removeElement($artist);
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }

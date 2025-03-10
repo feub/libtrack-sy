@@ -15,7 +15,7 @@ class Artist
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 100, unique: true)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -24,8 +24,17 @@ class Artist
     /**
      * @var Collection<int, Release>
      */
-    #[ORM\ManyToMany(targetEntity: Release::class, mappedBy: 'artist')]
+    #[ORM\ManyToMany(targetEntity: Release::class, mappedBy: 'artists')]
     private Collection $releases;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(length: 150)]
+    private ?string $slug = null;
 
     public function __construct()
     {
@@ -84,6 +93,42 @@ class Artist
         if ($this->releases->removeElement($release)) {
             $release->removeArtist($this);
         }
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }
