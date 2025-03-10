@@ -15,7 +15,7 @@ class ScanType extends AbstractType
         $builder
             ->add('barcode', TextType::class, [])
             ->add('search', SubmitType::class, [
-                'label' => 'Search'
+                'label' => 'search'
             ])
         ;
     }
