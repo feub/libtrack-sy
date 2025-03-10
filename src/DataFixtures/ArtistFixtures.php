@@ -7,10 +7,11 @@ use App\Entity\Release;
 use App\Repository\ArtistRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ArtistFixtures extends Fixture
 {
-    public function __construct(private ArtistRepository $artistRepository) {}
+    public function __construct(private ArtistRepository $artistRepository, private SluggerInterface $slugger) {}
 
     public function load(ObjectManager $manager): void
     {
@@ -20,6 +21,9 @@ class ArtistFixtures extends Fixture
         foreach ($artists as $key => $a) {
             $artist = new Artist();
             $artist->setName($a);
+            $artist->setSlug(strtolower($this->slugger->slug($a)));
+            $artist->setCreatedAt(new \DateTimeImmutable());
+            $artist->setUpdatedAt(new \DateTimeImmutable());
             $manager->persist($artist);
 
             // Store references to artist entities
@@ -81,9 +85,12 @@ class ArtistFixtures extends Fixture
         foreach ($releases as $r) {
             $release = new Release();
             $release->setTitle($r['title']);
+            $release->setSlug(strtolower($this->slugger->slug($r['title'])));
             $release->setReleaseDate($r['release_date']);
             $release->setCover($r['cover']);
             $release->setBarcode($r['barcode']);
+            $release->setCreatedAt(new \DateTimeImmutable());
+            $release->setUpdatedAt(new \DateTimeImmutable());
 
             // Get the artist entity from our stored references
             $artist = $artistEntities[$r['artist']];
