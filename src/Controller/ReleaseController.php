@@ -101,7 +101,7 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
-    public function scanAdd(Request $request, EntityManagerInterface $em, ArtistRepository $artistRepository): Response
+    public function scanAdd(Request $request, EntityManagerInterface $em, ReleaseRepository $releaseRepository, ArtistRepository $artistRepository): Response
     {
         // Get the release ID and barcode from the form submission
         $releaseId = $request->request->get('release_id');
@@ -134,7 +134,13 @@ final class ReleaseController extends AbstractController
 
         $releaseData = $response->toArray();
 
-        //TODO check if the release does NOT already exist
+        // Check if the release does NOT already exist
+        $checkRelease = $releaseRepository->findOneBy(['barcode' => $barcode]);
+
+        if ($checkRelease) {
+            $this->addFlash('warning', 'Barcode "' . $barcode . '" already in the database.');
+            return $this->redirectToRoute('release.scan');
+        }
 
         $release = new Release();
         $release->setTitle($releaseData['title']);
