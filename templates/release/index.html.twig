@@ -3,44 +3,49 @@
 {% block title %}Releases{% endblock %}
 
 {% block body %}
-<div class="example-wrapper">
+<div class="mx-auto">
+
     <h1 class="font-bold text-3xl text-slate-500 mb-4">Releases</h1>
 
     <div class="relative overflow-x-auto">
-    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-                <th scope="col" class="px-6 py-3">Title</th>
-                <th>Artist</th>
-                <th>Year</th>
-                <th>Barcode</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for release in releases %}
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {{ release.title }}
-                </td>
-                <td class="px-6 py-4">
-                    {% if release.artists|length > 0 %}
-                        {{ release.artists|map(artist => artist.name)|join(', ') }}
-                    {% else %}
-                        <em>No artists</em>
-                    {% endif %}
-                </td>
-                <td class="px-6 py-4">
-                    {{ release.releaseDate }}
-                </td>
-                <td class="px-6 py-4">
-                    {{ release.barcode }}
-                </td>
-                <td class="px-6 py-4"></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">{{ knp_pagination_sortable(releases, 'Title', 'r.title') }}</th>
+                    <th class="px-6 py-4">Artist</th>
+                    <th class="px-6 py-4">Year</th>
+                    <th class="px-6 py-4">Barcode</th>
+                    <th class="px-6 py-4"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for release in releases %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {{ release.title }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if release.artists|length > 0 %}
+                            {{ release.artists|map(artist => artist.name)|join(', ') }}
+                        {% else %}
+                            <em>No artists</em>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{ release.releaseDate }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {{ release.barcode }}
+                    </td>
+                    <td class="px-6 py-4"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="my-4">
+            {{ knp_pagination_render(releases, 'partials/tailwind_pagination.html.twig') }}
+        </div>
     </div>
 
 </div>

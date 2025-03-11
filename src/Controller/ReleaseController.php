@@ -14,7 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -27,15 +26,20 @@ final class ReleaseController extends AbstractController
     ) {}
 
     #[Route('/', name: 'index')]
-    public function index(ReleaseRepository $releaseRepository): Response
+    public function index(ReleaseRepository $releaseRepository, Request $request): Response
     {
         try {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            $releases = $releaseRepository->findAll();
+            $page = $request->query->getInt('page', 1);
+            $limit = 10;
+            $releases = $releaseRepository->paginatedReleases($page, $limit);
+            $maxpage = ceil($releases->count() / 2);
 
             return $this->render('release/index.html.twig', [
                 'releases' => $releases,
+                'maxPage' => $maxpage,
+                'page' => $page
             ]);
         } catch (AccessDeniedException $e) {
             return $this->render('errors/custom_access_denied.html.twig', [
@@ -48,6 +52,8 @@ final class ReleaseController extends AbstractController
     public function scan(Request $request): Response
     {
         try {
+            $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
             $barcodeValue = [];
             $releases = null;
 
@@ -110,9 +116,10 @@ final class ReleaseController extends AbstractController
                 'releases' => $releases
             ]);
         } catch (AccessDeniedException $e) {
-            return $this->render('errors/custom_access_denied.html.twig', [
-                'error' => 'You need admin privileges to view this page.',
-            ], new Response('', 403));
+            return $this->redirectToRoute('app_login');
+            // return $this->render('errors/custom_access_denied.html.twig', [
+            //     'error' => 'You need admin privileges to view this page.',
+            // ], new Response('', 403));
         }
     }
 
