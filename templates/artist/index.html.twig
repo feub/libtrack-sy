@@ -5,13 +5,13 @@
 {% block body %}
 <div class="max-w-screen-xl mx-auto">
 
-    <h1 class="font-bold text-3xl text-slate-500 mb-4">Artists</h1>
+    <h1 class="font-bold text-3xl text-slate-500 mb-4">Artists ({{ artists.getTotalItemCount() }})</h1>
 
     <div class="relative overflow-x-auto">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                    <th scope="col" class="px-6 py-3">Name</th>
+                    <th scope="col" class="px-6 py-3">{{ knp_pagination_sortable(artists, 'Name', 'a.name') }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -26,6 +26,10 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <div class="my-4">
+            {{ knp_pagination_render(artists, 'partials/tailwind_pagination.html.twig') }}
+        </div>
     </div>
 
 </div>
