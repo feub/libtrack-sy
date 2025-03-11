@@ -5,15 +5,39 @@ namespace App\Repository;
 use App\Entity\Release;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\PaginatorInterface;
+use Knp\Component\Pager\Pagination\PaginationInterface;
 
 /**
  * @extends ServiceEntityRepository<Release>
  */
 class ReleaseRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
     {
         parent::__construct($registry, Release::class);
+    }
+
+    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchArtistName = ''): PaginationInterface
+    {
+        $builder = $this->createQueryBuilder('r')
+            ->leftJoin('r.artists', 'a')
+            ->select('r', 'a');
+
+        if (!empty($searchArtistName)) {
+            $builder->andWhere('a.name LIKE :artistName')
+                ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
+        }
+
+        return $this->paginator->paginate(
+            $builder,
+            $page,
+            $limit,
+            [
+                'distinct' => false,
+                'sortFieldAllowList' => ['r.id', 'r.title']
+            ]
+        );
     }
 
     //    /**
