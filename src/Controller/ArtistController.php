@@ -15,12 +15,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class ArtistController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(ArtistRepository $artistRepository): Response
+    public function index(ArtistRepository $artistRepository, Request $request): Response
     {
-        $artists = $artistRepository->findAll();
+        $page = $request->query->getInt('page', 1);
+        $limit = 10;
+        $artists = $artistRepository->paginatedArtists($page, $limit);
+        $maxpage = ceil($artists->count() / 2);
 
         return $this->render('artist/index.html.twig', [
             'artists' => $artists,
+            'maxPage' => $maxpage,
+            'page' => $page
         ]);
     }
 
