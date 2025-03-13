@@ -17,6 +17,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use App\Service\MusicBrainzService;
+use App\Service\CoverArtArchiveService;
 
 #[Route('/release', name: 'release.')]
 final class ReleaseController extends AbstractController
@@ -52,7 +53,8 @@ final class ReleaseController extends AbstractController
     #[Route('/scan', name: 'scan', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
     public function scan(
         Request $request,
-        MusicBrainzService $musicBrainzService
+        MusicBrainzService $musicBrainzService,
+        CoverArtArchiveService $coverService
     ): Response {
         try {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -77,29 +79,32 @@ final class ReleaseController extends AbstractController
 
                 // Attach cover art
                 foreach ($releases as $key => $release) {
-                    $response = $this->client->request(
-                        'GET',
-                        'https://coverartarchive.org/release/' . $release['id'],
-                        [
-                            'headers' => [
-                                'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
-                            ]
-                        ]
-                    );
+                    $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
+                    $releases[$key] = $release;
 
-                    $statusCode = $response->getStatusCode();
+                    // $response = $this->client->request(
+                    //     'GET',
+                    //     'https://coverartarchive.org/release/' . $release['id'],
+                    //     [
+                    //         'headers' => [
+                    //             'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
+                    //         ]
+                    //     ]
+                    // );
 
-                    if ($statusCode === 200) {
-                        $covers = $response->toArray();
+                    // $statusCode = $response->getStatusCode();
 
-                        foreach ($covers['images'] as $cover) {
-                            if ($cover['front']) {
-                                $release['cover'] = $cover['image'];
-                            }
-                        }
+                    // if ($statusCode === 200) {
+                    //     $covers = $response->toArray();
 
-                        $releases[$key] = $release;
-                    }
+                    //     foreach ($covers['images'] as $cover) {
+                    //         if ($cover['front']) {
+                    //             $release['cover'] = $cover['image'];
+                    //         }
+                    //     }
+
+                    //     $releases[$key] = $release;
+                    // }
                 }
 
                 // Store the data in the session
@@ -157,7 +162,7 @@ final class ReleaseController extends AbstractController
 
             // Fetch the complete release data
             try {
-                $releaseData = $musicBrainzService->getReleaseById($releaseId);
+                $releaseData = $musicBrainzService->getReleaseWithCoverArt($releaseId);
             } catch (\Exception $e) {
                 return $this->json([
                     'error' => $e->getMessage()
@@ -175,6 +180,12 @@ final class ReleaseController extends AbstractController
             $release = new Release();
             $release->setTitle($releaseData['title']);
             $release->setBarcode($barcode);
+
+            // dd($releaseData);
+
+            if ($releaseData['cover']) {
+                $release->setCover($releaseData['cover']);
+            }
 
             // Release date (extract year if available)
             if (isset($releaseData['date']) && strlen($releaseData['date']) >= 4) {
