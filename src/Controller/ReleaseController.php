@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use App\Service\MusicBrainzService;
 
 #[Route('/release', name: 'release.')]
 final class ReleaseController extends AbstractController
@@ -49,8 +50,10 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/scan', name: 'scan', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
-    public function scan(Request $request): Response
-    {
+    public function scan(
+        Request $request,
+        MusicBrainzService $musicBrainzService
+    ): Response {
         try {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -63,32 +66,41 @@ final class ReleaseController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $barcodeValue = $form->get('barcode')->getData();
 
-                $response = $this->client->request(
-                    'GET',
-                    'https://musicbrainz.org/ws/2/release/',
-                    [
-                        'query' => [
-                            'query' => 'barcode:' . $barcodeValue,
-                            'fmt' => 'json'
-                        ],
-                        'headers' => [
-                            'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
-                        ]
-                    ]
-                );
-
-                $statusCode = $response->getStatusCode();
-
-                if ($statusCode !== 200) {
+                try {
+                    $releaseData = $musicBrainzService->getReleaseByBarcode($barcodeValue);
+                    $releases = $releaseData["releases"];
+                } catch (\Exception $e) {
                     return $this->json([
-                        'error' => 'Error fetching from MusicBrainz API',
-                        'status' => $statusCode
-                    ], $statusCode);
+                        'error' => $e->getMessage()
+                    ], 500);
                 }
 
-                $content = $response->getContent();
-                $content = $response->toArray();
-                $releases = $content["releases"];
+                // Attach cover art
+                foreach ($releases as $key => $release) {
+                    $response = $this->client->request(
+                        'GET',
+                        'https://coverartarchive.org/release/' . $release['id'],
+                        [
+                            'headers' => [
+                                'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
+                            ]
+                        ]
+                    );
+
+                    $statusCode = $response->getStatusCode();
+
+                    if ($statusCode === 200) {
+                        $covers = $response->toArray();
+
+                        foreach ($covers['images'] as $cover) {
+                            if ($cover['front']) {
+                                $release['cover'] = $cover['image'];
+                            }
+                        }
+
+                        $releases[$key] = $release;
+                    }
+                }
 
                 // Store the data in the session
                 $session = $request->getSession();
@@ -124,8 +136,13 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
-    public function scanAdd(Request $request, EntityManagerInterface $em, ReleaseRepository $releaseRepository, ArtistRepository $artistRepository): Response
-    {
+    public function scanAdd(
+        Request $request,
+        EntityManagerInterface $em,
+        ReleaseRepository $releaseRepository,
+        ArtistRepository $artistRepository,
+        MusicBrainzService $musicBrainzService
+    ): Response {
         try {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -139,26 +156,13 @@ final class ReleaseController extends AbstractController
             }
 
             // Fetch the complete release data
-            $response = $this->client->request(
-                'GET',
-                'https://musicbrainz.org/ws/2/release/' . $releaseId,
-                [
-                    'query' => [
-                        'fmt' => 'json',
-                        'inc' => 'artists+labels+recordings'
-                    ],
-                    'headers' => [
-                        'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
-                    ]
-                ]
-            );
-
-            if ($response->getStatusCode() !== 200) {
-                $this->addFlash('error', 'Error fetching release details');
-                return $this->redirectToRoute('scan');
+            try {
+                $releaseData = $musicBrainzService->getReleaseById($releaseId);
+            } catch (\Exception $e) {
+                return $this->json([
+                    'error' => $e->getMessage()
+                ], 500);
             }
-
-            $releaseData = $response->toArray();
 
             // Check if the release does NOT already exist
             $checkRelease = $releaseRepository->findOneBy(['barcode' => $barcode]);
