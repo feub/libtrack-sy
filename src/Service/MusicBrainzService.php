@@ -8,14 +8,17 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class MusicBrainzService
 {
   private HttpClientInterface $httpClient;
+  private CoverArtArchiveService $coverService;
   private string $userAgent;
 
   public function __construct(
     HttpClientInterface $httpClient,
+    CoverArtArchiveService $coverService,
     #[Autowire('%env(MUSICBRAINZ_APP_NAME)%')] string $appName,
     #[Autowire('%env(MUSICBRAINZ_CONTACT_EMAIL)%')] string $contactEmail
   ) {
     $this->httpClient = $httpClient;
+    $this->coverService = $coverService;
     $this->userAgent = "$appName/1.0 ($contactEmail)";
   }
 
@@ -32,6 +35,16 @@ class MusicBrainzService
     ]);
 
     return $response->toArray();
+  }
+
+  public function getReleaseWithCoverArt(string $mbid): array
+  {
+    $release = $this->getReleaseById($mbid);
+    $coverArt = $this->coverService->getCoverArtByMbid($mbid);
+
+    $release['cover'] = $coverArt;
+
+    return $release;
   }
 
   public function getReleaseById(string $mbid): array

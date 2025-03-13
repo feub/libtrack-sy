@@ -29,9 +29,8 @@
     {% if releases|length > 0 %}
       <div class="releases-container">
         {% for release in releases %}
-        {# {{dump(release)}} #}
           {% if release.cover is defined %}
-            {% if release.cover is not null %}
+            {% if release.cover != '' %}
               <img src="{{ release.cover }}" alt="{{ release.title }}" class="float-right" style="width: 150px" />
             {% endif %}
           {% endif %}
