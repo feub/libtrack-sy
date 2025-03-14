@@ -17,7 +17,7 @@
     {{ form_widget(form.search, {'attr': {'class': 'text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800', type: 'submit', name: 'search', id: 'search'}}) }}
 
     <p class="mt-4 text-slate-500 text-sm">
-      Ex.: 724382975229 (The Dark Side of the Moon CD)
+      Ex.: 016861923822 (Death "Human" CD)
     </p>
 
   {{ form_end(form) }}
@@ -29,26 +29,50 @@
     {% if releases|length > 0 %}
       <div class="releases-container">
         {% for release in releases %}
-          <div class="release-item mb-2 rounded bg-gray-900 p-4">
-            <h3 class="font-bold text-xl text-slate-500 mb-4">{{ release.title }}</h3>
-            {% if release.artist_credit is defined %}
+          {% if release.cover is defined %}
+            {% if release.cover != '' %}
+              <img src="{{ release.cover }}" alt="{{ release.title }}" class="float-right" style="width: 150px" />
+            {% endif %}
+          {% endif %}
+          <form action="{{ path('release.scan.add') }}" method="post">
+            <div class="release-item mb-2 rounded bg-gray-900 p-4">
+              <h3 class="font-bold text-xl text-slate-500 mb-4 flex items-center">
+                <button type="submit" class="text-orange-500 hover:text-orange-800 mr-2" aria-label="Add" title="Add">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </button>
+                {{ release.title }}
+              </h3>
+              {% if release['artist-credit'] is defined %}
                 <p>Artist:
-                    {% for artist in release.artist_credit %}
-                        {{ artist.name }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
+                  {% for art in release['artist-credit'] %}
+                      {{ art.name }}{% if not loop.last %}, {% endif %}
+                  {% endfor %}
                 </p>
-            {% endif %}
+              {% endif %}
 
-            {% if release.date is defined %}
-                <p>Date: {{ release.date }}</p>
-            {% endif %}
+              <div class="grid justify-items-start">
+                {% if release.date is defined %}
+                  <p>Date: {{ release.date }}</p>
+                {% endif %}
 
-            <form action="{{ path('release.scan.add') }}" method="post">
-              <input type="hidden" name="release_id" value="{{ release.id }}">
-              <input type="hidden" name="barcode" value="{{ barcode }}">
-              <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add</button>
+                {% if release.media is defined %}
+                  <p class="clear-both">Media:
+                      {% for media in release.media %}
+                          {{ media.format }}{% if not loop.last %}, {% endif %}
+                      {% endfor %}
+                      {% if release.packaging is defined %}
+                       - Packaging: {{ release.packaging }}
+                      {% endif %}
+                  </p>
+                {% endif %}
+              </div>
+
+                <input type="hidden" name="release_id" value="{{ release.id }}">
+                <input type="hidden" name="barcode" value="{{ barcode }}">
+              </div>
             </form>
-          </div>
         {% endfor %}
       </div>
     {% else %}
