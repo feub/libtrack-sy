@@ -44,9 +44,8 @@ final class ReleaseController extends AbstractController
                 'page' => $page
             ]);
         } catch (AccessDeniedException $e) {
-            return $this->render('errors/custom_access_denied.html.twig', [
-                'error' => 'You need admin privileges to view this page.',
-            ], new Response('', 403));
+            $this->addFlash('warning', 'You need admin privileges to view this page.');
+            return $this->redirectToRoute('app_login');
         }
     }
 
@@ -133,10 +132,8 @@ final class ReleaseController extends AbstractController
                 'releases' => $releases
             ]);
         } catch (AccessDeniedException $e) {
+            $this->addFlash('warning', 'You need admin privileges to view this page.');
             return $this->redirectToRoute('app_login');
-            // return $this->render('errors/custom_access_denied.html.twig', [
-            //     'error' => 'You need admin privileges to view this page.',
-            // ], new Response('', 403));
         }
     }
 
