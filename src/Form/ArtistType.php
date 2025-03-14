@@ -6,6 +6,7 @@ use App\Entity\Artist;
 use App\Entity\Release;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Event\PostSubmitEvent;
 use Symfony\Component\Form\Event\PreSubmitEvent;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -20,23 +21,25 @@ class ArtistType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class, [])
-            ->add('slug', TextType::class, [])
-            ->add('thumbnail')
-            ->add('createdAt', null, [
-                'widget' => 'single_text',
+            ->add('name', TextType::class, [
+                'empty_data' => ''
             ])
-            ->add('updatedAt', null, [
-                'widget' => 'single_text',
+            ->add('slug', TextType::class, [
+                'empty_data' => '',
+                'required' => false
             ])
-            ->add('releases', EntityType::class, [
-                'class' => Release::class,
-                'choice_label' => 'id',
-                'multiple' => true,
-            ])
+            // ->add('releases', EntityType::class, [
+            //     'class' => Release::class,
+            //     'choice_label' => 'id',
+            //     'multiple' => true,
+            // ])
             ->addEventListener(
                 FormEvents::PRE_SUBMIT,
                 $this->autoSlug(...)
+            )
+            ->addEventListener(
+                FormEvents::POST_SUBMIT,
+                $this->setTimestamps(...)
             )
             ->add('save', SubmitType::class, [
                 'label' => 'Save'
@@ -51,6 +54,16 @@ class ArtistType extends AbstractType
         if (empty($data['slug'])) {
             $data['slug'] = $this->slugger->slug($data['name']);
             $event->setData($data);
+        }
+    }
+
+    public function setTimestamps(PostSubmitEvent $event): void
+    {
+        $data = $event->getData();
+        $data->setUpdatedAt(new \DateTimeImmutable());
+
+        if (!$data->getId()) {
+            $data->setCreatedAt(new \DateTimeImmutable());
         }
     }
 
