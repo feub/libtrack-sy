@@ -2,7 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #1f2937; /* #111827 */
-  color: #f1f1f1;
+.btn-primary {
+  @apply text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-zinc-600 dark:hover:bg-zinc-700 dark:focus:ring-blue-800;
+}
+
+.title {
+  @apply font-bold text-3xl text-zinc-300;
+}
+
+.table-table {
+  @apply w-full text-sm text-left rtl:text-right text-gray-500 dark:text-zinc-400;
+}
+
+.table-thead {
+  @apply text-xs text-gray-700 uppercase bg-gray-50 dark:bg-zinc-700 dark:text-zinc-400;
+}
+
+.table-tr {
+  @apply bg-white border-b dark:bg-zinc-800 dark:border-zinc-700 border-zinc-200;
 }
