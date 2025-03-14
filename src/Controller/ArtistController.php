@@ -9,9 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/artist', name: 'artist.')]
+#[IsGranted('ROLE_ADMIN', message: 'You need admin privileges to view this page.')]
 final class ArtistController extends AbstractController
 {
     #[Route('/', name: 'index')]
