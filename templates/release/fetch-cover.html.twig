@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Fetch a release cover art
+{% endblock %}
+
+{% block body %}
+	<div class="max-w-screen-xl mx-auto">
+
+		<h1 class="font-bold text-3xl text-slate-500 mb-4">
+			Fetch a release cover art
+		</h1>
+
+		{% if releases is not null %}
+			<div class="mx-auto mt-4"></div>
+			<h2 class="font-bold text-2xl text-slate-500 mb-4">
+				Results for barcode:
+				{{ barcode }}
+			</h2>
+
+			{% if releases|length > 0 %}
+				<div class="releases-container">
+					{% for release in releases %}
+						{% if release.cover is defined %}
+							{% if release.cover != '' %}
+								<img src="{{ release.cover }}" alt="{{ release.title }}" class="float-right" style="width: 150px"/>
+							{% endif %}
+						{% endif %}
+						<form action="{{ path('release.update.cover') }}" method="post">
+							<div class="release-item mb-2 rounded bg-gray-900 p-4">
+								<h3 class="font-bold text-xl text-slate-500 mb-4 flex items-center">
+									<button type="submit" class="text-orange-500 hover:text-orange-800 mr-2" aria-label="Add" title="Add">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+										</svg>
+									</button>
+									{{ release.title }}
+								</h3>
+								{% if release['artist-credit'] is defined %}
+									<p>
+										Artist:
+										{% for art in release['artist-credit'] %}
+											{{ art.name }}
+											{% if not loop.last %}
+												,
+											{% endif %}
+										{% endfor %}
+									</p>
+								{% endif %}
+
+								<div class="grid justify-items-start">
+									{% if release.date is defined %}
+										<p>
+											Date:
+											{{ release.date }}
+										</p>
+									{% endif %}
+
+									{% if release.media is defined %}
+										<p class="clear-both">
+											Media:
+											{% for media in release.media %}
+												{{ media.format }}
+												{% if not loop.last %}
+													,
+												{% endif %}
+											{% endfor %}
+											{% if release.packaging is defined %}
+												- Packaging:
+												{{ release.packaging }}
+											{% endif %}
+										</p>
+									{% endif %}
+								</div>
+
+								<input type="hidden" name="release_id" value="{{ release.id }}">
+								<input type="hidden" name="barcode" value="{{ barcode }}">
+							</div>
+						</form>
+					{% endfor %}
+				</div>
+			{% else %}
+				<p>
+					No releases found for this barcode.
+				</p>
+			{% endif %}
+		{% endif %}
+
+	</div>
+{% endblock %}

@@ -71,30 +71,6 @@ final class ReleaseController extends AbstractController
             foreach ($releases as $key => $release) {
                 $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
                 $releases[$key] = $release;
-
-                // $response = $this->client->request(
-                //     'GET',
-                //     'https://coverartarchive.org/release/' . $release['id'],
-                //     [
-                //         'headers' => [
-                //             'User-Agent' => 'LibTrack/1.0 (f@feub.net)'
-                //         ]
-                //     ]
-                // );
-
-                // $statusCode = $response->getStatusCode();
-
-                // if ($statusCode === 200) {
-                //     $covers = $response->toArray();
-
-                //     foreach ($covers['images'] as $cover) {
-                //         if ($cover['front']) {
-                //             $release['cover'] = $cover['image'];
-                //         }
-                //     }
-
-                //     $releases[$key] = $release;
-                // }
             }
 
             // Store the data in the session
@@ -214,5 +190,83 @@ final class ReleaseController extends AbstractController
 
         $this->addFlash('success', 'Release "' . $release->getTitle() . '" added successfully');
         return $this->redirectToRoute('release.scan');
+    }
+
+    #[Route('/{barcode}/fetch-cover', name: 'fetch-cover', methods: ['GET', 'POST'], requirements: ['barcode' => Requirement::DIGITS])]
+    public function fetchCover(
+        int $barcode,
+        MusicBrainzService $musicBrainzService,
+        CoverArtArchiveService $coverService
+    ) {
+        try {
+            $releaseData = $musicBrainzService->getReleaseByBarcode($barcode);
+            $releases = $releaseData["releases"];
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        // Attach cover art
+        foreach ($releases as $key => $release) {
+            $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
+            $releases[$key] = $release;
+        }
+
+        return $this->render('release/fetch-cover.html.twig', [
+            'releases' => $releases,
+            'barcode' => $barcode
+        ]);
+    }
+
+    #[Route('/update-cover', name: 'update.cover', methods: ['POST'])]
+    public function updateCover(
+        Request $request,
+        EntityManagerInterface $em,
+        ReleaseRepository $releaseRepository,
+        ArtistRepository $artistRepository,
+        MusicBrainzService $musicBrainzService
+    ): Response {
+        // Get the release ID and barcode from the form submission
+        $releaseId = $request->request->get('release_id');
+        $barcode = $request->request->get('barcode');
+
+        if (!$releaseId) {
+            $this->addFlash('error', 'No release ID provided');
+            return $this->redirectToRoute('scan');
+        }
+
+        // Fetch the complete release data
+        try {
+            $releaseData = $musicBrainzService->getReleaseWithCoverArt($releaseId);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        // Get the release
+        $release = $releaseRepository->findOneBy(['barcode' => $barcode]);
+
+        if (!$release) {
+            $this->addFlash('warning', 'Release with barcode "' . $barcode . '" does not exist in the database.');
+            return $this->redirectToRoute('release.index');
+        }
+
+        if ($releaseData['cover']) {
+            $release->setCover($releaseData['cover']);
+        }
+
+        //$em->persist($release);
+        $em->flush();
+
+        $this->addFlash('success', 'Cover art successfully added for release "' . $release->getTitle() . '".');
+        return $this->redirectToRoute('release.index');
+    }
+
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
+    public function edit()
+    {
+        //
     }
 }

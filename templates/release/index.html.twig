@@ -1,67 +1,89 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Releases{% endblock %}
+{% block title %}
+	Releases
+{% endblock %}
 
 {% block body %}
-<div class="max-w-screen-xl mx-auto">
+	<div class="max-w-screen-xl mx-auto">
 
-    <h1 class="title mb-4">Releases ({{ releases.getTotalItemCount() }})</h1>
+		<h1 class="title mb-4">
+			Releases (
+			{{ releases.getTotalItemCount() }}
+			)
+		</h1>
 
-    <div class="relative overflow-x-auto">
-        <table class="table-table">
-            <thead class="table-thead">
-                <tr>
-                    <th class="px-6 py-4">Cover art</th>
-                    <th scope="col" class="px-6 py-3">{{ knp_pagination_sortable(releases, 'Title', 'r.title') }}</th>
-                    <th class="px-6 py-4">Artist</th>
-                    <th class="px-6 py-4">Year</th>
-                    <th class="px-6 py-4">Barcode</th>
-                    <th class="px-6 py-4 text-right"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for release in releases %}
-                <tr class="table-tr">
-                    <td class="px-6 py-4 w-[100px]">
-                        {% if release.cover|length > 0 %}
-                            <img src="{{ release.cover }}" alt="{{ release.title }}" style="width: 100px" />
-                        {% else %}
-                        <div class="w-[100px] h-[100px] bg-gray-200 flex items-center justify-center text-center text-sm font-medium text-gray-600 border border-gray-300">
-                            No cover
-                        </div>
-                        {% endif %}
-                    </td>
-                    <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ release.title }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if release.artists|length > 0 %}
-                            {{ release.artists|map(artist => artist.name)|join(', ') }}
-                        {% else %}
-                            <em>No artists</em>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        {{ release.releaseDate }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {{ release.barcode }}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        {% if release.cover|length == 0 %}
-                            <a href="{{ path('release.fetch-cover', {id: release.id}) }}" class="btn-primary">Fetch cover</a>
-                        {% endif %}
-                        <a href="{{ path('release.edit', {id: release.id}) }}" class="btn-primary">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+		<div class="relative overflow-x-auto">
+			<table class="table-table">
+				<thead class="table-thead">
+					<tr>
+						<th class="px-6 py-4">
+							Cover art
+						</th>
+						<th scope="col" class="px-6 py-3">
+							{{ knp_pagination_sortable(releases, 'Title', 'r.title') }}
+						</th>
+						<th class="px-6 py-4">
+							Artist
+						</th>
+						<th class="px-6 py-4">
+							Year
+						</th>
+						<th class="px-6 py-4">
+							Barcode
+						</th>
+						<th class="px-6 py-4 text-right"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for release in releases %}
+						<tr class="table-tr">
+							<td class="px-6 py-4 w-[100px]">
+								{% if release.cover|length > 0 %}
+									<img src="{{ release.cover }}" alt="{{ release.title }}" style="width: 100px"/>
+								{% else %}
+									<div class="w-[100px] h-[100px] bg-gray-200 flex items-center justify-center text-center text-sm font-medium text-gray-600 border border-gray-300">
+										No cover
+									</div>
+								{% endif %}
+							</td>
+							<td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+								{{ release.title }}
+							</td>
+							<td class="px-6 py-4">
+								{% if release.artists|length > 0 %}
+									{{ release.artists|map(artist => artist.name)|join(', ') }}
+								{% else %}
+									<em>
+										No artists
+									</em>
+								{% endif %}
+							</td>
+							<td class="px-6 py-4">
+								{{ release.releaseDate }}
+							</td>
+							<td class="px-6 py-4">
+								{{ release.barcode }}
+							</td>
+							<td class="px-6 py-4 text-right">
+								{% if release.cover|length == 0 %}
+									<a href="{{ path('release.fetch-cover', {barcode: release.barcode}) }}" class="btn-primary">
+										Fetch cover
+									</a>
+								{% endif %}
+								<a href="{{ path('release.edit', {id: release.id}) }}" class="btn-primary">
+									Edit
+								</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 
-        <div class="my-4">
-            {{ knp_pagination_render(releases, 'partials/tailwind_pagination.html.twig') }}
-        </div>
-    </div>
+			<div class="my-4">
+				{{ knp_pagination_render(releases, 'partials/tailwind_pagination.html.twig') }}
+			</div>
+		</div>
 
-</div>
+	</div>
 {% endblock %}
