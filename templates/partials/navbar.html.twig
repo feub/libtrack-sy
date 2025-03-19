@@ -19,6 +19,16 @@
         <li>
           <a href="{{ path('contact') }}" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-zinc-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent {{ app.current_route starts with 'contact' ? 'dark:text-orange-500 font-bold' : '' }}" {{ app.current_route starts with 'contact' ? 'aria-current="page"' : '' }}>Contact</a>
         </li>
+        <li>
+        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+        <li class="flex items-center space-x-3">
+            <span>{{ app.user.email }}</span> <a href="/logout" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-zinc-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">[Logout]</a>
+        </li>
+        {% else %}
+        <li>
+            <a href="{{ path('app_login') }}" class="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-zinc-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Login</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>
