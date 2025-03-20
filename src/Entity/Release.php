@@ -26,7 +26,7 @@ class Release
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $cover = null;
 
-    #[ORM\Column(length: 100, unique: true)]
+    #[ORM\Column(length: 100, unique: true, nullable: true)]
     private ?string $barcode = null;
 
     /**
