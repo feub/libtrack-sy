@@ -269,4 +269,13 @@ final class ReleaseController extends AbstractController
     {
         //
     }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(Release $release, EntityManagerInterface $em)
+    {
+        $em->remove($release);
+        $em->flush();
+        $this->addFlash('success', 'The release has been successfully deleted.');
+        return $this->redirectToRoute('release.index');
+    }
 }
