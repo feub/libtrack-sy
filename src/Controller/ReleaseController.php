@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Artist;
 use App\Form\ScanType;
 use App\Entity\Release;
+use App\Form\ReleaseType;
 use App\Service\MusicBrainzService;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
@@ -263,6 +264,25 @@ final class ReleaseController extends AbstractController
 
         $this->addFlash('success', 'Cover art successfully added for release "' . $release->getTitle() . '".');
         return $this->redirectToRoute('release.index', ['page' => $page]);
+    }
+
+    #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
+    public function create(Request $request, EntityManagerInterface $em)
+    {
+        $release = new Release();
+        $form = $this->createForm(ReleaseType::class, $release);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($release);
+            $em->flush();
+            $this->addFlash('success', 'The release has been successfully added.');
+            return $this->redirectToRoute('release.index');
+        }
+
+        return $this->render('release/create.html.twig', [
+            'form' => $form
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
