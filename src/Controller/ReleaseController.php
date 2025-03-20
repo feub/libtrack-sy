@@ -192,9 +192,9 @@ final class ReleaseController extends AbstractController
         return $this->redirectToRoute('release.scan');
     }
 
-    #[Route('/{barcode}/fetch-cover', name: 'fetch-cover', methods: ['GET', 'POST'], requirements: ['barcode' => Requirement::DIGITS])]
+    #[Route('/{barcode}/fetch-cover', name: 'fetch-cover', methods: ['GET', 'POST'], requirements: ['barcode' => '\d+'])]
     public function fetchCover(
-        int $barcode,
+        string $barcode,
         Request $request,
         MusicBrainzService $musicBrainzService,
         CoverArtArchiveService $coverService
@@ -228,14 +228,14 @@ final class ReleaseController extends AbstractController
         ReleaseRepository $releaseRepository,
         MusicBrainzService $musicBrainzService
     ): Response {
-        // Get the release ID and barcode from the form submission
+        // Get the values from the form submission
         $page = $request->request->get('page');
         $releaseId = $request->request->get('release_id');
-        $barcode = $request->request->get('barcode');
+        $barcode = (string) $request->request->get('barcode', '', \FILTER_DEFAULT);
 
         if (!$releaseId) {
             $this->addFlash('error', 'No release ID provided');
-            return $this->redirectToRoute('scan');
+            return $this->redirectToRoute('release.index', ['page' => $page]);
         }
 
         // Fetch the complete release data
@@ -259,7 +259,6 @@ final class ReleaseController extends AbstractController
             $release->setCover($releaseData['cover']);
         }
 
-        //$em->persist($release);
         $em->flush();
 
         $this->addFlash('success', 'Cover art successfully added for release "' . $release->getTitle() . '".');

@@ -75,7 +75,7 @@
 
 								<input type="hidden" name="page" value="{{ page }}">
 								<input type="hidden" name="release_id" value="{{ release.id }}">
-								<input type="hidden" name="barcode" value="{{ barcode }}">
+								<input type="hidden" type="text" name="barcode" value="{{ barcode }}">
 							</div>
 						</form>
 					{% endfor %}
@@ -86,6 +86,10 @@
 				</p>
 			{% endif %}
 		{% endif %}
+
+		<p class="mt-4">
+			<a href="{{ path('release.index', {page: page}) }}" class="btn-primary">Back</a>
+		</p>
 
 	</div>
 {% endblock %}
