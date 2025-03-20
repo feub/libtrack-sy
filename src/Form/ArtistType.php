@@ -18,6 +18,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ArtistType extends AbstractType
 {
     public function __construct(private SluggerInterface $slugger) {}
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder

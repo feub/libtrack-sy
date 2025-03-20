@@ -68,4 +68,13 @@ final class ArtistController extends AbstractController
             'form' => $form
         ]);
     }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(Artist $artist, EntityManagerInterface $em)
+    {
+        $em->remove($artist);
+        $em->flush();
+        $this->addFlash('success', 'The artist has been successfully deleted.');
+        return $this->redirectToRoute('artist.index');
+    }
 }
