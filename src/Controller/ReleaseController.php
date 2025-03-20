@@ -195,6 +195,7 @@ final class ReleaseController extends AbstractController
     #[Route('/{barcode}/fetch-cover', name: 'fetch-cover', methods: ['GET', 'POST'], requirements: ['barcode' => Requirement::DIGITS])]
     public function fetchCover(
         int $barcode,
+        Request $request,
         MusicBrainzService $musicBrainzService,
         CoverArtArchiveService $coverService
     ) {
@@ -215,7 +216,8 @@ final class ReleaseController extends AbstractController
 
         return $this->render('release/fetch-cover.html.twig', [
             'releases' => $releases,
-            'barcode' => $barcode
+            'barcode' => $barcode,
+            'page' => $request->query->get('page', 1)
         ]);
     }
 
@@ -224,10 +226,10 @@ final class ReleaseController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         ReleaseRepository $releaseRepository,
-        ArtistRepository $artistRepository,
         MusicBrainzService $musicBrainzService
     ): Response {
         // Get the release ID and barcode from the form submission
+        $page = $request->request->get('page');
         $releaseId = $request->request->get('release_id');
         $barcode = $request->request->get('barcode');
 
@@ -250,7 +252,7 @@ final class ReleaseController extends AbstractController
 
         if (!$release) {
             $this->addFlash('warning', 'Release with barcode "' . $barcode . '" does not exist in the database.');
-            return $this->redirectToRoute('release.index');
+            return $this->redirectToRoute('release.index', ['page' => $page]);
         }
 
         if ($releaseData['cover']) {
@@ -261,7 +263,7 @@ final class ReleaseController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Cover art successfully added for release "' . $release->getTitle() . '".');
-        return $this->redirectToRoute('release.index');
+        return $this->redirectToRoute('release.index', ['page' => $page]);
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
