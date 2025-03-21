@@ -13,6 +13,16 @@ security:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
+
+    api:
+      pattern: ^/api
+      stateless: true
+      jwt: ~
+      entry_point: App\Security\ApiAuthenticationEntryPoint
+      access_denied_handler: App\Security\ApiAccessDeniedHandler
+      json_login:
+        check_path: api_login
+
     main:
       lazy: true
       provider: app_user_provider
@@ -34,25 +44,19 @@ security:
         # login form, uncomment the following line to always enable it.
         #always_remember_me: true
 
-      json_login:
-        check_path: api_login
-
       # activate different ways to authenticate
       # https://symfony.com/doc/current/security.html#the-firewall
 
       # https://symfony.com/doc/current/security/impersonating_user.html
       # switch_user: true
 
-    api:
-      pattern: ^/api/
-      stateless: true
-      jwt: ~ # Enables JWT authentication for API routes
-
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
     # - { path: ^/admin, roles: ROLE_ADMIN }
     # - { path: ^/profile, roles: ROLE_USER }
+    - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
   security:
