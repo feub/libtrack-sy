@@ -44,7 +44,7 @@ final class ReleaseController extends AbstractController
         ]);
     }
 
-    #[Route('/scan', name: 'scan', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
+    #[Route('/scan', name: 'scan', methods: ['GET', 'POST']/* , requirements: ['id' => Requirement::DIGITS] */)]
     public function scan(
         Request $request,
         MusicBrainzService $musicBrainzService,
