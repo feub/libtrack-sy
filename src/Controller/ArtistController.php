@@ -85,10 +85,15 @@ final class ArtistController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->remove($artist);
-            $em->flush();
-            $this->addFlash('success', 'The artist has been successfully deleted.');
-            return $this->redirectToRoute('artist.index');
+            try {
+                $em->remove($artist);
+                $em->flush();
+                $this->addFlash('success', 'The artist has been successfully deleted.');
+                return $this->redirectToRoute('artist.index');
+            } catch (\RuntimeException $e) {
+                $this->addFlash('warning', $e->getMessage());
+                return $this->redirectToRoute('artist.index');
+            }
         }
 
         return $this->render('artist/confirm_delete.html.twig', [

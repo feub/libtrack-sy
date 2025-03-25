@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ArtistRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Artist
 {
     #[ORM\Id]
@@ -131,5 +132,13 @@ class Artist
         $this->slug = $slug;
 
         return $this;
+    }
+
+    #[ORM\PreRemove]
+    public function preventDeletionIfHasReleases(): void
+    {
+        if (!$this->releases->isEmpty()) {
+            throw new \RuntimeException('Cannot delete artist with existing releases');
+        }
     }
 }
