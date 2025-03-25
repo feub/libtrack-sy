@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/artist', name: 'artist.')]
@@ -69,12 +70,30 @@ final class ArtistController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Artist $artist, EntityManagerInterface $em)
+    #[Route('/{id}/confirm-delete', name: 'delete', methods: ['GET', 'POST'])]
+    public function confirmDelete(Artist $artist, Request $request, EntityManagerInterface $em): Response
     {
-        $em->remove($artist);
-        $em->flush();
-        $this->addFlash('success', 'The artist has been successfully deleted.');
-        return $this->redirectToRoute('artist.index');
+        $form = $this->createFormBuilder()
+            ->add('delete', SubmitType::class, [
+                'label' => 'Delete',
+                'attr' => [
+                    'class' => 'text-white bg-red-500 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-blue-800'
+                ]
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($artist);
+            $em->flush();
+            $this->addFlash('success', 'The artist has been successfully deleted.');
+            return $this->redirectToRoute('artist.index');
+        }
+
+        return $this->render('artist/confirm_delete.html.twig', [
+            'artist' => $artist,
+            'form' => $form->createView(),
+        ]);
     }
 }
