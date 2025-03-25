@@ -10,6 +10,14 @@ body {
   @apply text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-zinc-600 dark:hover:bg-zinc-700 dark:focus:ring-blue-800;
 }
 
+.btn-primary-outlined {
+  @apply text-white border border-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:border-zinc-600 dark:hover:bg-zinc-700 dark:focus:ring-blue-800;
+}
+
+.btn-danger {
+  @apply text-white bg-red-500 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-blue-800;
+}
+
 .title {
   @apply font-bold text-3xl text-zinc-300;
 }
