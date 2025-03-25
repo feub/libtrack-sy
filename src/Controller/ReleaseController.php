@@ -18,6 +18,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/release', name: 'release.')]
@@ -291,12 +292,30 @@ final class ReleaseController extends AbstractController
         //
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Release $release, EntityManagerInterface $em)
+    #[Route('/{id}/confirm-delete', name: 'delete', methods: ['GET', 'POST'])]
+    public function confirmDelete(Release $release, Request $request, EntityManagerInterface $em): Response
     {
-        $em->remove($release);
-        $em->flush();
-        $this->addFlash('success', 'The release has been successfully deleted.');
-        return $this->redirectToRoute('release.index');
+        $form = $this->createFormBuilder()
+            ->add('delete', SubmitType::class, [
+                'label' => 'Delete',
+                // 'attr' => [
+                //     'class' => 'text-white bg-red-500 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-blue-800'
+                // ]
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($release);
+            $em->flush();
+            $this->addFlash('success', 'The release has been successfully deleted.');
+            return $this->redirectToRoute('release.index');
+        }
+
+        return $this->render('release/confirm_delete.html.twig', [
+            'release' => $release,
+            'form' => $form->createView(),
+        ]);
     }
 }
