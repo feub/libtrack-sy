@@ -32,3 +32,4 @@
 ###< lexik/jwt-authentication-bundle ###
 
 node_modules
+.vscode
