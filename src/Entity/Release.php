@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\ReleaseRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ReleaseRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 #[ORM\Entity(repositoryClass: ReleaseRepository::class)]
 #[ORM\Table(name: '`release`')]
@@ -15,24 +17,30 @@ class Release
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['api.release.list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['api.release.list'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups(['api.release.list'])]
     private ?int $release_date = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['api.release.list'])]
     private ?string $cover = null;
 
     #[ORM\Column(length: 100, unique: true, nullable: true)]
+    #[Groups(['api.release.list'])]
     private ?string $barcode = null;
 
     /**
      * @var Collection<int, Artist>
      */
     #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'releases')]
+    #[Groups(['api.release.list'])]
     private Collection $artists;
 
     #[ORM\Column]

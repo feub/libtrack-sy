@@ -180,4 +180,40 @@ final class ReleaseController extends AbstractController
             'message' => 'Release "' . $release->getTitle() . '" added successfully'
         ]);
     }
+
+    #[Route('/list', name: 'list', methods: ['GET'])]
+    public function list(ReleaseRepository $releaseRepository, Request $request): Response
+    {
+        $page = $request->query->getInt('page', 1);
+        $limit = 20;
+        $releases = $releaseRepository->paginatedReleases($page, $limit);
+        $maxpage = ceil($releases->count() / 2);
+
+        // Iterate over releases to get artists
+        $releasesData = [];
+
+        foreach ($releases as $release) {
+            $artists = $release->getArtists();
+            $artistsData = [];
+
+            foreach ($artists as $artist) {
+                $artistsData[] = [
+                    'id' => $artist->getId(),
+                    'name' => $artist->getName(),
+                ];
+            }
+            $releasesData[] = [
+                'id' => $release->getId(),
+                'title' => $release->getTitle(),
+                'artists' => $artistsData,
+            ];
+        }
+
+        return $this->json([
+            'type' => 'success',
+            'releases' => $releasesData,
+            'maxPage' => $maxpage,
+            'page' => $page
+        ], 200, [], ['groups' => 'api.release.list']);
+    }
 }
