@@ -25,20 +25,12 @@ final class ReleaseController extends AbstractController
         private SluggerInterface $slugger
     ) {}
 
-    #[Route('/', name: 'index', methods: ['GET'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY', message: 'You need admin privileges to view this page.')]
+    #[Route('/health', name: 'health', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'You need to be logged in to access this resource.'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
         return $this->json([
             'type' => 'success',
-            'message' => 'Welcome to your new controller!',
+            'message' => 'LibTrack API is running.',
         ]);
     }
 
@@ -49,14 +41,15 @@ final class ReleaseController extends AbstractController
         MusicBrainzService $musicBrainzService,
         CoverArtArchiveService $coverService
     ): Response {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'You need to be logged in to access this resource.'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        // if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+        //     return $this->json([
+        //         'type' => 'error',
+        //         'message' => 'You need to be logged in to access this resource.'
+        //     ], Response::HTTP_UNAUTHORIZED);
+        // }
 
-        $barcode = $request->request->get('barcode');
+        $barcode = $request->toArray();
+        $barcode = $barcode['barcode'];
         $releases = null;
 
         if (!$barcode) {
@@ -98,9 +91,10 @@ final class ReleaseController extends AbstractController
         ArtistRepository $artistRepository,
         MusicBrainzService $musicBrainzService
     ): Response {
-        // Get the release ID and barcode from the form submission
-        $releaseId = $request->request->get('release_id');
-        $barcode = $request->request->get('barcode');
+        // Get the JSON payload
+        $data = json_decode($request->getContent(), true);
+        $releaseId = $data['release_id'] ?? null;
+        $barcode = $data['barcode'] ?? null;
 
         if (!$releaseId) {
             return $this->json([
