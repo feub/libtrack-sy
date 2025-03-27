@@ -205,6 +205,8 @@ final class ReleaseController extends AbstractController
             $releasesData[] = [
                 'id' => $release->getId(),
                 'title' => $release->getTitle(),
+                'cover' => $release->getCover(),
+                'release_date' => $release->getReleaseDate(),
                 'artists' => $artistsData,
             ];
         }
