@@ -17,11 +17,11 @@ security:
     api:
       pattern: ^/api
       stateless: true
-      jwt: ~
-      entry_point: App\Security\ApiAuthenticationEntryPoint
-      access_denied_handler: App\Security\ApiAccessDeniedHandler
-      json_login:
-        check_path: api_login
+      # jwt: ~
+      # entry_point: App\Security\ApiAuthenticationEntryPoint
+      # access_denied_handler: App\Security\ApiAccessDeniedHandler
+      # json_login:
+      #   check_path: api_login
 
     main:
       lazy: true

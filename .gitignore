@@ -25,6 +25,8 @@
 ###< symfony/asset-mapper ###
 
 .env
+.env.dev
+.env.test
 
 /bin/mailpit
 ###> lexik/jwt-authentication-bundle ###
