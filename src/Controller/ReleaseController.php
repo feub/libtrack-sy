@@ -10,6 +10,7 @@ use App\Service\MusicBrainzService;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
 use App\Service\CoverArtArchiveService;
+use App\Service\ReleaseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,15 +21,21 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 #[Route('/release', name: 'release.')]
 #[IsGranted('ROLE_ADMIN', message: 'You need admin privileges to view this page.')]
 final class ReleaseController extends AbstractController
 {
+    private $coverDir;
+
     public function __construct(
+        private ParameterBagInterface $params,
         private HttpClientInterface $client,
         private SluggerInterface $slugger
-    ) {}
+    ) {
+        $this->coverDir = $params->get('cover_dir');
+    }
 
     #[Route('/', name: 'index')]
     public function index(ReleaseRepository $releaseRepository, Request $request): Response
@@ -41,11 +48,12 @@ final class ReleaseController extends AbstractController
         return $this->render('release/index.html.twig', [
             'releases' => $releases,
             'maxPage' => $maxpage,
-            'page' => $page
+            'page' => $page,
+            'coverDir' => $this->coverDir,
         ]);
     }
 
-    #[Route('/scan', name: 'scan', methods: ['GET', 'POST']/* , requirements: ['id' => Requirement::DIGITS] */)]
+    #[Route('/scan', name: 'scan', methods: ['GET', 'POST'])]
     public function scan(
         Request $request,
         MusicBrainzService $musicBrainzService,
@@ -108,7 +116,8 @@ final class ReleaseController extends AbstractController
         EntityManagerInterface $em,
         ReleaseRepository $releaseRepository,
         ArtistRepository $artistRepository,
-        MusicBrainzService $musicBrainzService
+        MusicBrainzService $musicBrainzService,
+        ReleaseService $releaseService
     ): Response {
         // Get the release ID and barcode from the form submission
         $releaseId = $request->request->get('release_id');
@@ -140,10 +149,10 @@ final class ReleaseController extends AbstractController
         $release->setTitle($releaseData['title']);
         $release->setBarcode($barcode);
 
-        // dd($releaseData);
-
         if ($releaseData['cover']) {
-            $release->setCover($releaseData['cover']);
+            $coverPath = $releaseService->downloadCovertArt($releaseData['cover'], $releaseId);
+            // $coverPath = $this->downloadCovertArt($releaseData['cover'], $releaseId);
+            $release->setCover($coverPath);
         }
 
         // Release date (extract year if available)
@@ -212,7 +221,8 @@ final class ReleaseController extends AbstractController
 
         // Attach cover art
         foreach ($releases as $key => $release) {
-            $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
+            $coverUrl = $coverService->getCoverArtByMbid($release['id']);
+            $release['cover'] = $coverUrl;
             $releases[$key] = $release;
         }
 
@@ -228,7 +238,8 @@ final class ReleaseController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         ReleaseRepository $releaseRepository,
-        MusicBrainzService $musicBrainzService
+        MusicBrainzService $musicBrainzService,
+        ReleaseService $releaseService
     ): Response {
         // Get the values from the form submission
         $page = $request->request->get('page');
@@ -258,7 +269,8 @@ final class ReleaseController extends AbstractController
         }
 
         if ($releaseData['cover']) {
-            $release->setCover($releaseData['cover']);
+            $coverPath = $releaseService->downloadCovertArt($releaseData['cover'], $releaseId);
+            $release->setCover($coverPath);
         }
 
         $em->flush();
