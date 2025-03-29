@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Artist;
 use App\Entity\Release;
+use App\Service\ReleaseService;
 use App\Service\MusicBrainzService;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
@@ -89,7 +90,8 @@ final class ReleaseController extends AbstractController
         EntityManagerInterface $em,
         ReleaseRepository $releaseRepository,
         ArtistRepository $artistRepository,
-        MusicBrainzService $musicBrainzService
+        MusicBrainzService $musicBrainzService,
+        ReleaseService $releaseService
     ): Response {
         // Get the JSON payload
         $data = json_decode($request->getContent(), true);
@@ -128,7 +130,8 @@ final class ReleaseController extends AbstractController
         $release->setBarcode($barcode);
 
         if ($releaseData['cover']) {
-            $release->setCover($releaseData['cover']);
+            $coverPath = $releaseService->downloadCovertArt($releaseData['cover'], $releaseId);
+            $release->setCover($coverPath);
         }
 
         // Release date (extract year if available)

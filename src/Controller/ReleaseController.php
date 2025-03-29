@@ -151,7 +151,6 @@ final class ReleaseController extends AbstractController
 
         if ($releaseData['cover']) {
             $coverPath = $releaseService->downloadCovertArt($releaseData['cover'], $releaseId);
-            // $coverPath = $this->downloadCovertArt($releaseData['cover'], $releaseId);
             $release->setCover($coverPath);
         }
 
