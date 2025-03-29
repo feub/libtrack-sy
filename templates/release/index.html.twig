@@ -47,7 +47,7 @@
             <tr class="table-tr">
               <td class="px-6 py-4 w-[100px]">
                 {% if release.cover|length > 0 %}
-                  <img src="{{ release.cover }}" alt="{{ release.title }}" style="width: 100px"/>
+                  <img src="/{{ coverDir ~ release.cover }}" alt="{{ release.title }}" style="width: 100px"/>
                 {% else %}
                   <div class="w-[100px] h-[100px] bg-gray-200 flex items-center justify-center text-center text-sm font-medium text-gray-600 border border-gray-300">
                     No cover
