@@ -184,10 +184,12 @@ final class ReleaseController extends AbstractController
     #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(ReleaseRepository $releaseRepository, Request $request): Response
     {
+        $totalRleases = $releaseRepository->getTotalReleases();
+
         $page = $request->query->getInt('page', 1);
         $limit = 20;
         $releases = $releaseRepository->paginatedReleases($page, $limit);
-        $maxpage = ceil($releases->count() / 2);
+        $maxpage = ceil($totalRleases / $limit);
 
         // Iterate over releases to get artists
         $releasesData = [];
@@ -214,6 +216,7 @@ final class ReleaseController extends AbstractController
         return $this->json([
             'type' => 'success',
             'releases' => $releasesData,
+            'totalReleases' => $totalRleases,
             'maxPage' => $maxpage,
             'page' => $page
         ], 200, [], ['groups' => 'api.release.list']);
