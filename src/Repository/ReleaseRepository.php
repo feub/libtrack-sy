@@ -18,6 +18,14 @@ class ReleaseRepository extends ServiceEntityRepository
         parent::__construct($registry, Release::class);
     }
 
+    public function getTotalReleases(): int
+    {
+        return $this->createQueryBuilder('r')
+            ->select('COUNT(r.id) AS count')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchArtistName = ''): PaginationInterface
     {
         $builder = $this->createQueryBuilder('r')
@@ -28,6 +36,8 @@ class ReleaseRepository extends ServiceEntityRepository
             $builder->andWhere('a.name LIKE :artistName')
                 ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
         }
+
+        $builder->orderBy('r.createdAt', 'DESC');
 
         return $this->paginator->paginate(
             $builder,
