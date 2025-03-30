@@ -2,14 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\Artist;
 use App\Form\ScanType;
 use App\Entity\Release;
 use App\Form\ReleaseType;
 use App\Service\MusicBrainzService;
-use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
 use App\Service\CoverArtArchiveService;
+use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -56,8 +55,7 @@ final class ReleaseController extends AbstractController
     #[Route('/scan', name: 'scan', methods: ['GET', 'POST'])]
     public function scan(
         Request $request,
-        MusicBrainzService $musicBrainzService,
-        CoverArtArchiveService $coverService
+        DiscogsService $discogsService,
     ): Response {
         $barcodeValue = [];
         $releases = null;
@@ -69,18 +67,11 @@ final class ReleaseController extends AbstractController
             $barcodeValue = $form->get('barcode')->getData();
 
             try {
-                $releaseData = $musicBrainzService->getReleaseByBarcode($barcodeValue);
-                $releases = $releaseData["releases"];
+                $releases = $discogsService->getReleaseByBarcode($barcodeValue);
             } catch (\Exception $e) {
                 return $this->json([
                     'error' => $e->getMessage()
                 ], 500);
-            }
-
-            // Attach cover art
-            foreach ($releases as $key => $release) {
-                $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
-                $releases[$key] = $release;
             }
 
             // Store the data in the session
@@ -247,9 +238,6 @@ final class ReleaseController extends AbstractController
         $form = $this->createFormBuilder()
             ->add('delete', SubmitType::class, [
                 'label' => 'Delete',
-                // 'attr' => [
-                //     'class' => 'text-white bg-red-500 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-blue-800'
-                // ]
             ])
             ->getForm();
 
