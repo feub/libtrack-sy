@@ -113,10 +113,6 @@ final class ReleaseController extends AbstractController
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
     public function scanAdd(
         Request $request,
-        EntityManagerInterface $em,
-        ReleaseRepository $releaseRepository,
-        ArtistRepository $artistRepository,
-        MusicBrainzService $musicBrainzService,
         ReleaseService $releaseService
     ): Response {
         // Get the release ID and barcode from the form submission
@@ -128,75 +124,11 @@ final class ReleaseController extends AbstractController
             return $this->redirectToRoute('scan');
         }
 
-        // Fetch the complete release data
         try {
-            $releaseData = $musicBrainzService->getReleaseWithCoverArt($releaseId);
-        } catch (\Exception $e) {
-            return $this->json([
-                'error' => $e->getMessage()
-            ], 500);
+            $release = $releaseService->addRelease($releaseId, $barcode);
+        } catch (\Throwable $th) {
+            //throw $th;
         }
-
-        // Check if the release does NOT already exist
-        $checkRelease = $releaseRepository->findOneBy(['barcode' => $barcode]);
-
-        if ($checkRelease) {
-            $this->addFlash('warning', 'Barcode "' . $barcode . '" already in the database.');
-            return $this->redirectToRoute('release.scan');
-        }
-
-        $release = new Release();
-        $release->setTitle($releaseData['title']);
-        $release->setBarcode($barcode);
-
-        if ($releaseData['cover']) {
-            $coverPath = $releaseService->downloadCovertArt($releaseData['cover'], $releaseId);
-            $release->setCover($coverPath);
-        }
-
-        // Release date (extract year if available)
-        if (isset($releaseData['date']) && strlen($releaseData['date']) >= 4) {
-            $yearString = substr($releaseData['date'], 0, 4);
-            $year = (int)$yearString;
-            $release->setReleaseDate($year);
-        }
-
-        // Slug
-        $slug = $this->slugger->slug(strtolower($releaseData['title'] . '-' . $barcode . '-' . $releaseId));
-        $release->setSlug($slug);
-
-        // Timestamps
-        $now = new \DateTimeImmutable();
-        $release->setCreatedAt($now);
-        $release->setUpdatedAt($now);
-
-        // Artist
-        if (isset($releaseData['artist-credit'])) {
-            foreach ($releaseData['artist-credit'] as $artistCredit) {
-                if (isset($artistCredit['artist'])) {
-                    $artistData = $artistCredit['artist'];
-
-                    // Check if artist already exists
-                    $artist = $artistRepository->findOneBy(['name' => $artistData['name']]);
-
-                    if (!$artist) {
-                        $artist = new Artist();
-                        $artist->setName($artistData['name']);
-                        $artistSlug = $this->slugger->slug(strtolower($artistData['name']));
-                        $artist->setSlug($artistSlug);
-                        $artist->setCreatedAt($now);
-                        $artist->setUpdatedAt($now);
-
-                        $em->persist($artist);
-                    }
-
-                    $release->addArtist($artist);
-                }
-            }
-        }
-
-        $em->persist($release);
-        $em->flush();
 
         $this->addFlash('success', 'Release "' . $release->getTitle() . '" added successfully');
         return $this->redirectToRoute('release.scan');
