@@ -120,17 +120,23 @@ final class ReleaseController extends AbstractController
         $barcode = $request->request->get('barcode');
 
         if (!$releaseId) {
-            $this->addFlash('error', 'No release ID provided');
+            $this->addFlash('error', 'No release ID provided.');
+            return $this->redirectToRoute('scan');
+        }
+
+        if (!$barcode) {
+            $this->addFlash('error', 'No barcode provided.');
             return $this->redirectToRoute('scan');
         }
 
         try {
             $release = $releaseService->addRelease($releaseId, $barcode);
-        } catch (\Throwable $th) {
-            //throw $th;
+        } catch (\Exception $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('release.scan');
         }
 
-        $this->addFlash('success', 'Release "' . $release->getTitle() . '" added successfully');
+        $this->addFlash('success', 'Release "' . $release->getTitle() . '" added successfully.');
         return $this->redirectToRoute('release.scan');
     }
 
