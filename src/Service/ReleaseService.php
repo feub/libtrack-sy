@@ -62,7 +62,10 @@ class ReleaseService
     $release = new Release();
     $release->setTitle($releaseData['title']);
     $release->setBarcode($barcode);
-    $release->setReleaseDate($releaseData['year']);
+
+    if ($releaseData['year']) {
+      $release->setReleaseDate($releaseData['year']);
+    }
 
     if ($releaseData['images'][0]['uri']) {
       $coverPath = $this->downloadCovertArt($releaseData['images'][0]['uri'], $releaseId);
