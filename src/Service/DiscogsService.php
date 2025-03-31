@@ -42,11 +42,19 @@ class DiscogsService
         ]
       ]);
 
-      $response = $response->toArray();
-      $releases = [];
+      if ($response->getStatusCode() === 200) {
+        $response = $response->toArray();
+        $releases = [];
 
-      foreach ($response['results'] as $rel) {
-        $releases[] = $this->getReleaseById($rel['id']);
+        foreach ($response['results'] as $rel) {
+          $releaseData = $this->getReleaseById($rel['id']);
+
+          if ($releaseData !== null) {
+            $releases[] = $releaseData;
+          }
+        }
+      } else {
+        throw new \Exception('Unexpected response status: ' . $response->getStatusCode());
       }
     } catch (\Throwable $th) {
       throw new \Exception('Unexpected response status: ' . $th->getMessage());
@@ -55,7 +63,7 @@ class DiscogsService
     return $releases;
   }
 
-  public function getReleaseById(string $id): array
+  public function getReleaseById(string $id)
   {
     try {
       $response = $this->httpClient->request('GET', $this->endpoint . 'releases/' . $id, [
@@ -69,7 +77,7 @@ class DiscogsService
 
         return $data;
       } else {
-        throw new \Exception('Unexpected response status: ' . $response->getStatusCode());
+        return null;
       }
     } catch (\Throwable $th) {
       throw new \Exception('Error fetching release data: ' . $th->getMessage(), 0, $th);

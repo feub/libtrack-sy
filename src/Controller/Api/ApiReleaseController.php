@@ -2,14 +2,9 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Artist;
-use App\Entity\Release;
+use App\Service\DiscogsService;
 use App\Service\ReleaseService;
-use App\Service\MusicBrainzService;
-use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
-use App\Service\CoverArtArchiveService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,9 +12,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[Route('/api/release', name: 'api.release.')]
-final class ReleaseController extends AbstractController
+final class ApiReleaseController extends AbstractController
 {
     public function __construct(
         private HttpClientInterface $client,
@@ -39,8 +36,7 @@ final class ReleaseController extends AbstractController
     // #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
         Request $request,
-        MusicBrainzService $musicBrainzService,
-        CoverArtArchiveService $coverService
+        DiscogsService $discogsService
     ): Response {
         // if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
         //     return $this->json([
@@ -61,19 +57,12 @@ final class ReleaseController extends AbstractController
         }
 
         try {
-            $releaseData = $musicBrainzService->getReleaseByBarcode($barcode);
-            $releases = $releaseData["releases"];
+            $releases = $discogsService->getReleaseByBarcode($barcode);
         } catch (\Exception $e) {
             return $this->json([
                 'type' => 'error',
                 'message' => $e->getMessage()
             ], 500);
-        }
-
-        // Attach cover art
-        foreach ($releases as $key => $release) {
-            $release['cover'] = $coverService->getCoverArtByMbid($release['id']);
-            $releases[$key] = $release;
         }
 
         return $this->json([
@@ -94,6 +83,7 @@ final class ReleaseController extends AbstractController
         $releaseId = $data['release_id'] ?? null;
         $barcode = $data['barcode'] ?? null;
 
+
         if (!$releaseId) {
             return $this->json([
                 'type' => 'error',
@@ -110,10 +100,20 @@ final class ReleaseController extends AbstractController
 
         try {
             $release = $releaseService->addRelease($releaseId, $barcode);
-        } catch (\Exception $e) {
+        } catch (BadRequestHttpException $e) {
             return $this->json([
                 'type' => 'error',
                 'message' => $e->getMessage()
+            ], 400);
+        } catch (NotFoundHttpException $e) {
+            return $this->json([
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ], 404);
+        } catch (\Exception $e) {
+            return $this->json([
+                'type' => 'error',
+                'message' => 'An unexpected error occurred: ' . $e->getMessage()
             ], 500);
         }
 
