@@ -247,7 +247,7 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/{id}/confirm-delete', name: 'delete', methods: ['GET', 'POST'])]
-    public function confirmDelete(Release $release, Request $request, EntityManagerInterface $em, ReleaseService $releaseService): Response
+    public function confirmDelete(Release $release, Request $request, ReleaseService $releaseService): Response
     {
         $form = $this->createFormBuilder()
             ->add('delete', SubmitType::class, [

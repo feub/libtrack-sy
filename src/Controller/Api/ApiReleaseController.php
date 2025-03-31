@@ -129,8 +129,9 @@ final class ApiReleaseController extends AbstractController
         $totalRleases = $releaseRepository->getTotalReleases();
 
         $page = $request->query->getInt('page', 1);
+        $searchTerm = $request->query->getString('search', '');
         $limit = 20;
-        $releases = $releaseRepository->paginatedReleases($page, $limit);
+        $releases = $releaseRepository->paginatedReleases($page, $limit, $searchTerm);
         $maxpage = ceil($totalRleases / $limit);
 
         // Iterate over releases to get artists

@@ -26,15 +26,16 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchArtistName = ''): PaginationInterface
+    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchTerm = ''): PaginationInterface
     {
         $builder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
             ->select('r', 'a');
 
-        if (!empty($searchArtistName)) {
-            $builder->andWhere('a.name LIKE :artistName')
-                ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
+        if (!empty($searchTerm)) {
+            $searchTerm = '%' . trim($searchTerm) . '%';
+            $builder->andWhere('a.name LIKE :searchTerm OR r.title LIKE :searchTerm')
+                ->setParameter('searchTerm', '%' . trim($searchTerm) . '%');
         }
 
         $builder->orderBy('r.createdAt', 'DESC');
@@ -49,29 +50,4 @@ class ReleaseRepository extends ServiceEntityRepository
             ]
         );
     }
-
-    //    /**
-    //     * @return Release[] Returns an array of Release objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Release
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
