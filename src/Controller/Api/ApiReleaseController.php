@@ -126,15 +126,21 @@ final class ApiReleaseController extends AbstractController
     #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(ReleaseRepository $releaseRepository, Request $request): Response
     {
-        $totalRleases = $releaseRepository->getTotalReleases();
+        $totalReleases = $releaseRepository->getTotalReleases();
 
         $page = $request->query->getInt('page', 1);
         $searchTerm = $request->query->getString('search', '');
         $limit = 20;
-        $releases = $releaseRepository->paginatedReleases($page, $limit, $searchTerm);
-        $maxpage = ceil($totalRleases / $limit);
 
-        // Iterate over releases to get artists
+
+        $releases = $releaseRepository->paginatedReleases($page, $limit, $searchTerm);
+
+        if (!empty($searchTerm)) {
+            $totalReleases = $releases->count();
+        }
+
+        $maxpage = ceil($totalReleases / $limit);
+
         $releasesData = [];
 
         foreach ($releases as $release) {
@@ -159,7 +165,7 @@ final class ApiReleaseController extends AbstractController
         return $this->json([
             'type' => 'success',
             'releases' => $releasesData,
-            'totalReleases' => $totalRleases,
+            'totalReleases' => $totalReleases,
             'maxPage' => $maxpage,
             'page' => $page
         ], 200, [], ['groups' => 'api.release.list']);
