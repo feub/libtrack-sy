@@ -11,6 +11,7 @@ use App\Service\CoverArtArchiveService;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,6 +31,7 @@ final class ReleaseController extends AbstractController
 
     public function __construct(
         private ParameterBagInterface $params,
+        private LoggerInterface $logger,
         private HttpClientInterface $client,
         private SluggerInterface $slugger
     ) {
@@ -233,7 +235,7 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/{id}/confirm-delete', name: 'delete', methods: ['GET', 'POST'])]
-    public function confirmDelete(Release $release, Request $request, EntityManagerInterface $em): Response
+    public function confirmDelete(Release $release, Request $request, EntityManagerInterface $em, ReleaseService $releaseService): Response
     {
         $form = $this->createFormBuilder()
             ->add('delete', SubmitType::class, [
@@ -244,9 +246,14 @@ final class ReleaseController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->remove($release);
-            $em->flush();
-            $this->addFlash('success', 'The release has been successfully deleted.');
+            try {
+                $releaseService->deleteRelease($release);
+                $this->addFlash('success', 'The release has been successfully deleted.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'An error occurred while deleting the release. Please try again.');
+                $this->logger->error("Error deleting release: " . $e->getMessage());
+            }
+
             return $this->redirectToRoute('release.index');
         }
 

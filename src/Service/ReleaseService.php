@@ -5,9 +5,9 @@ namespace App\Service;
 use App\Entity\Artist;
 use App\Entity\Release;
 use App\Repository\ArtistRepository;
-
 use App\Repository\ReleaseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -19,6 +19,7 @@ class ReleaseService
 
     public function __construct(
         private ParameterBagInterface $params,
+        private LoggerInterface $logger,
         private SluggerInterface $slugger,
         private EntityManagerInterface $em,
         private DiscogsService $discogsService,
@@ -49,6 +50,7 @@ class ReleaseService
         try {
             $releaseData = $this->discogsService->getReleaseById($releaseId);
         } catch (\Exception $e) {
+            $this->logger->error("Release data not found: $e");
             throw new NotFoundHttpException('Release data not found.', $e);
         }
 
@@ -56,6 +58,7 @@ class ReleaseService
         $checkRelease = $this->releaseRepository->findOneBy(['barcode' => $barcode]);
 
         if ($checkRelease) {
+            $this->logger->error('Barcode "' . $barcode . '" already exists.');
             throw new BadRequestHttpException('Barcode "' . $barcode . '" already exists.');
         }
 
@@ -115,5 +118,24 @@ class ReleaseService
     private function stripArtistName(string $artistName): string
     {
         return preg_replace('/\s*\(\d+\)$/', '', $artistName);
+    }
+
+    public function deleteRelease(Release $release): void
+    {
+        $coverPath = $this->coverDir . $release->getCover();
+
+        try {
+            $this->em->remove($release);
+            $this->em->flush();
+
+            if ($coverPath && file_exists($coverPath)) {
+                if (!unlink($coverPath)) {
+                    $this->logger->error("Failed to delete the cover file at path: $coverPath");
+                }
+            }
+        } catch (\Exception $e) {
+            $this->logger->error("An error occurred while deleting the release: " . $e->getMessage());
+            throw new \RuntimeException("Failed to delete the release.", 0, $e);
+        }
     }
 }
