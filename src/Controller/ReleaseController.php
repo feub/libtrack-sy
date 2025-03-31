@@ -229,9 +229,21 @@ final class ReleaseController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => Requirement::DIGITS])]
-    public function edit()
+    public function edit(Release $release, Request $request, EntityManagerInterface $em)
     {
-        //
+        $form = $this->createForm(ReleaseType::class, $release);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'The release has been successfully updated.');
+            return $this->redirectToRoute('release.index');
+        }
+
+        return $this->render('release/edit.html.twig', [
+            'release' => $release,
+            'form' => $form
+        ]);
     }
 
     #[Route('/{id}/confirm-delete', name: 'delete', methods: ['GET', 'POST'])]
