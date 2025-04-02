@@ -1,0 +1,40 @@
+{% extends 'base-public-centered.html.twig' %}
+
+{% block title %}
+  Register
+{% endblock %}
+
+{% block body %}
+  <div class="flex flex-grow items-center justify-center">
+    <div class="mx-auto max-w-sm">
+      <h1 class="font-bold text-3xl text-slate-500 mb-4">
+        Register
+      </h1>
+
+      {{ form_errors(registrationForm) }}
+
+      {{ form_start(registrationForm) }}
+      <div class="mb-4">
+        <label for="inputEmail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          Email
+        </label>
+        {{ form_widget(registrationForm.email, {'attr': {'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500', type: 'text', name: 'email', id: 'inputEmail'}}
+        ) }}
+      </div>
+      <div class="mb-4">
+        <label for="inputPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+          Password
+        </label>
+        {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500', type: 'password', name: 'password', id: 'inputPassword'}}
+        ) }}
+      </div>
+      <div class="mb-4">
+        {{ form_row(registrationForm.agreeTerms) }}
+      </div>
+      <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        Register
+      </button>
+      {{ form_end(registrationForm) }}
+    </div>
+  </div>
+{% endblock %}

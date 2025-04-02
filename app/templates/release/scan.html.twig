@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Scan a release barcode
+{% endblock %}
+
+{% block body %}
+  <div class="max-w-screen-xl mx-auto">
+
+    <h1 class="font-bold text-3xl text-slate-500 mb-4">
+      Scan a barcode
+    </h1>
+
+    {{ form_start(form, {'attr': {'class': 'mx-auto'}}
+    ) }}
+
+    <div class="relative z-0 w-full mb-5">
+      {{ form_widget(form.barcode, {'attr': {'class': 'block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer', type: 'text', name: 'barcode', id: 'barcode', 'autofocus': true }}
+      ) }}
+
+      <label for="barcode" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+        Barcode
+      </label>
+    </div>
+    {{ form_widget(form.search, {'attr': {'class': 'text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800', type: 'submit', name: 'search', id: 'search'}}
+    ) }}
+
+    <p class="mt-4 text-slate-500 text-sm">
+      Ex.: 016861923822 (Death "Human" CD)
+    </p>
+
+    {{ form_end(form) }}
+
+    {% if releases is not null %}
+      <div class="mx-auto mt-4"></div>
+      <h2 class="font-bold text-2xl text-slate-500 mb-4">
+        Results for barcode:
+        {{ barcode }}
+      </h2>
+
+      {% if releases|length > 0 %}
+        <div class="releases-container">
+          {% for release in releases %}
+            {% if release.images is defined %}
+              {% if release.images[0].uri != '' %}
+                <img src="{{ release.images[0].uri }}" alt="{{ release.title }}" class="float-right" style="width: 150px"/>
+              {% endif %}
+            {% endif %}
+            <form action="{{ path('release.scan.add') }}" method="post">
+              <div class="release-item mb-2 rounded bg-gray-900 p-4">
+                <h3 class="font-bold text-xl text-slate-500 mb-4 flex items-center">
+                  <button type="submit" class="text-orange-500 hover:text-orange-800 mr-2" aria-label="Add" title="Add">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                  </button>
+                  {{ release.title }}
+                </h3>
+                {% if release.artists is defined %}
+                  <p>
+                    Artist:
+                    {% for art in release.artists %}
+                      {{ art.name }}
+                      {% if not loop.last %}
+                        ,
+                      {% endif %}
+                    {% endfor %}
+                  </p>
+                {% endif %}
+
+                <div class="grid justify-items-start">
+                  {% if release.year is defined %}
+                    <p>
+                      Date:
+                      {{ release.year }}
+                    </p>
+                  {% endif %}
+
+                  {% if release.formats is defined %}
+                    <p class="clear-both">
+                      Format:
+                      {% for format in release.formats %}
+                        {{ format.name}}
+                        {% if not loop.last %}
+                          ,
+                        {% endif %}
+                      {% endfor %}
+                    </p>
+                  {% endif %}
+                </div>
+
+                <input type="hidden" name="release_id" value="{{ release.id }}">
+                <input type="hidden" name="barcode" value="{{ barcode }}">
+              </div>
+            </form>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>
+          No releases found for this barcode.
+        </p>
+      {% endif %}
+    {% endif %}
+
+  </div>
+
+{% endblock %}

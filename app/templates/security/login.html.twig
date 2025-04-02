@@ -1,0 +1,59 @@
+{% extends 'base-public-centered.html.twig' %}
+
+{% block title %}
+  Sign in
+{% endblock %}
+
+{% block body %}
+  <div class="flex flex-grow items-center justify-center">
+    <div class="mx-auto max-w-sm">
+      <form method="post">
+        {% if error %}
+          <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-900 dark:text-red-400" role="alert">
+            {{ error.messageKey|trans(error.messageData, 'security') }}
+          </div>
+        {% endif %}
+
+        {% if app.user %}
+          <div class="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-900 dark:text-blue-400" role="alert">
+            You are logged in as
+            {{ app.user.userIdentifier }}
+            ,
+            <a href="{{ path('app_logout') }}">
+              Logout
+            </a>
+          </div>
+        {% endif %}
+
+        <h1 class="font-bold text-3xl text-slate-500 mb-4">
+          Please sign in
+        </h1>
+        {% include 'partials/flash.html.twig' %}
+        <div class="mb-4">
+          <label for="inputEmail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Email
+          </label>
+          <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" autocomplete="email" required autofocus>
+        </div>
+        <div class="mb-4">
+          <label for="inputPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Password
+          </label>
+          <input type="password" name="password" id="inputPassword" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" autocomplete="current-password" required>
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <div class="my-4">
+          <label>
+            <input type="checkbox" name="_remember_me">
+            Remember me
+          </label>
+        </div>
+
+        <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">
+          Sign in
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
