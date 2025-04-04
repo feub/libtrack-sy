@@ -78,6 +78,13 @@ final class ApiReleaseController extends AbstractController
         Request $request,
         ReleaseService $releaseService
     ): Response {
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->json([
+                'type' => 'error',
+                'message' => 'You need to be logged in to access this resource.'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
         // Get the JSON payload
         $data = json_decode($request->getContent(), true);
         $releaseId = $data['release_id'] ?? null;
