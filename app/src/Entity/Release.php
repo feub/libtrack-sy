@@ -8,7 +8,6 @@ use App\Repository\ReleaseRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 #[ORM\Entity(repositoryClass: ReleaseRepository::class)]
 #[ORM\Table(name: '`release`')]
@@ -51,6 +50,9 @@ class Release
 
     #[ORM\Column(length: 150)]
     private ?string $slug = null;
+
+    #[ORM\ManyToOne(inversedBy: 'releases')]
+    private ?Shelf $shelf = null;
 
     public function __construct()
     {
@@ -166,6 +168,18 @@ class Release
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getShelf(): ?Shelf
+    {
+        return $this->shelf;
+    }
+
+    public function setShelf(?Shelf $shelf): static
+    {
+        $this->shelf = $shelf;
 
         return $this;
     }
