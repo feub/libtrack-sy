@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Shelf;
 use App\Entity\Artist;
 use App\Entity\Release;
 use Symfony\Component\Form\FormEvents;
@@ -53,6 +54,12 @@ class ReleaseType extends AbstractType
                 'class' => Artist::class,
                 'choice_label' => 'name',
                 'multiple' => true,
+            ])
+            ->add('shelf', EntityType::class, [
+                'class' => Shelf::class,
+                'choice_label' => 'location',
+                'required' => false,
+                'placeholder' => 'Select a shelf',
             ])
             ->addEventListener(
                 FormEvents::PRE_SUBMIT,
