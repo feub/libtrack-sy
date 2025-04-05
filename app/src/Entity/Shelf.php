@@ -27,6 +27,9 @@ class Shelf
     #[ORM\OneToMany(targetEntity: Release::class, mappedBy: 'shelf')]
     private Collection $releases;
 
+    #[ORM\Column(length: 150)]
+    private ?string $slug = null;
+
     public function __construct()
     {
         $this->releases = new ArrayCollection();
@@ -87,6 +90,18 @@ class Shelf
                 $release->setShelf(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }
