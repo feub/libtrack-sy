@@ -40,4 +40,23 @@ final class ShelfController extends AbstractController
             'form' => $form
         ]);
     }
+
+    #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
+    public function create(Request $request, EntityManagerInterface $em): Response
+    {
+        $shelf = new Shelf();
+        $form = $this->createForm(ShelfType::class, $shelf);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($shelf);
+            $em->flush();
+            $this->addFlash('success', 'The shelf has been successfully added.');
+            return $this->redirectToRoute('shelf.index');
+        }
+
+        return $this->render('shelf/create.html.twig', [
+            'form' => $form
+        ]);
+    }
 }
