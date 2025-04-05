@@ -16,20 +16,17 @@ class ShelfRepository extends ServiceEntityRepository
         parent::__construct($registry, Shelf::class);
     }
 
-    //    /**
-    //     * @return Shelf[] Returns an array of Shelf objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Shelf[] Returns an array of Shelf objects
+     */
+    public function getShelves(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->orderBy('s.location', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
     //    public function findOneBySomeField($value): ?Shelf
     //    {
