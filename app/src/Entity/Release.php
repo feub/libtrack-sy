@@ -54,6 +54,9 @@ class Release
     #[ORM\ManyToOne(inversedBy: 'releases')]
     private ?Shelf $shelf = null;
 
+    #[ORM\ManyToOne(inversedBy: 'releases')]
+    private ?Format $format = null;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
@@ -180,6 +183,18 @@ class Release
     public function setShelf(?Shelf $shelf): static
     {
         $this->shelf = $shelf;
+
+        return $this;
+    }
+
+    public function getFormat(): ?Format
+    {
+        return $this->format;
+    }
+
+    public function setFormat(?Format $format): static
+    {
+        $this->format = $format;
 
         return $this;
     }
