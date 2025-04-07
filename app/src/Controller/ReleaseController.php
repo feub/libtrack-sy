@@ -4,14 +4,15 @@ namespace App\Controller;
 
 use App\Form\ScanType;
 use App\Entity\Release;
+use App\Form\SearchType;
 use App\Form\ReleaseType;
+use Psr\Log\LoggerInterface;
+use App\Service\DiscogsService;
+use App\Service\ReleaseService;
 use App\Service\MusicBrainzService;
 use App\Repository\ReleaseRepository;
 use App\Service\CoverArtArchiveService;
-use App\Service\DiscogsService;
-use App\Service\ReleaseService;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -38,19 +39,29 @@ final class ReleaseController extends AbstractController
         $this->coverDir = $params->get('cover_dir');
     }
 
-    #[Route('/', name: 'index')]
+    #[Route('/', name: 'index', methods: ['GET', 'POST'])]
     public function index(ReleaseRepository $releaseRepository, Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
         $limit = 10;
-        $releases = $releaseRepository->paginatedReleases($page, $limit);
-        $maxpage = ceil($releases->count() / 2);
+
+        $form = $this->createForm(SearchType::class);
+        $form->handleRequest($request);
+
+        $searchTerm = '';
+        if ($form->isSubmitted() && $form->isValid()) {
+            $searchTerm = $form->get('terms')->getData();
+        }
+
+        $releases = $releaseRepository->paginatedReleases($page, $limit, $searchTerm);
+        $maxpage = ceil($releases->count() / $limit);
 
         return $this->render('release/index.html.twig', [
             'releases' => $releases,
             'maxPage' => $maxpage,
             'page' => $page,
             'coverDir' => $this->coverDir,
+            'form' => $form->createView(),
         ]);
     }
 
