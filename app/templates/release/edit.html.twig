@@ -61,11 +61,19 @@
         ) }}
     </div>
     <div class="mb-4">
-        <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+        <label for="shelf" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             Shelf
         </label>
 
         {{ form_widget(form.shelf, {'attr': {'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500', type: 'text', name: 'shelf', id: 'shelf', required: false, placeholder: ''}}
+        ) }}
+    </div>
+    <div class="mb-4">
+        <label for="format" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Format
+        </label>
+
+        {{ form_widget(form.format, {'attr': {'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500', type: 'text', name: 'format', id: 'format', required: false, placeholder: ''}}
         ) }}
     </div>
 

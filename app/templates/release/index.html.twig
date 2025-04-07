@@ -13,6 +13,15 @@
                 {{ releases.getTotalItemCount() }}
                 )
             </h1>
+        </div>
+
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                {{ form_start(form, {'attr': {'class': 'mx-auto'} }) }}
+                {{ form_widget(form.terms, {'attr': {'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500', 'placeholder': 'Search'} }) }}
+                {{ form_widget(form.search, {'attr': {'class': 'text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800', type: 'submit', name: 'search', id: 'search'} }) }}
+                {{ form_end(form) }}
+            </div>
             <a href="{{ path('release.create') }}" class="text-zinc-500 hover:text-zinc-400 mr-8">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
@@ -20,7 +29,7 @@
             </a>
         </div>
 
-        <div class="relative overflow-x-auto">
+        <div class="relative overflow-x-auto mt-4">
             <table class="table-table">
                 <thead class="table-thead">
                     <tr>
@@ -32,6 +41,9 @@
                         </th>
                         <th class="px-6 py-4">
                             Artist
+                        </th>
+                        <th class="px-6 py-4">
+                            Format
                         </th>
                         <th class="px-6 py-4">
                             Year
@@ -68,8 +80,17 @@
                                 {% if release.artists|length > 0 %}
                                     {{ release.artists|map(artist => artist.name)|join(', ') }}
                                 {% else %}
-                                    <em>
+                                    <em class="text-xs text-gray-500">
                                         No artists
+                                    </em>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if release.format is not null %}
+                                    {{ release.format.name }}
+                                {% else %}
+                                    <em class="text-xs text-gray-500">
+                                        Missing
                                     </em>
                                 {% endif %}
                             </td>
