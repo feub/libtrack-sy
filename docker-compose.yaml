@@ -11,6 +11,7 @@ services:
       - '4306:3306'
     volumes:
       - ./mysql:/var/lib/mysql
+
   php:
     container_name: php
     build:
@@ -27,6 +28,19 @@ services:
       - ./app:/var/www
     depends_on:
       - database
+
+  client:
+    build: ./client
+    command: npm run dev -- --host
+    restart: always
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    ports:
+      - 5173:5173
+    volumes:
+      - ./client/src:/app/src
+      - /app/node_modules
+
   phpma:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
