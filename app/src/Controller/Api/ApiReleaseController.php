@@ -142,9 +142,9 @@ final class ApiReleaseController extends AbstractController
         $totalReleases = $releaseRepository->getTotalReleases();
 
         $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
         $searchTerm = $request->query->getString('search', '');
-        $limit = 20;
-
+        // $limit = 20;
 
         $releases = $releaseRepository->paginatedReleases($page, $limit, $searchTerm);
 
@@ -172,6 +172,7 @@ final class ApiReleaseController extends AbstractController
                 'cover' => $release->getCover(),
                 'release_date' => $release->getReleaseDate(),
                 'artists' => $artistsData,
+                'barcode' => $release->getBarcode()
             ];
         }
 
