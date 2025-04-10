@@ -1,15 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "./context/ThemeProvider.tsx";
 import { AuthProvider } from "./context/AuthProvider";
 import Layout from "./Layout.tsx";
 import ErrorPage from "./pages/ErrorPage.tsx";
 import ReleasePage from "./pages/ReleasePage.tsx";
 import ArtistPage from "./pages/ArtistPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
-import "./index.css";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
+import "./index.css";
 
 const router = createBrowserRouter([
   {

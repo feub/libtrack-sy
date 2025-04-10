@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/sidebar/AppSidebar";
-import { SiteHeader } from "./components/site-header";
+import { SiteHeader } from "./components/SiteHeader";
 
 function Layout() {
   return (
