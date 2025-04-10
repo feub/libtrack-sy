@@ -9,6 +9,7 @@ import ReleasePage from "./pages/ReleasePage.tsx";
 import ArtistPage from "./pages/ArtistPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
+import AddByBarcodePage from "./pages/AddByBarcodePage.tsx";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -31,7 +32,16 @@ const router = createBrowserRouter([
           },
           {
             path: "release",
-            element: <ReleasePage />,
+            children: [
+              {
+                index: true,
+                element: <ReleasePage />,
+              },
+              {
+                path: "scan",
+                element: <AddByBarcodePage />,
+              },
+            ],
           },
           {
             path: "artist",
