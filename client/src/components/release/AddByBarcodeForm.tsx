@@ -32,8 +32,6 @@ export default function AddByBarcodeForm({
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const barcode = parseInt(values.barcode.toString());
-    console.log("typeof: ", typeof barcode);
-
     handleBarcodeSearch(barcode);
   }
 
