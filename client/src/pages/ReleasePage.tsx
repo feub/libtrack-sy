@@ -81,7 +81,7 @@ export default function ReleasePage() {
 
   return (
     <>
-      <h2 className="font-bold text-3xl">Releases</h2>
+      <h2 className="font-bold text-3xl">Releases ({totalReleases})</h2>
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
@@ -101,6 +101,7 @@ export default function ReleasePage() {
                   <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
                     Artist(s)
                   </TableHead>
+                  <TableHead className="text-center">Format</TableHead>
                   <TableHead className="text-center">Year</TableHead>
                   <TableHead className="text-center">Barcode</TableHead>
                   <TableHead></TableHead>

@@ -13,4 +13,6 @@ export type ListReleasesType = {
   cover?: CoverType[];
   release_date?: string;
   barcode?: string;
+  format?: string;
+  shelf?: string;
 };
