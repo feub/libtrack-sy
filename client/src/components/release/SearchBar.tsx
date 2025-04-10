@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,20 +25,55 @@ export default function SearchBar({
 }: {
   handleSearch: (search: string) => void;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearchTerm = searchParams.get("search") || "";
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      search: "",
+      search: initialSearchTerm,
     },
   });
 
+  // Update form when URL changes
+  useEffect(() => {
+    const searchFromURL = searchParams.get("search") || "";
+
+    if (searchFromURL !== searchTerm) {
+      setSearchTerm(searchFromURL);
+      form.setValue("search", searchFromURL);
+    }
+  }, [searchParams, form, searchTerm]);
+
+  // Trigger search when URL search param changes
+  useEffect(() => {
+    const searchFromURL = searchParams.get("search") || "";
+
+    handleSearch(searchFromURL);
+  }, [searchParams, handleSearch]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const search = values.search.trim();
+    setSearchTerm(search);
+
+    // Update URL query parameter
+    if (search) {
+      setSearchParams({ search });
+    } else {
+      searchParams.delete("search");
+      setSearchParams(searchParams);
+    }
+
     handleSearch(values.search);
   }
 
   function resetForm() {
     form.reset({ search: "" });
-    handleSearch(""); // Also reset the search results
+    setSearchTerm("");
+    searchParams.delete("search");
+    setSearchParams(searchParams);
+    handleSearch("");
   }
 
   return (
