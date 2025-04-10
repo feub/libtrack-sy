@@ -9,12 +9,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "../components/ui/sidebar";
-import { Calendar, Home, Inbox, Settings } from "lucide-react";
-import { ModeToggle } from "../components/mode-toggle";
+} from "@/components/ui/sidebar";
+import { Music, Home, PersonStanding, Settings } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router";
 
-// Menu items.
 const items = [
   {
     title: "Home",
@@ -24,12 +23,12 @@ const items = [
   {
     title: "Artists",
     url: "/artist",
-    icon: Inbox,
+    icon: PersonStanding,
   },
   {
     title: "Releases",
     url: "/release",
-    icon: Calendar,
+    icon: Music,
   },
   {
     title: "Settings",

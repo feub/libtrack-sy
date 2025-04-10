@@ -77,11 +77,14 @@ export default function ReleasePage() {
   };
 
   return (
-    <div className="">
-      <p>
-        {totalReleases} releases - page {currentPage}/{maxPage}
-      </p>
-      <SearchBar handleSearch={handleSearchSubmit} />
+    <>
+      <h2 className="font-bold text-3xl">Releases</h2>
+      <div className="flex items-center justify-between">
+        <p>
+          {totalReleases} releases - page {currentPage}/{maxPage}
+        </p>
+        <SearchBar handleSearch={handleSearchSubmit} />
+      </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-muted">
@@ -111,6 +114,6 @@ export default function ReleasePage() {
           onPageChange={setCurrentPage}
         />
       </div>
-    </div>
+    </>
   );
 }
