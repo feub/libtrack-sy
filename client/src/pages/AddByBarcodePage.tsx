@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { api } from "@/utils/apiRequest";
+import { ScannedReleaseType } from "@/types/releaseTypes";
 import AddByBarcodeForm from "@/components/release/AddByBarcodeForm";
 import TheLoader from "@/components/TheLoader";
+import ScanResultCard from "@/components/release/ScanResultCard";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function AddByBarcodePage() {
   const [barcode, setBarcode] = useState<number | null>(null);
   const [releases, setReleases] = useState<{
-    releases: { title: string }[];
+    releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -54,6 +56,10 @@ export default function AddByBarcodePage() {
     }
   };
 
+  const handleAddRelease = (barcode: number, release_id: number) => {
+    console.log("added: ", barcode, release_id);
+  };
+
   return (
     <>
       <h2 className="font-bold text-3xl">Add by barcode</h2>
@@ -62,13 +68,19 @@ export default function AddByBarcodePage() {
         <TheLoader style="my-4" />
       ) : (
         <>
-          <h3 className="text-xl font-bold">
-            Results for barcode "{barcode}":
-          </h3>
-          {releases &&
-            releases?.releases.map((release, index) => (
-              <p key={index}>{release.title}</p>
-            ))}
+          {releases && (
+            <h3 className="text-xl font-bold">
+              Found {releases.releases.length} results for barcode "{barcode}":
+            </h3>
+          )}
+          {releases?.releases.map((release, index) => (
+            <ScanResultCard
+              key={index}
+              barcode={barcode ?? 0}
+              scannedRelease={release}
+              handleAddRelease={handleAddRelease}
+            />
+          ))}
         </>
       )}
     </>

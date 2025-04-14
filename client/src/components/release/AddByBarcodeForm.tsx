@@ -42,7 +42,7 @@ export default function AddByBarcodeForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="my-6 flex">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="my-2 flex">
         <FormField
           control={form.control}
           name="barcode"
@@ -77,6 +77,9 @@ export default function AddByBarcodeForm({
           <Search />
         </Button>
       </form>
+      <p className="mb-6 text-neutral-500 text-sm">
+        Ex.: 016861923822 (Death "Human" CD)
+      </p>
     </Form>
   );
 }

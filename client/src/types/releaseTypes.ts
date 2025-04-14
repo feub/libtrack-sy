@@ -16,3 +16,26 @@ export type ListReleasesType = {
   format?: string;
   shelf?: string;
 };
+
+export type ScannedFormatType = {
+  name: string;
+};
+
+export type ScannedImageType = {
+  resource_url: string;
+  type: string;
+};
+
+export type ScannedReleaseType = {
+  id: number;
+  artists: ArtistType[];
+  title: string;
+  year: number;
+  formats: ScannedFormatType[];
+  images: ScannedImageType[];
+};
+
+export type ScannedResultType = {
+  barcode: number;
+  releases: ScannedReleaseType[];
+};
