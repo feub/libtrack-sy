@@ -26,6 +26,8 @@ services:
       - ./apache/default-ssl.conf:/etc/apache2/sites-enabled/000-default-ssl.conf
       - ./etc/ssl:/etc/ssl
       - ./app:/var/www
+      - ./app/public/covers:/var/www/public/covers:rw
+    user: "${UID}:${GID}"
     depends_on:
       - database
 
