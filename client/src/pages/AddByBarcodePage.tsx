@@ -13,6 +13,8 @@ export default function AddByBarcodePage() {
     releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSearchSubmit = async (barcode: number | null) => {
     if (barcode === null) {
@@ -41,8 +43,6 @@ export default function AddByBarcodePage() {
 
       const data = await response.json();
 
-      console.log(barcode, data);
-
       setReleases(data);
 
       if (data.type !== "success") {
@@ -56,8 +56,32 @@ export default function AddByBarcodePage() {
     }
   };
 
-  const handleAddRelease = (barcode: number, release_id: number) => {
-    console.log("added: ", barcode, release_id);
+  const handleAddRelease = async (barcode: number, release_id: number) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post(`${apiURL}/api/release/scan/add`, {
+        barcode,
+        release_id,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          "Error adding release:",
+          errorData.message || "Unknown error",
+        );
+        setError(errorData.message || "Failed to add release");
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccessMessage("Release added successfully!");
+    } catch (error) {
+      console.error("SCan add error:", error);
+      setError("Failed to add release. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,6 +96,10 @@ export default function AddByBarcodePage() {
             <h3 className="text-xl font-bold">
               Found {releases.releases.length} results for barcode "{barcode}":
             </h3>
+          )}
+          {error && <div className="text-red-500 mt-2">{error}</div>}
+          {successMessage && (
+            <div className="text-green-500 mt-2">{successMessage}</div>
           )}
           {releases?.releases.map((release, index) => (
             <ScanResultCard
