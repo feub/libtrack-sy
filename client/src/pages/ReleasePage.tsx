@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../utils/apiRequest";
+import { ListReleasesType } from "@/types/releaseTypes";
 import {
   Table,
   TableBody,
@@ -15,7 +16,7 @@ import TheLoader from "@/components/TheLoader";
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function ReleasePage() {
-  const [releases, setReleases] = useState<{ title: string }[]>([]);
+  const [releases, setReleases] = useState<ListReleasesType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
@@ -79,6 +80,31 @@ export default function ReleasePage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await apiRequest(`${apiURL}/api/release/delete/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          "ERROR (response): " + errorData.message || "Deleting release failed",
+        );
+      }
+
+      const data = await response.json();
+      setReleases(releases.filter((rel) => rel.id !== id));
+
+      if (data.type !== "success") {
+        throw "ERROR: problem deleting release.";
+      }
+    } catch (error) {
+      console.error("Deleting release error:", error);
+      throw "ERROR (T/C): " + error;
+    }
+  };
+
   return (
     <>
       <h2 className="font-bold text-3xl">Releases ({totalReleases})</h2>
@@ -110,7 +136,11 @@ export default function ReleasePage() {
               <TableBody>
                 {releases &&
                   releases.map((release, index) => (
-                    <ReleaseListItem key={index} release={release} />
+                    <ReleaseListItem
+                      key={index}
+                      release={release}
+                      handleDelete={handleDelete}
+                    />
                   ))}
               </TableBody>
             </Table>

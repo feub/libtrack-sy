@@ -7,12 +7,12 @@ export type CoverType = {
 };
 
 export type ListReleasesType = {
-  id?: string;
+  id: number;
   title?: string;
   artists?: ArtistType[];
   cover?: CoverType[];
-  release_date?: string;
-  barcode?: string;
+  release_date?: number;
+  barcode?: number;
   format?: string;
   shelf?: string;
 };
