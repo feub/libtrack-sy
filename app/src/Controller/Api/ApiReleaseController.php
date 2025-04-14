@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Release;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use App\Repository\ReleaseRepository;
@@ -187,5 +188,27 @@ final class ApiReleaseController extends AbstractController
             'maxPage' => $maxpage,
             'page' => $page
         ], 200, [], ['groups' => 'api.release.list']);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(Release $release, ReleaseService $releaseService)
+    {
+        try {
+            $releaseService->deleteRelease($release);
+        } catch (NotFoundHttpException $e) {
+            return $this->json([
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ], 404);
+        } catch (\Exception $e) {
+            return $this->json([
+                'type' => 'error',
+                'message' => 'An unexpected error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+        return $this->json([
+            'type' => 'success',
+            'message' => 'Release successfully deleted'
+        ], 200);
     }
 }
