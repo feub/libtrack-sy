@@ -10,7 +10,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Music, Home, PersonStanding, Settings } from "lucide-react";
+import {
+  Music,
+  ScanBarcode,
+  Home,
+  PersonStanding,
+  Settings,
+} from "lucide-react";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Link } from "react-router";
 
@@ -21,14 +27,19 @@ const items = [
     icon: Home,
   },
   {
-    title: "Artists",
-    url: "/artist",
-    icon: PersonStanding,
-  },
-  {
     title: "Releases",
     url: "/release",
     icon: Music,
+  },
+  {
+    title: "Add by Barcode",
+    url: "/release/scan",
+    icon: ScanBarcode,
+  },
+  {
+    title: "Artists",
+    url: "/artist",
+    icon: PersonStanding,
   },
   {
     title: "Settings",
