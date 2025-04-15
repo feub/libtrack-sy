@@ -4,13 +4,15 @@ namespace App\Service;
 
 use App\Entity\Artist;
 use App\Entity\Release;
+use Psr\Log\LoggerInterface;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ReleaseService
@@ -25,6 +27,7 @@ class ReleaseService
         private DiscogsService $discogsService,
         private ReleaseRepository $releaseRepository,
         private ArtistRepository $artistRepository,
+        private Security $security
     ) {
         $this->coverDir = $params->get('cover_dir');
     }
@@ -120,8 +123,31 @@ class ReleaseService
         return preg_replace('/\s*\(\d+\)$/', '', $artistName);
     }
 
+    /**
+     * Check if the current user can delete the release
+     *
+     * @return bool True if the user can delete the release
+     */
+    private function canDelete(): bool
+    {
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function deleteRelease(Release $release): void
     {
+        if (!$release) {
+            throw new NotFoundHttpException('Release not found');
+        }
+
+        // User does not have permission
+        if (!$this->canDelete($release)) {
+            throw new AccessDeniedException('You are not allowed to delete this release');
+        }
+
         $coverPath = $this->coverDir . $release->getCover();
 
         try {
@@ -135,7 +161,7 @@ class ReleaseService
             }
         } catch (\Exception $e) {
             $this->logger->error("An error occurred while deleting the release: " . $e->getMessage());
-            throw new \RuntimeException("Failed to delete the release.", 0, $e);
+            throw new \RuntimeException("Failed to delete the release: " . $e->getMessage());
         }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Controller\Api;
 
 use App\Entity\Release;
-use App\Service\ApiResponseService;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use App\Repository\ReleaseRepository;
@@ -13,18 +12,20 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ApiResponseService;
 
 #[Route('/api/release', name: 'api.release.')]
-final class ApiReleaseController extends AbstractController
+final class ApiReleaseController extends AbstractApiController
 {
     public function __construct(
+        EntityManagerInterface $entityManager,
+        ApiResponseService $apiResponseService,
         private HttpClientInterface $client,
-        private SluggerInterface $slugger,
-        private ApiResponseService $apiResponseService
-    ) {}
+        private SluggerInterface $slugger
+    ) {
+        parent::__construct($entityManager, $apiResponseService);
+    }
 
     #[Route('/health', name: 'health', methods: ['GET'])]
     public function index(): JsonResponse
@@ -56,22 +57,16 @@ final class ApiReleaseController extends AbstractController
             );
         }
 
-        try {
-            $releases = $discogsService->getReleaseByBarcode($barcode);
+        // ApiExceptionSubscriber handles exceptions
+        $releases = $discogsService->getReleaseByBarcode($barcode);
 
-            return $this->apiResponseService->success(
-                'Available releases for the barcode: ' . $barcode,
-                [
-                    'barcode' => $barcode,
-                    'releases' => $releases
-                ]
-            );
-        } catch (\Exception $e) {
-            return $this->apiResponseService->error(
-                $e->getMessage(),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
+        return $this->apiResponseService->success(
+            'Available releases for the barcode: ' . $barcode,
+            [
+                'barcode' => $barcode,
+                'releases' => $releases
+            ]
+        );
     }
 
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
@@ -105,27 +100,11 @@ final class ApiReleaseController extends AbstractController
             );
         }
 
-        try {
-            $release = $releaseService->addRelease($releaseId, $barcode);
-            return $this->apiResponseService->success(
-                'Release "' . $release->getTitle() . '" added successfully'
-            );
-        } catch (BadRequestHttpException $e) {
-            return $this->apiResponseService->error(
-                $e->getMessage(),
-                Response::HTTP_BAD_REQUEST
-            );
-        } catch (NotFoundHttpException $e) {
-            return $this->apiResponseService->error(
-                $e->getMessage(),
-                Response::HTTP_NOT_FOUND
-            );
-        } catch (\Exception $e) {
-            return $this->apiResponseService->error(
-                'An unexpected error occurred: ' . $e->getMessage(),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
+        // ApiExceptionSubscriber handles exceptions
+        $release = $releaseService->addRelease($releaseId, $barcode);
+        return $this->apiResponseService->success(
+            'Release "' . $release->getTitle() . '" added successfully'
+        );
     }
 
     #[Route('/list', name: 'list', methods: ['GET'])]
@@ -191,7 +170,7 @@ final class ApiReleaseController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Release $release, ReleaseService $releaseService): Response
+    public function delete(int $id, ReleaseService $releaseService): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->apiResponseService->error(
@@ -200,19 +179,16 @@ final class ApiReleaseController extends AbstractController
             );
         }
 
-        try {
-            $releaseService->deleteRelease($release);
-            return $this->apiResponseService->success('Release successfully deleted');
-        } catch (NotFoundHttpException $e) {
-            return $this->apiResponseService->error(
-                $e->getMessage(),
-                Response::HTTP_NOT_FOUND
-            );
-        } catch (\Exception $e) {
-            return $this->apiResponseService->error(
-                'An unexpected error occurred: ' . $e->getMessage(),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
+        // Use findOr404 method to find the entity or return a 404
+        $releaseOrResponse = $this->findOr404(Release::class, $id);
+
+        // If a response is returned (404), return it
+        if ($releaseOrResponse instanceof Response) {
+            return $releaseOrResponse;
         }
+
+        // ApiExceptionSubscriber will handle exceptions
+        $releaseService->deleteRelease($releaseOrResponse);
+        return $this->apiResponseService->success('Release successfully deleted');
     }
 }
