@@ -168,9 +168,9 @@ final class ApiReleaseController extends AbstractApiController
         return $this->apiResponseService->success('Release successfully deleted');
     }
 
-    #[Route('/edit/{id}', name: 'edit', methods: ['GET', 'PUT'])]
+    #[Route('/{id}', name: 'view', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function edit(int $id, Request $request): Response
+    public function view(int $id): Response
     {
         $releaseOrResponse = $this->findOr404(Release::class, $id);
 
@@ -178,44 +178,47 @@ final class ApiReleaseController extends AbstractApiController
             return $releaseOrResponse;
         }
 
-        if ($request->isMethod('GET')) {
-            $release = $releaseOrResponse;
-            $artists = $release->getArtists();
-            $artistsData = [];
+        $release = $releaseOrResponse;
+        $artists = $release->getArtists();
+        $artistsData = [];
 
-            $format = $release->getFormat();
-            $shelf = $release->getShelf();
+        $format = $release->getFormat();
+        $shelf = $release->getShelf();
 
-            foreach ($artists as $artist) {
-                $artistsData[] = [
-                    'id' => $artist->getId(),
-                    'name' => $artist->getName(),
-                ];
-            }
-
-            $releaseData = [
-                'id' => $release->getId(),
-                'title' => $release->getTitle(),
-                'cover' => $release->getCover(),
-                'release_date' => $release->getReleaseDate(),
-                'artists' => $artistsData,
-                'barcode' => $release->getBarcode(),
-                'format' => $format ? [
-                    'id' => $format->getId(),
-                    'name' => $format->getName()
-                ] : null,
-                'shelf' => $shelf ? [
-                    'id' => $shelf->getId(),
-                    'location' => $shelf->getLocation()
-                ] : null
+        foreach ($artists as $artist) {
+            $artistsData[] = [
+                'id' => $artist->getId(),
+                'name' => $artist->getName(),
             ];
-
-            return $this->apiResponseService->success(
-                'Release details retrieved successfully',
-                ['release' => $releaseData]
-            );
         }
 
+        $releaseData = [
+            'id' => $release->getId(),
+            'title' => $release->getTitle(),
+            'cover' => $release->getCover(),
+            'release_date' => $release->getReleaseDate(),
+            'artists' => $artistsData,
+            'barcode' => $release->getBarcode(),
+            'format' => $format ? [
+                'id' => $format->getId(),
+                'name' => $format->getName()
+            ] : null,
+            'shelf' => $shelf ? [
+                'id' => $shelf->getId(),
+                'location' => $shelf->getLocation()
+            ] : null
+        ];
+
+        return $this->apiResponseService->success(
+            'Release details retrieved successfully',
+            ['release' => $releaseData]
+        );
+    }
+
+    #[Route('/edit/{id}', name: 'edit', methods: ['PUT'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function edit(int $id, Request $request): Response
+    {
         // Example of a POST request to edit a release
         // {
         //     "title": "New Title",
@@ -232,102 +235,114 @@ final class ApiReleaseController extends AbstractApiController
         //       "id": 2
         //     }
         //   }
-        if ($request->isMethod('PUT')) {
-            $release = $releaseOrResponse;
-            $data = json_decode($request->getContent(), true);
 
-            if (isset($data['title'])) {
-                $release->setTitle($data['title']);
-            }
+        $releaseOrResponse = $this->findOr404(Release::class, $id);
 
-            if (isset($data['release_date'])) {
-                $release->setReleaseDate($data['release_date']);
-            }
-
-            if (isset($data['cover'])) {
-                $release->setCover($data['cover']);
-            }
-
-            if (isset($data['barcode'])) {
-                $release->setBarcode($data['barcode']);
-            }
-
-            // Artists
-            if (isset($data['artists']) && is_array($data['artists'])) {
-                $artistRepository = $this->entityManager->getRepository(\App\Entity\Artist::class);
-
-                // Create a collection with IDs of current artists
-                $currentArtistIds = [];
-                foreach ($release->getArtists() as $artist) {
-                    $currentArtistIds[] = $artist->getId();
-                }
-
-                // Create a collection with the new artists IDs
-                $newArtistIds = [];
-                foreach ($data['artists'] as $artistData) {
-                    if (isset($artistData['id'])) {
-                        $newArtistIds[] = $artistData['id'];
-                    }
-                }
-
-                // Remove artists not associated
-                foreach ($release->getArtists() as $artist) {
-                    if (!in_array($artist->getId(), $newArtistIds)) {
-                        $release->removeArtist($artist);
-                    }
-                }
-
-                // Add new artists
-                foreach ($newArtistIds as $artistId) {
-                    if (!in_array($artistId, $currentArtistIds)) {
-                        $artist = $artistRepository->find($artistId);
-                        if ($artist) {
-                            $release->addArtist($artist);
-                        }
-                    }
-                }
-            }
-
-            // Format
-            if (isset($data['format'])) {
-                if (isset($data['format']['id'])) {
-                    $formatRepository = $this->entityManager->getRepository(\App\Entity\Format::class);
-                    $format = $formatRepository->find($data['format']['id']);
-
-                    if ($format) {
-                        $release->setFormat($format);
-                    }
-                } elseif ($data['format'] === null) {
-                    $release->setFormat(null);
-                }
-            }
-
-            // Shelf
-            if (isset($data['shelf'])) {
-                if (isset($data['shelf']['id'])) {
-                    $shelfRepository = $this->entityManager->getRepository(\App\Entity\Shelf::class);
-                    $shelf = $shelfRepository->find($data['shelf']['id']);
-
-                    if ($shelf) {
-                        $release->setShelf($shelf);
-                    }
-                } elseif ($data['shelf'] === null) {
-                    $release->setShelf(null);
-                }
-            }
-
-            $release->setUpdatedAt(new \DateTimeImmutable());
-
-            $this->entityManager->flush();
-
-            return $this->apiResponseService->success(
-                'Release "' . $release->getTitle() . '" updated successfully'
-            );
+        if ($releaseOrResponse instanceof Response) {
+            return $releaseOrResponse;
         }
+
+        $release = $releaseOrResponse;
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['title'])) {
+            $release->setTitle($data['title']);
+        }
+
+        if (isset($data['release_date'])) {
+            $release->setReleaseDate($data['release_date']);
+        }
+
+        if (isset($data['cover'])) {
+            $release->setCover($data['cover']);
+        }
+
+        if (isset($data['barcode'])) {
+            $release->setBarcode($data['barcode']);
+        }
+
+        // Artists
+        if (isset($data['artists']) && is_array($data['artists'])) {
+            $artistRepository = $this->entityManager->getRepository(\App\Entity\Artist::class);
+
+            // Create a collection with IDs of current artists
+            $currentArtistIds = [];
+            foreach ($release->getArtists() as $artist) {
+                $currentArtistIds[] = $artist->getId();
+            }
+
+            // Create a collection with the new artists IDs
+            $newArtistIds = [];
+            foreach ($data['artists'] as $artistData) {
+                if (isset($artistData['id'])) {
+                    $newArtistIds[] = $artistData['id'];
+                }
+            }
+
+            // Remove artists not associated
+            foreach ($release->getArtists() as $artist) {
+                if (!in_array($artist->getId(), $newArtistIds)) {
+                    $release->removeArtist($artist);
+                }
+            }
+
+            // Add new artists
+            foreach ($newArtistIds as $artistId) {
+                if (!in_array($artistId, $currentArtistIds)) {
+                    $artist = $artistRepository->find($artistId);
+                    if ($artist) {
+                        $release->addArtist($artist);
+                    }
+                }
+            }
+        }
+
+        // Format
+        if (isset($data['format'])) {
+            if (isset($data['format']['id'])) {
+                $formatRepository = $this->entityManager->getRepository(\App\Entity\Format::class);
+                $format = $formatRepository->find($data['format']['id']);
+
+                if ($format) {
+                    $release->setFormat($format);
+                }
+            } elseif ($data['format'] === null) {
+                $release->setFormat(null);
+            }
+        }
+
+        // Shelf
+        if (isset($data['shelf'])) {
+            if (isset($data['shelf']['id'])) {
+                $shelfRepository = $this->entityManager->getRepository(\App\Entity\Shelf::class);
+                $shelf = $shelfRepository->find($data['shelf']['id']);
+
+                if ($shelf) {
+                    $release->setShelf($shelf);
+                }
+            } elseif ($data['shelf'] === null) {
+                $release->setShelf(null);
+            }
+        }
+
+        $release->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+
+        return $this->apiResponseService->success(
+            'Release "' . $release->getTitle() . '" updated successfully'
+        );
 
         return $this->apiResponseService->error(
             'Method not allowed',
             Response::HTTP_METHOD_NOT_ALLOWED
         );
     }
+
+    // #[Route('/create', name: ['GET', 'POST'])]
+    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    // public function create()
+    // {
+    //     //
+    // }
 }
