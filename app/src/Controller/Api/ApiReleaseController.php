@@ -14,8 +14,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\ApiResponseService;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/release', name: 'api.release.')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class ApiReleaseController extends AbstractApiController
 {
     public function __construct(
@@ -34,18 +36,10 @@ final class ApiReleaseController extends AbstractApiController
     }
 
     #[Route('/scan', name: 'scan', methods: ['POST'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
         Request $request,
         DiscogsService $discogsService
     ): Response {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->apiResponseService->error(
-                'You need to be logged in to access this resource.',
-                Response::HTTP_UNAUTHORIZED
-            );
-        }
-
         $barcode = $request->toArray();
         $barcode = $barcode['barcode'];
         $releases = null;
@@ -74,13 +68,6 @@ final class ApiReleaseController extends AbstractApiController
         Request $request,
         ReleaseService $releaseService
     ): Response {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->apiResponseService->error(
-                'You need to be logged in to access this resource.',
-                Response::HTTP_UNAUTHORIZED
-            );
-        }
-
         // Get the JSON payload
         $data = json_decode($request->getContent(), true);
         $releaseId = $data['release_id'] ?? null;
@@ -110,13 +97,6 @@ final class ApiReleaseController extends AbstractApiController
     #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(ReleaseRepository $releaseRepository, Request $request): Response
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->apiResponseService->error(
-                'You need to be logged in to access this resource.',
-                Response::HTTP_UNAUTHORIZED
-            );
-        }
-
         $totalReleases = $releaseRepository->getTotalReleases();
 
         $page = $request->query->getInt('page', 1);
@@ -172,13 +152,6 @@ final class ApiReleaseController extends AbstractApiController
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id, ReleaseService $releaseService): Response
     {
-        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->apiResponseService->error(
-                'You need to be logged in to access this resource.',
-                Response::HTTP_UNAUTHORIZED
-            );
-        }
-
         // Use findOr404 method to find the entity or return a 404
         $releaseOrResponse = $this->findOr404(Release::class, $id);
 
