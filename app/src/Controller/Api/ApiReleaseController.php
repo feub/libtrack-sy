@@ -332,17 +332,32 @@ final class ApiReleaseController extends AbstractApiController
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" updated successfully'
         );
-
-        return $this->apiResponseService->error(
-            'Method not allowed',
-            Response::HTTP_METHOD_NOT_ALLOWED
-        );
     }
 
-    // #[Route('/create', name: ['GET', 'POST'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    // public function create()
-    // {
-    //     //
-    // }
+    #[Route('/create', name: 'create', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function create(Request $request, ReleaseService $releaseService): Response
+    {
+        // Example of a POST request to create a release
+        // {
+        //     "title": "Nightfall Farmer",
+        //     "release_date": 1995,
+        //     "barcode": "1234567890",
+        //     "artists": "Death",
+        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
+        //     "format": {
+        //       "id": 2
+        //     },
+        //     "shelf": {
+        //       "id": 2
+        //     }
+        //   }
+
+        $data = json_decode($request->getContent(), true);
+        $release = $releaseService->manualAddRelease($data);
+
+        return $this->apiResponseService->success(
+            'Release "' . $release->getTitle() . '" created successfully'
+        );
+    }
 }
