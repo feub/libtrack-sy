@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Release;
+use App\Service\ApiResponseService;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use App\Repository\ReleaseRepository;
@@ -21,16 +22,14 @@ final class ApiReleaseController extends AbstractController
 {
     public function __construct(
         private HttpClientInterface $client,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private ApiResponseService $apiResponseService
     ) {}
 
     #[Route('/health', name: 'health', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        return $this->json([
-            'type' => 'success',
-            'message' => 'LibTrack API is running.',
-        ]);
+        return $this->apiResponseService->success('LibTrack API is running.');
     }
 
     #[Route('/scan', name: 'scan', methods: ['POST'])]
@@ -40,10 +39,10 @@ final class ApiReleaseController extends AbstractController
         DiscogsService $discogsService
     ): Response {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'You need to be logged in to access this resource.'
-            ], Response::HTTP_UNAUTHORIZED);
+            return $this->apiResponseService->error(
+                'You need to be logged in to access this resource.',
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         $barcode = $request->toArray();
@@ -51,27 +50,28 @@ final class ApiReleaseController extends AbstractController
         $releases = null;
 
         if (!$barcode) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'Barcode is required'
-            ], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->apiResponseService->error(
+                'Barcode is required',
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         try {
             $releases = $discogsService->getReleaseByBarcode($barcode);
-        } catch (\Exception $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
-        }
 
-        return $this->json([
-            'type' => 'success',
-            'barcode' => $barcode,
-            'releases' => $releases,
-            'message' => 'Available releases for the barcode: ' . $barcode,
-        ]);
+            return $this->apiResponseService->success(
+                'Available releases for the barcode: ' . $barcode,
+                [
+                    'barcode' => $barcode,
+                    'releases' => $releases
+                ]
+            );
+        } catch (\Exception $e) {
+            return $this->apiResponseService->error(
+                $e->getMessage(),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
@@ -80,10 +80,10 @@ final class ApiReleaseController extends AbstractController
         ReleaseService $releaseService
     ): Response {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'You need to be logged in to access this resource.'
-            ], Response::HTTP_UNAUTHORIZED);
+            return $this->apiResponseService->error(
+                'You need to be logged in to access this resource.',
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         // Get the JSON payload
@@ -92,52 +92,50 @@ final class ApiReleaseController extends AbstractController
         $barcode = $data['barcode'] ?? null;
 
         if (!$releaseId) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'No release ID provided'
-            ], 400);
+            return $this->apiResponseService->error(
+                'No release ID provided',
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         if (!$barcode) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'No barcode provided'
-            ], 400);
+            return $this->apiResponseService->error(
+                'No barcode provided',
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         try {
             $release = $releaseService->addRelease($releaseId, $barcode);
+            return $this->apiResponseService->success(
+                'Release "' . $release->getTitle() . '" added successfully'
+            );
         } catch (BadRequestHttpException $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
+            return $this->apiResponseService->error(
+                $e->getMessage(),
+                Response::HTTP_BAD_REQUEST
+            );
         } catch (NotFoundHttpException $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => $e->getMessage()
-            ], 404);
+            return $this->apiResponseService->error(
+                $e->getMessage(),
+                Response::HTTP_NOT_FOUND
+            );
         } catch (\Exception $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'An unexpected error occurred: ' . $e->getMessage()
-            ], 500);
+            return $this->apiResponseService->error(
+                'An unexpected error occurred: ' . $e->getMessage(),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
-
-        return $this->json([
-            'type' => 'success',
-            'message' => 'Release "' . $release->getTitle() . '" added successfully'
-        ]);
     }
 
     #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(ReleaseRepository $releaseRepository, Request $request): Response
     {
         if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'You need to be logged in to access this resource.'
-            ], Response::HTTP_UNAUTHORIZED);
+            return $this->apiResponseService->error(
+                'You need to be logged in to access this resource.',
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         $totalReleases = $releaseRepository->getTotalReleases();
@@ -181,34 +179,40 @@ final class ApiReleaseController extends AbstractController
             ];
         }
 
-        return $this->json([
-            'type' => 'success',
-            'releases' => $releasesData,
-            'totalReleases' => $totalReleases,
-            'maxPage' => $maxpage,
-            'page' => $page
-        ], 200, [], ['groups' => 'api.release.list']);
+        return $this->apiResponseService->success(
+            'Releases retrieved successfully',
+            [
+                'releases' => $releasesData,
+                'totalReleases' => $totalReleases,
+                'maxPage' => $maxpage,
+                'page' => $page
+            ]
+        );
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Release $release, ReleaseService $releaseService)
+    public function delete(Release $release, ReleaseService $releaseService): Response
     {
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->apiResponseService->error(
+                'You need to be logged in to access this resource.',
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
+
         try {
             $releaseService->deleteRelease($release);
+            return $this->apiResponseService->success('Release successfully deleted');
         } catch (NotFoundHttpException $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => $e->getMessage()
-            ], 404);
+            return $this->apiResponseService->error(
+                $e->getMessage(),
+                Response::HTTP_NOT_FOUND
+            );
         } catch (\Exception $e) {
-            return $this->json([
-                'type' => 'error',
-                'message' => 'An unexpected error occurred: ' . $e->getMessage()
-            ], 500);
+            return $this->apiResponseService->error(
+                'An unexpected error occurred: ' . $e->getMessage(),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
-        return $this->json([
-            'type' => 'success',
-            'message' => 'Release successfully deleted'
-        ], 200);
     }
 }
