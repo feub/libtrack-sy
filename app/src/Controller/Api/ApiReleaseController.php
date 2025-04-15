@@ -17,7 +17,6 @@ use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/release', name: 'api.release.')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class ApiReleaseController extends AbstractApiController
 {
     public function __construct(
@@ -36,6 +35,7 @@ final class ApiReleaseController extends AbstractApiController
     }
 
     #[Route('/scan', name: 'scan', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
         Request $request,
         DiscogsService $discogsService
@@ -64,6 +64,7 @@ final class ApiReleaseController extends AbstractApiController
     }
 
     #[Route('/scan/add', name: 'scan.add', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scanAdd(
         Request $request,
         ReleaseService $releaseService
@@ -95,6 +96,7 @@ final class ApiReleaseController extends AbstractApiController
     }
 
     #[Route('/list', name: 'list', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function list(ReleaseRepository $releaseRepository, Request $request): Response
     {
         $totalReleases = $releaseRepository->getTotalReleases();
@@ -150,6 +152,7 @@ final class ApiReleaseController extends AbstractApiController
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(int $id, ReleaseService $releaseService): Response
     {
         // Use findOr404 method to find the entity or return a 404
