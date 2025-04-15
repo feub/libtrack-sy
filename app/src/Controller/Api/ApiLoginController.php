@@ -40,24 +40,22 @@ final class ApiLoginController extends AbstractController
         // Access token
         $token = $jWTTokenManager->create($user);
 
-        // Récupérer la valeur TTL depuis la configuration
         $ttl = $this->parameterBag->get('gesdinet_jwt_refresh_token.ttl');
 
-        // Si la configuration n'est pas disponible, utiliser une valeur par défaut
         if (!$ttl) {
-            $ttl = 2592000; // 30 jours par défaut
+            $ttl = 2592000; // 30 days by default
         }
 
-        // Refresh token avec la TTL de configuration
+        // Refresh token
         $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl(
             $user,
             $ttl
         );
 
-        // Persistez le refresh token
+        // Persisting refresh token
         $this->refreshTokenManager->save($refreshToken);
 
-        // Décoder le token JWT pour obtenir sa vraie date d'expiration
+        // Decoding JWT token to get its expiration date
         $tokenData = $this->jwtEncoder->decode($token);
         $tokenExpiresAt = isset($tokenData['exp']) ? new \DateTime('@' . $tokenData['exp']) : null;
 
