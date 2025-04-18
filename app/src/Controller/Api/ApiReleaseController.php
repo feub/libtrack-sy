@@ -158,7 +158,9 @@ final class ApiReleaseController extends AbstractApiController
         //     "title": "Nightfall Farmer",
         //     "release_date": 1995,
         //     "barcode": "1234567890",
-        //     "artists": "Death",
+        //     "artists": [
+        //          {"id": 37}
+        //     ],
         //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
         //     "format": {
         //       "id": 2
