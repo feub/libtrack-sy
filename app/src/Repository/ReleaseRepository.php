@@ -51,4 +51,17 @@ class ReleaseRepository extends ServiceEntityRepository
             ]
         );
     }
+
+    public function getRelease(int $id): ?Release
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.artists', 'a')
+            ->leftJoin('r.shelf', 's')
+            ->leftJoin('r.format', 'f')
+            ->select('r', 'a', 's', 'f')
+            ->where('r.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
