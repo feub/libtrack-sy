@@ -19,7 +19,7 @@ security:
       stateless: true
       jwt: ~
       refresh_jwt:
-        check_path: api_refresh_token
+        check_path: /api/token/refresh
       entry_point: App\Security\ApiAuthenticationEntryPoint
       access_denied_handler: App\Security\ApiAccessDeniedHandler
       json_login:
@@ -58,6 +58,7 @@ security:
     # - { path: ^/admin, roles: ROLE_ADMIN }
     # - { path: ^/profile, roles: ROLE_USER }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
     #- { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
