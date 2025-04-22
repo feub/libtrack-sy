@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -10,9 +12,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Music, ScanBarcode, PersonStanding, Settings } from "lucide-react";
+import {
+  Music,
+  ScanBarcode,
+  PersonStanding,
+  Settings,
+  ChevronUp,
+  User2,
+  LogOut,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/ModeToggle";
-import { Link } from "react-router";
 
 const items = [
   {
@@ -30,14 +45,11 @@ const items = [
     url: "/artist",
     icon: PersonStanding,
   },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
 ];
 
 export function AppSidebar() {
+  const { user } = useAuth();
+
   return (
     <Sidebar variant="inset">
       <SidebarHeader />
@@ -56,13 +68,40 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <ModeToggle />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup />
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <SidebarMenuButton>
+                  <User2 />
+                  {user?.email}
+                  <ChevronUp className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
+                <ModeToggle />
+                <DropdownMenuItem>
+                  <Settings />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <LogOut />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
