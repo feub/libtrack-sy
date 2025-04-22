@@ -78,11 +78,11 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <SidebarMenuButton>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent">
                   <User2 />
                   {user?.email}
                   <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
