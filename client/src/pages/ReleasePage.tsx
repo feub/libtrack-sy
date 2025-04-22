@@ -118,6 +118,10 @@ export default function ReleasePage() {
     }
   };
 
+  const handleEdit = (id: number) => {
+    console.log(id);
+  };
+
   return (
     <>
       <h2 className="font-bold text-3xl">Releases ({totalReleases})</h2>
@@ -153,6 +157,7 @@ export default function ReleasePage() {
                       key={index}
                       release={release}
                       handleDelete={handleDelete}
+                      handleEdit={handleEdit}
                     />
                   ))}
               </TableBody>

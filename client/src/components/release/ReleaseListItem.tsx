@@ -1,7 +1,7 @@
 import { ListReleasesType } from "../../types/releaseTypes";
 import { TableRow, TableCell } from "../ui/table";
 import { Button } from "@/components/ui/button";
-import { Disc, Disc3, CircleX } from "lucide-react";
+import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
 const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
@@ -9,9 +9,11 @@ const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
 export default function ReleaseListItem({
   release,
   handleDelete,
+  handleEdit,
 }: {
   release: ListReleasesType;
   handleDelete: (id: number) => void;
+  handleEdit: (id: number) => void;
 }) {
   return (
     <>
@@ -55,6 +57,13 @@ export default function ReleaseListItem({
         <TableCell className="text-center">{release.release_date}</TableCell>
         <TableCell className="text-center">{release.barcode}</TableCell>
         <TableCell>
+          <Button
+            variant="ghost"
+            onClick={() => handleEdit(release.id)}
+            className="text-neutral-600 hover:text-neutral-400"
+          >
+            <FilePenLine />
+          </Button>
           <Button
             variant="ghost"
             onClick={() => handleDelete(release.id)}
