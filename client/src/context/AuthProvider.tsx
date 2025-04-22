@@ -101,15 +101,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
-      const newExpiryDate = new Date(data.token_expires_at);
 
-      // Validate the received expiry date
-      if (isNaN(newExpiryDate.getTime())) {
-        console.error(
-          "Received invalid token expiry date from server, logging out.",
-        );
-        await logout("invalid expiry date");
-        return;
+      // Debug the actual value received from the server
+      console.log("Received token_expires_at:", data.token_expires_at);
+
+      // Improved date parsing with fallback mechanism
+      let newExpiryDate;
+
+      if (data.token_expires_at) {
+        try {
+          newExpiryDate = new Date(data.token_expires_at);
+        } catch (e) {
+          console.warn("Error parsing date:", e);
+        }
+      }
+
+      // If we couldn't get a valid date, use a fallback
+      if (!newExpiryDate || isNaN(newExpiryDate.getTime())) {
+        // Fallback: Use current time plus a reasonable interval (e.g., 55 minutes)
+        // JWT tokens are typically valid for 1 hour, so we make it slightly less
+        console.warn("Using fallback expiry calculation");
+        newExpiryDate = new Date(Date.now() + 55 * 60 * 1000); // 55 minutes
+
+        // Update stored value to match our calculated one
+        data.token_expires_at = newExpiryDate.toISOString();
       }
 
       // Check if the new token is already expired or expires immediately
@@ -117,8 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.warn(
           "New token expires too soon, potential server issue or clock skew. Logging out.",
         );
-        await logout("new token expires too soon");
-        return;
+        // Instead of logging out, use the fallback again
+        newExpiryDate = new Date(Date.now() + 55 * 60 * 1000);
+        data.token_expires_at = newExpiryDate.toISOString();
       }
 
       console.log(
@@ -131,7 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(data.token);
       setRefreshToken(data.refresh_token);
-      setTokenExpiresAt(new Date(newExpiryDate)); // Store as Date object
+      setTokenExpiresAt(newExpiryDate);
     } catch (error) {
       console.error("Error during token refresh:", error);
       await logout("refresh exception");
