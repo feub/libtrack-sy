@@ -10,22 +10,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Music,
-  ScanBarcode,
-  Home,
-  PersonStanding,
-  Settings,
-} from "lucide-react";
+import { Music, ScanBarcode, PersonStanding, Settings } from "lucide-react";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Link } from "react-router";
 
 const items = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
   {
     title: "Releases",
     url: "/release",
