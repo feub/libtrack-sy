@@ -357,13 +357,13 @@ class ReleaseService
             throw new NotFoundHttpException('Release not found');
         }
 
-        $coverPath = $this->coverDir . $release->getCover();
-
         try {
             $this->em->remove($release);
             $this->em->flush();
 
-            if ($coverPath && file_exists($coverPath)) {
+            $coverPath = $this->coverDir . $release->getCover();
+
+            if ($release->getCover() && file_exists($coverPath)) {
                 if (!unlink($coverPath)) {
                     $this->logger->error("Failed to delete the cover file at path: $coverPath");
                 }
