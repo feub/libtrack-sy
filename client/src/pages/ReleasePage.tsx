@@ -25,13 +25,15 @@ export default function ReleasePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setTimeout(() => getReleases(currentPage, limit, searchTerm), 250);
+    getReleases(currentPage, limit, searchTerm);
   }, [currentPage, limit, searchTerm]);
 
   const handleSearchSubmit = async (search: string) => {
-    setSearchTerm(search);
-    setCurrentPage(1); // Reset to the first page when searching
-    return Promise.resolve();
+    if (search !== searchTerm) {
+      setSearchTerm(search);
+      setCurrentPage(1); // Reset to the first page when searching
+      return Promise.resolve();
+    }
   };
 
   const getReleases = async (
@@ -68,16 +70,27 @@ export default function ReleasePage() {
         throw "ERROR: problem getting releases.";
       }
 
-      setReleases(data.releases);
-      setCurrentPage(data.page);
-      setMaxPage(data.maxPage);
-      setTotalReleases(data.totalReleases);
+      setReleases(data.data.releases);
+      setMaxPage(data.data.maxPage);
+      setTotalReleases(data.data.totalReleases);
+
+      // if (data.data.page !== page) {
+      //setCurrentPage(data.data.page);
+      // }
     } catch (error) {
       console.error("Releases list error:", error);
       throw "ERROR (T/C): " + error;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle page change from pagination component
+  const handlePageChange = (page: number) => {
+    if (page === currentPage || page < 1 || page > maxPage) {
+      return;
+    }
+    setCurrentPage(page);
   };
 
   const handleDelete = async (id: number) => {
@@ -149,7 +162,7 @@ export default function ReleasePage() {
             <ThePagination
               currentPage={currentPage}
               maxPage={maxPage}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
             />
           </div>
         </>
