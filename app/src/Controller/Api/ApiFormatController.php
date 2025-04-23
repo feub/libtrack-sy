@@ -2,9 +2,16 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Release;
+use App\Repository\FormatRepository;
+use App\Service\DiscogsService;
+use App\Service\ReleaseService;
+use App\Repository\ReleaseRepository;
 use App\Repository\ShelfRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,8 +19,8 @@ use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-#[Route('/api/shelf', name: 'api.shelf.')]
-final class ApiShelfController extends AbstractApiController
+#[Route('/api/format', name: 'api.format.')]
+final class ApiFormatController extends AbstractApiController
 {
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -26,27 +33,26 @@ final class ApiShelfController extends AbstractApiController
 
     #[Route('/', name: 'list', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function list(ShelfRepository $shelfRepository): Response
+    public function list(FormatRepository $formatRepository): Response
     {
         try {
-            $total = $shelfRepository->getTotalShelves();
+            $total = $formatRepository->getTotalFormats();
 
-            $shelves = $shelfRepository->getShelves();
+            $formats = $formatRepository->getFormats();
 
-            foreach ($shelves as $shelf) {
-                $shelvesData[] = [
-                    'id' => $shelf->getId(),
-                    'location' => $shelf->getLocation(),
-                    'slug' => $shelf->getSlug(),
-                    'description' => $shelf->getDescription(),
+            foreach ($formats as $format) {
+                $formatsData[] = [
+                    'id' => $format->getId(),
+                    'name' => $format->getName(),
+                    'slug' => $format->getSlug(),
                 ];
             }
 
             return $this->apiResponseService->success(
-                'Shelves retrieved successfully',
+                'Formats retrieved successfully',
                 [
-                    'shelves' => $shelvesData,
-                    'totalShelves' => $total
+                    'formats' => $formatsData,
+                    'totalFormats' => $total
                 ]
             );
         } catch (NotFoundHttpException $e) {
@@ -59,21 +65,20 @@ final class ApiShelfController extends AbstractApiController
 
     #[Route('/{id}', name: 'view', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function view(int $id, ShelfRepository $shelfRepository): Response
+    public function view(int $id, FormatRepository $formatRepository): Response
     {
         try {
-            $shelf = $shelfRepository->findShelfById($id);
+            $format = $formatRepository->findFormatById($id);
 
-            $shelfData = [
-                'id' => $shelf->getId(),
-                'location' => $shelf->getLocation(),
-                'slug' => $shelf->getSlug(),
-                'description' => $shelf->getDescription(),
+            $formatData = [
+                'id' => $format->getId(),
+                'name' => $format->getName(),
+                'slug' => $format->getSlug(),
             ];
 
             return $this->apiResponseService->success(
-                'Shelf retrieved successfully',
-                ['shelf' => $shelfData]
+                'Format retrieved successfully',
+                ['format' => $formatData]
             );
         } catch (NotFoundHttpException $e) {
             return $this->apiResponseService->error(
