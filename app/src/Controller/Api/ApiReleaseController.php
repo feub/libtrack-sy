@@ -35,6 +35,22 @@ final class ApiReleaseController extends AbstractApiController
         return $this->apiResponseService->success('LibTrack API is running.');
     }
 
+    #[Route('/', name: 'list', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function list(Request $request, ReleaseService $releaseService): Response
+    {
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
+        $searchTerm = $request->query->getString('search', '');
+
+        $releasesData = $releaseService->getPaginatedReleases($page, $limit, $searchTerm);
+
+        return $this->apiResponseService->success(
+            'Releases retrieved successfully',
+            $releasesData
+        );
+    }
+
     #[Route('/scan', name: 'scan', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
@@ -93,22 +109,6 @@ final class ApiReleaseController extends AbstractApiController
         $release = $releaseService->addRelease($releaseId, $barcode);
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" added successfully'
-        );
-    }
-
-    #[Route('/list', name: 'list', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function list(Request $request, ReleaseService $releaseService): Response
-    {
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 20);
-        $searchTerm = $request->query->getString('search', '');
-
-        $releasesData = $releaseService->getPaginatedReleases($page, $limit, $searchTerm);
-
-        return $this->apiResponseService->success(
-            'Releases retrieved successfully',
-            $releasesData
         );
     }
 

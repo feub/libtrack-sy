@@ -433,8 +433,6 @@ class ReleaseService
             ];
         }
 
-        dd($releasesData);
-
         return [
             'releases' => $releasesData,
             'totalReleases' => $totalReleases,
