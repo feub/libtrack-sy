@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { ListReleasesType } from "../../types/releaseTypes";
 import { TableRow, TableCell } from "../ui/table";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,9 @@ const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
 export default function ReleaseListItem({
   release,
   handleDelete,
-  handleEdit,
 }: {
   release: ListReleasesType;
   handleDelete: (id: number) => void;
-  handleEdit: (id: number) => void;
 }) {
   return (
     <>
@@ -35,7 +34,9 @@ export default function ReleaseListItem({
           {release.shelf && (
             <>
               <br />
-              <span className="text-neutral-500">Shelf: {release.shelf}</span>
+              <span className="text-neutral-500">
+                Shelf: {release.shelf.location}
+              </span>
             </>
           )}
         </TableCell>
@@ -45,10 +46,10 @@ export default function ReleaseListItem({
         </TableCell>
         <TableCell className="text-center">
           <div className="flex justify-center items-center">
-            {release.format?.includes("CD") ? (
-              <Disc aria-label={release.format} />
-            ) : release.format?.includes("Vinyl") ? (
-              <Disc3 aria-label={release.format} />
+            {release.format?.name?.includes("CD") ? (
+              <Disc aria-label={release.format.name} />
+            ) : release.format?.name?.includes("Vinyl") ? (
+              <Disc3 aria-label={release.format.name} />
             ) : (
               ""
             )}
@@ -57,13 +58,12 @@ export default function ReleaseListItem({
         <TableCell className="text-center">{release.release_date}</TableCell>
         <TableCell className="text-center">{release.barcode}</TableCell>
         <TableCell>
-          <Button
-            variant="ghost"
-            onClick={() => handleEdit(release.id)}
-            className="text-neutral-600 hover:text-neutral-400"
+          <Link
+            to={`/release/edit/${release.id}`}
+            className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-neutral-600 hover:text-neutral-400"
           >
-            <FilePenLine />
-          </Button>
+            <FilePenLine className="h-4 w-4" />
+          </Link>
           <Button
             variant="ghost"
             onClick={() => handleDelete(release.id)}
