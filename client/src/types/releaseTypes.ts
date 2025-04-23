@@ -1,20 +1,31 @@
 export type ArtistType = {
+  id: number;
   name: string;
 };
 
-export type CoverType = {
-  formats: string;
+export type ShelfType = {
+  id: number;
+  location: string;
+  slug: string;
+  description: string;
+};
+
+export type FormatType = {
+  id: number;
+  name: string;
+  slug: string;
 };
 
 export type ListReleasesType = {
   id: number;
   title?: string;
+  slug?: string;
   artists?: ArtistType[];
-  cover?: CoverType[];
+  cover?: string;
   release_date?: number;
   barcode?: number;
-  format?: string;
-  shelf?: string;
+  format?: FormatType;
+  shelf?: ShelfType;
 };
 
 export type ScannedFormatType = {

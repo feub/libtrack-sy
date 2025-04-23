@@ -50,7 +50,7 @@ export default function ReleasePage() {
       });
 
       const response = await apiRequest(
-        `${apiURL}/api/release/list?${params.toString()}`,
+        `${apiURL}/api/release?${params.toString()}`,
         {
           method: "GET",
         },
@@ -73,10 +73,6 @@ export default function ReleasePage() {
       setReleases(data.data.releases);
       setMaxPage(data.data.maxPage);
       setTotalReleases(data.data.totalReleases);
-
-      // if (data.data.page !== page) {
-      //setCurrentPage(data.data.page);
-      // }
     } catch (error) {
       console.error("Releases list error:", error);
       throw "ERROR (T/C): " + error;
@@ -118,10 +114,6 @@ export default function ReleasePage() {
     }
   };
 
-  const handleEdit = (id: number) => {
-    console.log(id);
-  };
-
   return (
     <>
       <h2 className="font-bold text-3xl">Releases ({totalReleases})</h2>
@@ -157,7 +149,6 @@ export default function ReleasePage() {
                       key={index}
                       release={release}
                       handleDelete={handleDelete}
-                      handleEdit={handleEdit}
                     />
                   ))}
               </TableBody>
