@@ -331,6 +331,7 @@ class ReleaseService
         return [
             'id' => $release->getId(),
             'title' => $release->getTitle(),
+            'slug' => $release->getSlug(),
             'cover' => $release->getCover(),
             'release_date' => $release->getReleaseDate(),
             'artists' => $artistsData,
