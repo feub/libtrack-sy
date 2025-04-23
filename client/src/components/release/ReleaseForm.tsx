@@ -1,0 +1,406 @@
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { apiRequest, api } from "@/utils/apiRequest";
+import { ListReleasesType } from "@/types/releaseTypes";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Save, Loader } from "lucide-react";
+import { SelectPills } from "@/components/SelectPills";
+
+const apiURL = import.meta.env.VITE_API_URL;
+
+const artistsList = [
+  { id: "1", name: "Black Sabbath" },
+  { id: "2", name: "Misanthrope" },
+  { id: "3", name: "Death" },
+  { id: "4", name: "Nightfall" },
+  { id: "5", name: "Toto" },
+  { id: "6", name: "Mylène Farmer" },
+  { id: "7", name: "La Compagnie Créole" },
+];
+
+const formSchema = z.object({
+  title: z
+    .string()
+    .min(1, { message: "Title is required." })
+    .max(150, { message: "Title is too long (150 caracters max)." }),
+  slug: z
+    .string()
+    .regex(/^[a-zA-Z0-9-]+$/, {
+      message: "Slug must contain only alphanumerical caracters and hyphen.",
+    })
+    .optional(),
+  release_date: z.coerce
+    .number()
+    .int()
+    .min(1000, { message: "Enter a valid year (4 digits)." })
+    .max(new Date().getFullYear() + 10, {
+      message: "Year cannot be that far in the future.",
+    })
+    .optional(),
+  barcode: z.coerce
+    .number()
+    .int()
+    .nonnegative({ message: "Barcode must be a positive number." })
+    .optional(),
+  cover: z
+    .string()
+    .max(255, { message: "Cover image path too long (255 caracters max)." }),
+  //   artists: z
+  //     .array(z.string())
+  //     .min(1, { message: "At least one artist must be choosen." }),
+  shelf: z.object({ id: z.number().or(z.string()) }).optional(),
+  format: z.object({ id: z.number().or(z.string()) }).optional(),
+});
+
+type ShelfType = {
+  id: number;
+  location: string;
+  description: string;
+  slug: string;
+};
+
+type FormatType = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
+export default function ReleaseForm({
+  release,
+  mode,
+}: {
+  release: ListReleasesType | null;
+  mode: "create" | "update";
+}) {
+  const isUpdateMode = mode === "update";
+  const [shelves, setShelves] = useState<ShelfType[] | null>(null);
+  const [formats, setFormats] = useState<FormatType[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      release_date: new Date().getFullYear(),
+      barcode: undefined,
+      cover: "",
+      //artists: [] as string[],
+      shelf: undefined,
+      format: undefined,
+    },
+  });
+
+  const getShelves = async () => {
+    try {
+      const response = await apiRequest(`${apiURL}/api/shelf`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          "ERROR (response): " + errorData.message || "Getting shelves failed",
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.type !== "success") {
+        throw "ERROR: problem getting shelves.";
+      }
+
+      setShelves(data.data.shelves);
+    } catch (error) {
+      console.error("Shelves list error:", error);
+      throw "ERROR (T/C): " + error;
+    }
+  };
+
+  const getFormats = async () => {
+    try {
+      const response = await apiRequest(`${apiURL}/api/format`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          "ERROR (response): " + errorData.message || "Getting formats failed",
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.type !== "success") {
+        throw "ERROR: problem getting formats.";
+      }
+
+      setFormats(data.data.formats);
+    } catch (error) {
+      console.error("Formats list error:", error);
+      throw "ERROR (T/C): " + error;
+    }
+  };
+
+  // Populate form with existing values
+  useEffect(() => {
+    // First, get the data needed for the selects
+    const loadData = async () => {
+      await Promise.all([getShelves(), getFormats()]);
+      if (isUpdateMode && release) {
+        form.setValue("title", release.title || "");
+        form.setValue("slug", release.slug || "");
+        form.setValue(
+          "release_date",
+          release.release_date ?? new Date().getFullYear(),
+        );
+        form.setValue("barcode", release.barcode ?? 0);
+        form.setValue("cover", release.cover || "");
+
+        if (release.shelf?.id) {
+          form.setValue("shelf", { id: release.shelf.id });
+        }
+
+        if (release.format?.id) {
+          form.setValue("format", { id: release.format.id });
+        }
+      }
+    };
+
+    loadData();
+
+    getShelves();
+    getFormats();
+  }, [release, isUpdateMode, form]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      const response = await api.put(
+        `${apiURL}/api/release/edit/${release?.id || ""}`,
+        values,
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          "Error updating release:",
+          errorData.message || "Unknown error",
+        );
+        setError(errorData.message || "Failed to update release");
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccessMessage("Release updated successfully!");
+    } catch (error) {
+      console.error("Update error:", error);
+      setError("Failed to update release. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <>
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+      {successMessage && (
+        <div className="text-green-500 mt-2">{successMessage}</div>
+      )}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className=" grid grid-cols-2 gap-4 p-4"
+        >
+          <FormField
+            control={form.control}
+            name="artists"
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Artist(s)</FormLabel>
+                <FormControl>
+                  <SelectPills
+                    data={artistsList}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Search for an artist..."
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Slug</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>
+                  The slug will be added automatically if you leave the field
+                  empty.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="barcode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Barcode</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="release_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Year</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="cover"
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Cover art</FormLabel>
+                <FormControl>
+                  <Input {...field} disabled />
+                </FormControl>
+                <FormDescription>Disabled for now.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="shelf"
+            render={({ field }) => (
+              <FormItem className="">
+                <FormLabel>Shelf location</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange({ id: parseInt(value) })
+                    }
+                    value={field.value?.id?.toString() || ""}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a shelf location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {shelves &&
+                        shelves.map((shelf, idx) => (
+                          <SelectItem key={idx} value={String(shelf.id)}>
+                            {shelf.location}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="format"
+            render={({ field }) => (
+              <FormItem className="">
+                <FormLabel>Format</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange({ id: parseInt(value) })
+                    }
+                    value={field.value?.id?.toString() || ""}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formats &&
+                        formats.map((format, idx) => (
+                          <SelectItem key={idx} value={String(format.id)}>
+                            {format.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="ml-2 w-[80px]">
+            {isLoading ? (
+              <>
+                <Loader /> Saving...
+              </>
+            ) : (
+              <>
+                <Save /> Save
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </>
+  );
+}
