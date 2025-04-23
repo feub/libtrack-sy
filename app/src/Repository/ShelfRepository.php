@@ -28,13 +28,21 @@ class ShelfRepository extends ServiceEntityRepository
         ;
     }
 
-    //    public function findOneBySomeField($value): ?Shelf
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function getTotalShelves(): int
+    {
+        return $this->createQueryBuilder('s')
+            ->select('COUNT(s.id) AS count')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findShelfById($id): ?Shelf
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.id = :val')
+            ->setParameter('val', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }
