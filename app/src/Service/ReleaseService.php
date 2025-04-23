@@ -338,11 +338,14 @@ class ReleaseService
             'barcode' => $release->getBarcode(),
             'format' => $format ? [
                 'id' => $format->getId(),
-                'name' => $format->getName()
+                'name' => $format->getName(),
+                'slug' => $format->getSlug()
             ] : null,
             'shelf' => $shelf ? [
                 'id' => $shelf->getId(),
-                'location' => $shelf->getLocation()
+                'location' => $shelf->getLocation(),
+                'slug' => $shelf->getSlug(),
+                'description' => $shelf->getDescription()
             ] : null
         ];
     }
@@ -416,10 +419,21 @@ class ReleaseService
                 'release_date' => $release->getReleaseDate(),
                 'artists' => $artistsData,
                 'barcode' => $release->getBarcode(),
-                'format' => $format?->getName() ?? '',
-                'shelf' => $shelf?->getLocation() ?? ''
+                'format' => $format ? [
+                    'id' => $format->getId(),
+                    'name' => $format->getName(),
+                    'slug' => $format->getSlug()
+                ] : null,
+                'shelf' => $shelf ? [
+                    'id' => $shelf->getId(),
+                    'location' => $shelf->getLocation(),
+                    'slug' => $shelf->getSlug(),
+                    'description' => $shelf->getDescription()
+                ] : null
             ];
         }
+
+        dd($releasesData);
 
         return [
             'releases' => $releasesData,
