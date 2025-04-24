@@ -47,10 +47,11 @@ const formSchema = z.object({
       message: "Year cannot be that far in the future.",
     })
     .optional(),
-  barcode: z.coerce
+  barcode: z
     .number()
     .int()
     .nonnegative({ message: "Barcode must be a positive number." })
+    .nullable()
     .optional(),
   cover: z
     .string()
@@ -58,8 +59,14 @@ const formSchema = z.object({
   artists: z
     .array(z.string())
     .min(1, { message: "At least one artist must be choosen." }),
-  shelf: z.object({ id: z.number().or(z.string()) }).optional(),
-  format: z.object({ id: z.number().or(z.string()) }).optional(),
+  shelf: z
+    .object({ id: z.number().or(z.string()) })
+    .nullable()
+    .optional(),
+  format: z
+    .object({ id: z.number().or(z.string()) })
+    .nullable()
+    .optional(),
 });
 
 type ShelfType = {
@@ -101,11 +108,11 @@ export default function ReleaseForm({
       title: "",
       slug: "",
       release_date: new Date().getFullYear(),
-      barcode: undefined,
+      barcode: null,
       cover: "",
       artists: [] as string[],
-      shelf: undefined,
-      format: undefined,
+      shelf: null,
+      format: null,
     },
   });
 
@@ -205,15 +212,19 @@ export default function ReleaseForm({
           "release_date",
           release.release_date ?? new Date().getFullYear(),
         );
-        form.setValue("barcode", release.barcode ?? 0);
+        form.setValue("barcode", release.barcode || null);
         form.setValue("cover", release.cover || "");
 
         if (release.shelf?.id) {
           form.setValue("shelf", { id: release.shelf.id });
+        } else {
+          form.setValue("shelf", null);
         }
 
         if (release.format?.id) {
           form.setValue("format", { id: release.format.id });
+        } else {
+          form.setValue("format", null);
         }
       }
     };
@@ -337,7 +348,10 @@ export default function ReleaseForm({
               <FormItem>
                 <FormLabel>Barcode</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input
+                    {...field}
+                    value={field.value === null ? "" : field.value}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
