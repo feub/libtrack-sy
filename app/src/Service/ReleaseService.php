@@ -396,45 +396,9 @@ class ReleaseService
         }
 
         $maxpage = ceil($totalReleases / $limit);
-        $releasesData = [];
-
-        foreach ($releases as $release) {
-            $artists = $release->getArtists();
-            $artistsData = [];
-
-            $format = $release->getFormat();
-            $shelf = $release->getShelf();
-
-            foreach ($artists as $artist) {
-                $artistsData[] = [
-                    'id' => $artist->getId(),
-                    'name' => $artist->getName(),
-                ];
-            }
-
-            $releasesData[] = [
-                'id' => $release->getId(),
-                'title' => $release->getTitle(),
-                'cover' => $release->getCover(),
-                'release_date' => $release->getReleaseDate(),
-                'artists' => $artistsData,
-                'barcode' => $release->getBarcode(),
-                'format' => $format ? [
-                    'id' => $format->getId(),
-                    'name' => $format->getName(),
-                    'slug' => $format->getSlug()
-                ] : null,
-                'shelf' => $shelf ? [
-                    'id' => $shelf->getId(),
-                    'location' => $shelf->getLocation(),
-                    'slug' => $shelf->getSlug(),
-                    'description' => $shelf->getDescription()
-                ] : null
-            ];
-        }
 
         return [
-            'releases' => $releasesData,
+            'releases' => $releases->getItems(),
             'totalReleases' => $totalReleases,
             'maxPage' => $maxpage,
             'page' => $page

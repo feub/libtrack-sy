@@ -43,18 +43,23 @@ class Release
     private Collection $artists;
 
     #[ORM\Column]
+    #[Groups(['api.release.list'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['api.release.list'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['api.release.list'])]
     private ?string $slug = null;
 
     #[ORM\ManyToOne(inversedBy: 'releases')]
+    #[Groups(['api.release.list'])]
     private ?Shelf $shelf = null;
 
     #[ORM\ManyToOne(inversedBy: 'releases')]
+    #[Groups(['api.release.list'])]
     private ?Format $format = null;
 
     public function __construct()

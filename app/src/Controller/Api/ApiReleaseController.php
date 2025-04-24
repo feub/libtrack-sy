@@ -39,7 +39,11 @@ final class ApiReleaseController extends AbstractApiController
 
         return $this->apiResponseService->success(
             'Releases retrieved successfully',
-            $releasesData
+            $releasesData,
+            200,
+            [
+                "groups" => ['api.release.list']
+            ]
         );
     }
 

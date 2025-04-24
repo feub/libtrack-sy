@@ -2,18 +2,31 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class ApiResponseService
 {
-    public function success(string $message, array $data = [], int $statusCode = Response::HTTP_OK): JsonResponse
+    private SerializerInterface $serializer;
+
+    public function __construct(SerializerInterface $serializer)
     {
-        return new JsonResponse([
+        $this->serializer = $serializer;
+    }
+
+    public function success(string $message, array $data = [], int $statusCode = Response::HTTP_OK, array $context = []): JsonResponse
+    {
+        $responseData = [
             'type' => 'success',
             'message' => $message,
             'data' => $data
-        ], $statusCode);
+        ];
+
+        // Serialize the entire response with the provided context
+        $serializedData = $this->serializer->serialize($responseData, 'json', $context);
+
+        return new JsonResponse($serializedData, $statusCode, [], true);
     }
 
     public function error(string $message, int $statusCode = Response::HTTP_BAD_REQUEST): JsonResponse
