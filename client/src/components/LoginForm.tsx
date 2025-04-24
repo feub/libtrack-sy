@@ -14,6 +14,7 @@ import { Input } from "./ui/input";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Label } from "./ui/label";
 import { AlertCircle } from "lucide-react";
+import { PasswordVisibilityIcon } from "./PasswordVisibilityIcon";
 
 export function LoginForm({
   className,
@@ -23,8 +24,14 @@ export function LoginForm({
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(true);
+
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const switchPasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +75,7 @@ export function LoginForm({
                     placeholder="m@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="true"
                     required
                   />
                 </div>
@@ -77,17 +85,24 @@ export function LoginForm({
                     {/* <a
                       href="#"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
+                      >
                       Forgot your password?
-                    </a> */}
+                      </a> */}
                   </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative h-10 w-full">
+                    <PasswordVisibilityIcon
+                      showPassword={showPassword}
+                      switchPasswordVisibility={switchPasswordVisibility}
+                    />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="true"
+                      required
+                    />
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Loggin in..." : "Login"}
