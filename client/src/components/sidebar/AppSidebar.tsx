@@ -48,7 +48,11 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <Sidebar variant="inset">
@@ -93,7 +97,7 @@ export function AppSidebar() {
                   <Settings />
                   <span>Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
                   <span>Sign out</span>
                 </DropdownMenuItem>
