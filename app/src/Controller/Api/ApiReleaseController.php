@@ -5,11 +5,9 @@ namespace App\Controller\Api;
 use App\Entity\Release;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
-use App\Repository\ReleaseRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,12 +25,6 @@ final class ApiReleaseController extends AbstractApiController
         private SluggerInterface $slugger
     ) {
         parent::__construct($entityManager, $apiResponseService);
-    }
-
-    #[Route('/health', name: 'health', methods: ['GET'])]
-    public function index(): JsonResponse
-    {
-        return $this->apiResponseService->success('LibTrack API is running.');
     }
 
     #[Route('/', name: 'list', methods: ['GET'])]
