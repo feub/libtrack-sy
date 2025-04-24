@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { apiRequest, api } from "@/utils/apiRequest";
 import { ListReleasesType } from "@/types/releaseTypes";
 import { Button } from "@/components/ui/button";
@@ -95,8 +96,6 @@ export default function ReleaseForm({
   const [shelves, setShelves] = useState<ShelfType[] | null>(null);
   const [formats, setFormats] = useState<FormatType[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -209,15 +208,14 @@ export default function ReleaseForm({
           "Error updating release:",
           errorData.message || "Unknown error",
         );
-        setError(errorData.message || "Failed to update release");
+        toast.error(errorData.message || "Failed to update release");
         setIsLoading(false);
         return;
       }
-
-      setSuccessMessage("Release updated successfully!");
+      toast.success("Release updated successfully!");
     } catch (error) {
       console.error("Update error:", error);
-      setError("Failed to update release. Please try again.");
+      toast.error("Failed to update release. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -225,10 +223,6 @@ export default function ReleaseForm({
 
   return (
     <>
-      {error && <div className="text-red-500 mt-2">{error}</div>}
-      {successMessage && (
-        <div className="text-green-500 mt-2">{successMessage}</div>
-      )}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -388,7 +382,7 @@ export default function ReleaseForm({
             )}
           />
 
-          <Button type="submit" className="ml-2 w-[80px]">
+          <Button type="submit" className="ml-2 w-[80px]" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader /> Saving...
