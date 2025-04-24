@@ -28,16 +28,6 @@ import { SelectPills } from "@/components/SelectPills";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
-const artistsList = [
-  { id: "1", name: "Black Sabbath" },
-  { id: "2", name: "Misanthrope" },
-  { id: "3", name: "Death" },
-  { id: "4", name: "Nightfall" },
-  { id: "5", name: "Toto" },
-  { id: "6", name: "Mylène Farmer" },
-  { id: "7", name: "La Compagnie Créole" },
-];
-
 const formSchema = z.object({
   title: z
     .string()
@@ -65,9 +55,9 @@ const formSchema = z.object({
   cover: z
     .string()
     .max(255, { message: "Cover image path too long (255 caracters max)." }),
-  //   artists: z
-  //     .array(z.string())
-  //     .min(1, { message: "At least one artist must be choosen." }),
+  artists: z
+    .array(z.string())
+    .min(1, { message: "At least one artist must be choosen." }),
   shelf: z.object({ id: z.number().or(z.string()) }).optional(),
   format: z.object({ id: z.number().or(z.string()) }).optional(),
 });
@@ -85,6 +75,13 @@ type FormatType = {
   slug: string;
 };
 
+type ArtistType = {
+  id: number;
+  name: string;
+  slug: string;
+  thumbnail: string;
+};
+
 export default function ReleaseForm({
   release,
   mode,
@@ -95,6 +92,7 @@ export default function ReleaseForm({
   const isUpdateMode = mode === "update";
   const [shelves, setShelves] = useState<ShelfType[] | null>(null);
   const [formats, setFormats] = useState<FormatType[] | null>(null);
+  const [artists, setArtists] = useState<ArtistType[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -105,7 +103,7 @@ export default function ReleaseForm({
       release_date: new Date().getFullYear(),
       barcode: undefined,
       cover: "",
-      //artists: [] as string[],
+      artists: [] as string[],
       shelf: undefined,
       format: undefined,
     },
@@ -163,12 +161,44 @@ export default function ReleaseForm({
     }
   };
 
+  const getArtists = async () => {
+    try {
+      const response = await apiRequest(`${apiURL}/api/artist`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          "ERROR (response): " + errorData.message || "Getting artists failed",
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.type !== "success") {
+        throw "ERROR: problem getting artists.";
+      }
+
+      setArtists(data.data.artists);
+    } catch (error) {
+      console.error("Artists list error:", error);
+      throw "ERROR (T/C): " + error;
+    }
+  };
+
   // Populate form with existing values
   useEffect(() => {
     // First, get the data needed for the selects
     const loadData = async () => {
       await Promise.all([getShelves(), getFormats()]);
       if (isUpdateMode && release) {
+        // Set the artists as an array of names
+        if (release.artists && release.artists.length > 0) {
+          const artistNames = release.artists.map((artist) => artist.name);
+          form.setValue("artists", artistNames);
+        }
+
         form.setValue("title", release.title || "");
         form.setValue("slug", release.slug || "");
         form.setValue(
@@ -190,6 +220,7 @@ export default function ReleaseForm({
 
     loadData();
 
+    getArtists();
     getShelves();
     getFormats();
   }, [release, isUpdateMode, form]);
@@ -197,9 +228,23 @@ export default function ReleaseForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      // Convert artist names to artist objects with IDs
+      const artistsWithIds = values.artists
+        ?.map((artistName) => {
+          const artist = artists?.find((a) => a.name === artistName);
+          return artist ? { id: artist.id } : null;
+        })
+        .filter((artist) => artist !== null);
+
+      // Replace the artist names array with the array of artist objects
+      const formData = {
+        ...values,
+        artists: artistsWithIds,
+      };
+
       const response = await api.put(
         `${apiURL}/api/release/edit/${release?.id || ""}`,
-        values,
+        formData,
       );
 
       if (!response.ok) {
@@ -236,8 +281,14 @@ export default function ReleaseForm({
                 <FormLabel>Artist(s)</FormLabel>
                 <FormControl>
                   <SelectPills
-                    data={artistsList}
+                    data={(artists || []).map((artist) => ({
+                      ...artist,
+                      id: artist.id.toString(),
+                    }))}
                     value={field.value}
+                    // defaultValue={release?.artists?.map((artist) =>
+                    //   artist.name.toString(),
+                    // )}
                     onValueChange={field.onChange}
                     placeholder="Search for an artist..."
                   />
