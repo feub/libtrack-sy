@@ -39,28 +39,52 @@ class ArtistRepository extends ServiceEntityRepository
         );
     }
 
-    //    /**
-    //     * @return Artist[] Returns an array of Artist objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Artist[] Returns an array of Artist objects
+     */
+    public function getArtists(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->orderBy('a.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
-    //    public function findOneBySomeField($value): ?Artist
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function getTotalArtists(): int
+    {
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id) AS count')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return Artist Returns an Artist object
+     */
+    public function findArtistByid($id): Artist
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.id = :val')
+            ->setParameter('val', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+
+    /**
+     * @return Artist[] Returns an array of Artist objects
+     */
+    public function findArtistByname($value): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.name = :val')
+            ->setParameter('val', $value)
+            ->orderBy('a.id', 'ASC')
+            //    ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }
