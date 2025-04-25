@@ -93,7 +93,7 @@ export default function ReleasePage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await apiRequest(`${apiURL}/api/release/delete/${id}`, {
+      const response = await apiRequest(`${apiURL}/api/release/${id}`, {
         method: "DELETE",
       });
 
