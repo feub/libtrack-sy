@@ -10,8 +10,9 @@ import ArtistPage from "./pages/ArtistPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import AddByBarcodePage from "./pages/AddByBarcodePage.tsx";
-import "./index.css";
 import ReleaseEdit from "./pages/ReleaseEdit.tsx";
+import ReleaseCreate from "./pages/ReleaseCreate.tsx";
+import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <ReleasePage />,
+              },
+              {
+                path: "create",
+                element: <ReleaseCreate />,
               },
               {
                 path: "edit/:id",

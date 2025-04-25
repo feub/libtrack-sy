@@ -52,8 +52,8 @@ const formSchema = z.object({
     .regex(/^[0-9]+$/, {
       message: "Barcode must contain only numerical caracters.",
     })
-    .nullable()
-    .optional(),
+    .nullish()
+    .or(z.literal("")),
   cover: z
     .string()
     .max(255, { message: "Cover image path too long (255 caracters max)." }),
@@ -257,25 +257,41 @@ export default function ReleaseForm({
         artists: artistsWithIds,
       };
 
-      const response = await api.put(
-        `${apiURL}/api/release/${release?.id || ""}`,
-        formData,
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          "Error updating release:",
-          errorData.message || "Unknown error",
+      if (isUpdateMode) {
+        const response = await api.put(
+          `${apiURL}/api/release/${release?.id || ""}`,
+          formData,
         );
-        toast.error(errorData.message || "Failed to update release");
-        setIsLoading(false);
-        return;
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(
+            "Error updating release:",
+            errorData.message || "Unknown error",
+          );
+          toast.error(errorData.message || "Failed to update release");
+          setIsLoading(false);
+          return;
+        }
+        toast.success("Release updated successfully!");
+      } else {
+        const response = await api.post(`${apiURL}/api/release/`, formData);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(
+            "Error creating release:",
+            errorData.message || "Unknown error",
+          );
+          toast.error(errorData.message || "Failed to create release");
+          setIsLoading(false);
+          return;
+        }
+        toast.success("Release created successfully!");
       }
-      toast.success("Release updated successfully!");
     } catch (error) {
-      console.error("Update error:", error);
-      toast.error("Failed to update release. Please try again.");
+      console.error("Save error:", error);
+      toast.error("Failed to save release. Please try again.");
     } finally {
       setIsLoading(false);
     }
