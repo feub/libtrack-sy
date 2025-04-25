@@ -48,9 +48,10 @@ const formSchema = z.object({
     })
     .optional(),
   barcode: z
-    .number()
-    .int()
-    .nonnegative({ message: "Barcode must be a positive number." })
+    .string()
+    .regex(/^[0-9]+$/, {
+      message: "Barcode must contain only numerical caracters.",
+    })
     .nullable()
     .optional(),
   cover: z
@@ -108,7 +109,7 @@ export default function ReleaseForm({
       title: "",
       slug: "",
       release_date: new Date().getFullYear(),
-      barcode: null,
+      barcode: "",
       cover: "",
       artists: [] as string[],
       shelf: null,
@@ -212,7 +213,10 @@ export default function ReleaseForm({
           "release_date",
           release.release_date ?? new Date().getFullYear(),
         );
-        form.setValue("barcode", release.barcode || null);
+        form.setValue(
+          "barcode",
+          release.barcode ? String(release.barcode) : "",
+        );
         form.setValue("cover", release.cover || "");
 
         if (release.shelf?.id) {
@@ -254,7 +258,7 @@ export default function ReleaseForm({
       };
 
       const response = await api.put(
-        `${apiURL}/api/release/edit/${release?.id || ""}`,
+        `${apiURL}/api/release/${release?.id || ""}`,
         formData,
       );
 
