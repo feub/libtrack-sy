@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Artist;
 use App\Service\ApiResponseService;
 use App\Repository\ArtistRepository;
 use App\Service\ArtistService;
@@ -69,5 +70,23 @@ final class ApiArtistController extends AbstractApiController
                 Response::HTTP_NOT_FOUND
             );
         }
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function delete(int $id, ArtistService $artistService): Response
+    {
+        // Use findOr404 method to find the entity or return a 404
+        $artistOrResponse = $this->findOr404(Artist::class, $id);
+
+        // If a response is returned (404), return it
+        if ($artistOrResponse instanceof Response) {
+            return $artistOrResponse;
+        }
+
+        // ApiExceptionSubscriber will handle exceptions
+        $artistService->deleteArtist($artistOrResponse);
+
+        return $this->apiResponseService->success('Artist successfully deleted');
     }
 }

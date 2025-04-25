@@ -120,7 +120,7 @@ class ArtistService
             $this->em->flush();
         } catch (\Exception $e) {
             $this->logger->error("An error occurred while deleting the artist: " . $e->getMessage());
-            throw new \RuntimeException("Failed to delete the artist: " . $e->getMessage());
+            throw new \RuntimeException($e->getMessage());
         }
     }
 
