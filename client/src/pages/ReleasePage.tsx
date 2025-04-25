@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { apiRequest } from "../utils/apiRequest";
 import { ListReleasesType } from "@/types/releaseTypes";
 import {
@@ -60,6 +61,10 @@ export default function ReleasePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        toast.error(
+          "ERROR (response): " + errorData.message ||
+            "Getting releases list failed",
+        );
         throw new Error(
           "ERROR (response): " + errorData.message ||
             "Getting releases list failed",
@@ -69,6 +74,7 @@ export default function ReleasePage() {
       const data = await response.json();
 
       if (data.type !== "success") {
+        toast.error("ERROR: problem getting releases.");
         throw "ERROR: problem getting releases.";
       }
 
@@ -76,7 +82,7 @@ export default function ReleasePage() {
       setMaxPage(data.data.maxPage);
       setTotalReleases(data.data.totalReleases);
     } catch (error) {
-      console.error("Releases list error:", error);
+      toast.error("Releases list error: " + error);
       throw "ERROR (T/C): " + error;
     } finally {
       setIsLoading(false);
@@ -99,6 +105,9 @@ export default function ReleasePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        toast.error(
+          "ERROR (response): " + errorData.message || "Deleting release failed",
+        );
         throw new Error(
           "ERROR (response): " + errorData.message || "Deleting release failed",
         );
@@ -108,10 +117,13 @@ export default function ReleasePage() {
       setReleases(releases.filter((rel) => rel.id !== id));
 
       if (data.type !== "success") {
+        toast.error("ERROR: problem deleting release.");
         throw "ERROR: problem deleting release.";
       }
+
+      toast.success("Releases successfully deleted.");
     } catch (error) {
-      console.error("Deleting release error:", error);
+      toast.error("Deleting release error: " + error);
       throw "ERROR (T/C): " + error;
     }
   };
