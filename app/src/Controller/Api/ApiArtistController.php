@@ -2,10 +2,11 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\ArtistDto;
 use App\Entity\Artist;
+use App\Service\ArtistService;
 use App\Service\ApiResponseService;
 use App\Repository\ArtistRepository;
-use App\Service\ArtistService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[Route('/api/artist', name: 'api.artist.')]
@@ -43,6 +45,48 @@ final class ApiArtistController extends AbstractApiController
             [
                 "groups" => ['api.artist.list']
             ]
+        );
+    }
+
+    #[Route('/', name: 'create', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function create(
+        Request $request,
+        ArtistService $artistService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a POST request to create an artist
+        // {
+        //     "name": "Nightfall",
+        //     "slug": "nightfall",
+        //     "thumbnail": "nightfall.jpg"
+        //   }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $artistDto = ArtistDto::fromArray($data);
+        $violations = $validator->validate($artistDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        // Create the artist
+        $artist = $artistService->createFromDto($artistDto);
+
+        return $this->apiResponseService->success(
+            'Artist "' . $artist->getName() . '" created successfully'
         );
     }
 

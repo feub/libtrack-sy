@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Validator\Constraint\UniqueSlug;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class ArtistDto
@@ -14,6 +15,7 @@ class ArtistDto
         pattern: '/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
         message: "This is not a valid slug."
     )]
+    #[UniqueSlug]
     public ?string $slug = null;
 
     public ?string $thumbnail = null;
