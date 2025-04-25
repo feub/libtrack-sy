@@ -2,13 +2,15 @@
 
 namespace App\Controller\Api;
 
+use App\Service\ApiResponseService;
 use App\Repository\ArtistRepository;
+use App\Service\ArtistService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,35 +28,21 @@ final class ApiArtistController extends AbstractApiController
 
     #[Route('/', name: 'list', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function list(ArtistRepository $artistRepository): Response
+    public function list(Request $request, ArtistService $artistService): Response
     {
-        try {
-            $total = $artistRepository->getTotalArtists();
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
 
-            $artists = $artistRepository->getArtists();
+        $artistsData = $artistService->getPaginatedArtists($page, $limit);
 
-            foreach ($artists as $artist) {
-                $artistsData[] = [
-                    'id' => $artist->getId(),
-                    'name' => $artist->getName(),
-                    'slug' => $artist->getSlug(),
-                    'thumbnail' => $artist->getThumbnail(),
-                ];
-            }
-
-            return $this->apiResponseService->success(
-                'Artists retrieved successfully',
-                [
-                    'artists' => $artistsData,
-                    'totalArtists' => $total
-                ]
-            );
-        } catch (NotFoundHttpException $e) {
-            return $this->apiResponseService->error(
-                $e->getMessage(),
-                Response::HTTP_NOT_FOUND
-            );
-        }
+        return $this->apiResponseService->success(
+            'Artist retrieved successfully',
+            $artistsData,
+            200,
+            [
+                "groups" => ['api.artist.list']
+            ]
+        );
     }
 
     #[Route('/{id}', name: 'view', methods: ['GET'])]

@@ -19,13 +19,13 @@ class Artist
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['api.release.list'])]
+    #[Groups(['api.artist.list', 'api.release.list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100, unique: true)]
     #[Assert\Length(min: 1, groups: ['Extra'])]
     #[Assert\Length(max: 100, groups: ['Extra'])]
-    #[Groups(['api.release.list'])]
+    #[Groups(['api.artist.list', 'api.release.list'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 150)]
@@ -35,6 +35,7 @@ class Artist
     private ?string $slug = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['api.artist.list'])]
     private ?string $thumbnail = null;
 
     /**
