@@ -224,7 +224,7 @@ final class ApiReleaseController extends AbstractApiController
         );
     }
 
-    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(int $id, ReleaseService $releaseService): Response
     {
