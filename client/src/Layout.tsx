@@ -15,12 +15,21 @@ function Layout() {
             <Outlet />
             <Toaster
               toastOptions={{
-                className: "",
-                style: {
-                  backgroundColor: "#151515",
-                  border: "1px solid #CFCFCF",
-                  padding: "16px",
-                  color: "#CFCFCF",
+                success: {
+                  style: {
+                    backgroundColor: "#15803d",
+                    border: "1px solid #15803d",
+                    padding: "16px",
+                    color: "#dcfce7",
+                  },
+                },
+                error: {
+                  style: {
+                    backgroundColor: "#b91c1c",
+                    border: "1px solid #b91c1c",
+                    padding: "16px",
+                    color: "#fee2e2",
+                  },
                 },
               }}
             />

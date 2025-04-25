@@ -86,12 +86,12 @@ export default function ReleasePage() {
         method: "DELETE",
       });
 
-      await validateApiResponse(response, "Deleting release");
+      await validateApiResponse(response, "Deleting release.");
 
       setReleases(releases.filter((rel) => rel.id !== id));
-      toast.success("Releases successfully deleted.");
+      toast.success("Release successfully deleted.");
     } catch (error) {
-      handleApiError(error, "Deleting release");
+      handleApiError(error, "Deleting release.");
     }
   };
 

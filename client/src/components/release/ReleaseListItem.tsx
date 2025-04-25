@@ -22,9 +22,10 @@ export default function ReleaseListItem({
             <img
               src={`${apiURL}${coverPath}${release.cover}`}
               alt={release.title}
+              className="rounded-md"
             />
           ) : (
-            <div className="text-neutral-700 w-[100px] h-[100px] bg-neutral-900 justify-center items-center flex">
+            <div className="text-neutral-700 w-[100px] h-[100px] bg-neutral-900 justify-center items-center flex rounded-md">
               No cover
             </div>
           )}

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { apiRequest } from "../utils/apiRequest";
+import { validateApiResponse, handleApiError } from "../utils/errorHandling";
 import { ArtistType } from "@/types/releaseTypes";
 import {
   Table,
@@ -43,27 +45,13 @@ export default function ArtistPage() {
         },
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          "ERROR (response): " + errorData.message ||
-            "Getting artists list failed",
-        );
-      }
-
-      const data = await response.json();
-      console.log(data);
-
-      if (data.type !== "success") {
-        throw "ERROR: problem getting artists.";
-      }
+      const data = await validateApiResponse(response, "Fetching artists");
 
       setArtists(data.data.artists);
       setMaxPage(data.data.maxPage);
       setTotalArtists(data.data.totalArtists);
     } catch (error) {
-      console.error("Artists list error:", error);
-      throw "ERROR (T/C): " + error;
+      handleApiError(error, "Fetching artists");
     } finally {
       setIsLoading(false);
     }
@@ -79,26 +67,16 @@ export default function ArtistPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await apiRequest(`${apiURL}/api/release/${id}`, {
+      const response = await apiRequest(`${apiURL}/api/artist/${id}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          "ERROR (response): " + errorData.message || "Deleting artist failed",
-        );
-      }
+      await validateApiResponse(response, "Deleting artist.");
 
-      const data = await response.json();
       setArtists(artists.filter((artist) => artist.id !== id));
-
-      if (data.type !== "success") {
-        throw "ERROR: problem deleting artist.";
-      }
+      toast.success("Artist successfully deleted.");
     } catch (error) {
-      console.error("Deleting artist error:", error);
-      throw "ERROR (T/C): " + error;
+      handleApiError(error, "Deleting artist.");
     }
   };
 
@@ -127,8 +105,12 @@ export default function ArtistPage() {
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-muted">
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
+                    Name
+                  </TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead className="w-[100px] text-center"></TableHead>
+                  <TableHead className="text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
