@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\Release;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
+use App\Dto\ReleaseDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,6 +15,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/release', name: 'api.release.')]
 final class ApiReleaseController extends AbstractApiController
@@ -44,6 +48,118 @@ final class ApiReleaseController extends AbstractApiController
             [
                 "groups" => ['api.release.list']
             ]
+        );
+    }
+
+    #[Route('/', name: 'create', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function create(
+        Request $request,
+        ReleaseService $releaseService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a POST request to create a release
+        // {
+        //     "title": "Nightfall Farmer",
+        //     "release_date": 1995,
+        //     "barcode": "1234567890",
+        //     "artists": [
+        // {
+        //     "id": 36
+        // }],
+        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
+        //     "format": {
+        //       "id": 2
+        //     },
+        //     "shelf": {
+        //       "id": 2
+        //     }
+        //   }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $releaseDto = ReleaseDto::fromArray($data);
+        $violations = $validator->validate($releaseDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        // Create the release
+        $release = $releaseService->createFromDto($releaseDto);
+
+        return $this->apiResponseService->success(
+            'Release "' . $release->getTitle() . '" created successfully'
+        );
+    }
+
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function edit(
+        int $id,
+        Request $request,
+        ReleaseService $releaseService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a PUT request to edit a release
+        // {
+        //     "title": "Nightfall Farmer",
+        //     "release_date": 1995,
+        //     "barcode": "1234567890",
+        //     "artists": [
+        //          {"id": 37}
+        //     ],
+        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
+        //     "format": {
+        //       "id": 2
+        //     },
+        //     "shelf": {
+        //       "id": 2
+        //     }
+        //   }
+
+        $releaseOrResponse = $this->findOr404(Release::class, $id);
+
+        if ($releaseOrResponse instanceof Response) {
+            return $releaseOrResponse;
+        }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $releaseDto = ReleaseDto::fromArray($data);
+
+        $violations = $validator->validate($releaseDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        $release = $releaseService->updateFromDto($releaseOrResponse, $releaseDto);
+
+        return $this->apiResponseService->success(
+            'Release "' . $release->getTitle() . '" updated successfully'
         );
     }
 
@@ -143,67 +259,5 @@ final class ApiReleaseController extends AbstractApiController
                 Response::HTTP_NOT_FOUND
             );
         }
-    }
-
-    #[Route('/edit/{id}', name: 'edit', methods: ['PUT'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function edit(int $id, Request $request, ReleaseService $releaseService): Response
-    {
-        // Example of a POST request to edit a release
-        // {
-        //     "title": "Nightfall Farmer",
-        //     "release_date": 1995,
-        //     "barcode": "1234567890",
-        //     "artists": [
-        //          {"id": 37}
-        //     ],
-        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
-        //     "format": {
-        //       "id": 2
-        //     },
-        //     "shelf": {
-        //       "id": 2
-        //     }
-        //   }
-
-        $releaseOrResponse = $this->findOr404(Release::class, $id);
-
-        if ($releaseOrResponse instanceof Response) {
-            return $releaseOrResponse;
-        }
-
-        $data = json_decode($request->getContent(), true);
-        $release = $releaseService->updateRelease($releaseOrResponse, $data);
-
-        return $this->apiResponseService->success(
-            'Release "' . $release->getTitle() . '" updated successfully'
-        );
-    }
-
-    #[Route('/create', name: 'create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function create(Request $request, ReleaseService $releaseService): Response
-    {
-        // Example of a POST request to create a release
-        // {
-        //     "title": "Nightfall Farmer",
-        //     "release_date": 1995,
-        //     "barcode": "1234567890",
-        //     "artists": "Death",
-        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
-        //     "format": {
-        //       "id": 2
-        //     },
-        //     "shelf": {
-        //       "id": 2
-        //     }
-        //   }
-
-        $data = json_decode($request->getContent(), true);
-        $release = $releaseService->manualAddRelease($data);
-
-        return $this->apiResponseService->success(
-            'Release "' . $release->getTitle() . '" created successfully'
-        );
     }
 }

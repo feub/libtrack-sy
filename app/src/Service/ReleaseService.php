@@ -7,6 +7,8 @@ use App\Entity\Release;
 use Psr\Log\LoggerInterface;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
+use App\Dto\ReleaseDto;
+use App\Mapper\ReleaseDtoMapper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -28,7 +30,8 @@ class ReleaseService
         private ReleaseRepository $releaseRepository,
         private ArtistRepository $artistRepository,
         private Security $security,
-        private NormalizerInterface $serializer
+        private NormalizerInterface $serializer,
+        private ReleaseDtoMapper $releaseDtoMapper
     ) {
         $this->coverDir = $params->get('cover_dir');
     }
@@ -85,6 +88,36 @@ class ReleaseService
                 'groups' => ['api.release.list']
             ]
         );
+    }
+
+    // Create release from DTO
+    public function createFromDto(ReleaseDto $dto): Release
+    {
+        // Check if the release already exists
+        if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
+            $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
+            throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
+        }
+
+        // Create a new release entity from the DTO
+        $release = $this->releaseDtoMapper->createEntityFromDto($dto);
+
+        // Persist and flush
+        $this->em->persist($release);
+        $this->em->flush();
+
+        return $release;
+    }
+
+    // Update from DTO
+    public function updateFromDto(Release $release, ReleaseDto $dto): Release
+    {
+        // Update the release from the DTO
+        $this->releaseDtoMapper->updateEntityFromDto($dto, $release);
+
+        $this->em->flush();
+
+        return $release;
     }
 
     public function downloadCovertArt(string $coverUrl, string $id): string
@@ -168,189 +201,6 @@ class ReleaseService
         }
 
         $this->em->persist($release);
-        $this->em->flush();
-
-        return $release;
-    }
-
-    public function manualAddRelease(
-        array $data,
-    ) {
-        if (!isset($data['barcode'])) {
-            $this->logger->error('Barcode is missing');
-            throw new BadRequestHttpException('Barcode is missing');
-        }
-
-        // Check if the release does NOT already exist
-        $checkRelease = $this->releaseRepository->findOneBy(['barcode' => $data['barcode']]);
-
-        if ($checkRelease) {
-            $this->logger->error('Barcode "' . $data['barcode'] . '" already exists.');
-            throw new BadRequestHttpException('Barcode "' . $data['barcode'] . '" already exists.');
-        }
-
-        $release = new Release();
-        $release->setTitle($data['title']);
-        $release->setBarcode($data['barcode']);
-
-        if ($data['release_date']) {
-            $release->setReleaseDate($data['release_date']);
-        }
-
-        if ($data['cover']) {
-            $release->setCover($data['cover']);
-        }
-
-        // Slug
-        $slug = $this->slugger->slug(strtolower($data['title'] . '-' . $data['barcode'] . '-' . rand(10000, 79999)));
-        $release->setSlug($slug);
-
-        // Timestamps
-        $now = new \DateTimeImmutable();
-        $release->setCreatedAt($now);
-        $release->setUpdatedAt($now);
-
-        // Artist
-        if (isset($data['artists'])) {
-            $artists = explode(',', $data['artists']);
-            foreach ($artists as $artistName) {
-                $name = $this->stripArtistName($artistName);
-
-                // Check if artist already exists
-                $artist = $this->artistRepository->findOneBy(['name' => $name]);
-
-                if (!$artist) {
-                    $artist = new Artist();
-                    $artist->setName($name);
-                    $artistSlug = $this->slugger->slug(strtolower($name));
-                    $artist->setSlug($artistSlug);
-                    $artist->setCreatedAt($now);
-                    $artist->setUpdatedAt($now);
-
-                    $this->em->persist($artist);
-                }
-
-                $release->addArtist($artist);
-            }
-        }
-
-        // Format
-        if (isset($data['format']) && isset($data['format']['id'])) {
-            $formatRepository = $this->em->getRepository(\App\Entity\Format::class);
-            $format = $formatRepository->find($data['format']['id']);
-
-            if ($format) {
-                $release->setFormat($format);
-            }
-        }
-
-        // Shelf
-        if (isset($data['shelf']) && isset($data['shelf']['id'])) {
-            $shelfRepository = $this->em->getRepository(\App\Entity\Shelf::class);
-            $shelf = $shelfRepository->find($data['shelf']['id']);
-
-            if ($shelf) {
-                $release->setShelf($shelf);
-            }
-        }
-
-        $this->em->persist($release);
-        $this->em->flush();
-
-        return $release;
-    }
-
-    /**
-     * Update a release
-     *
-     * @param Release $release The Release entity to update
-     * @param array $data The release data
-     * @return Release The updated Release entity
-     */
-    public function updateRelease(Release $release, array $data): Release
-    {
-        if (isset($data['title'])) {
-            $release->setTitle($data['title']);
-        }
-
-        if (isset($data['release_date'])) {
-            $release->setReleaseDate($data['release_date']);
-        }
-
-        if (isset($data['cover'])) {
-            $release->setCover($data['cover']);
-        }
-
-        if (isset($data['barcode'])) {
-            $release->setBarcode($data['barcode']);
-        }
-
-        // Artists
-        if (isset($data['artists']) && is_array($data['artists'])) {
-            // Collection of IDs of current artists
-            $currentArtistIds = [];
-            foreach ($release->getArtists() as $artist) {
-                $currentArtistIds[] = $artist->getId();
-            }
-
-            // Collection of IDs of new artists
-            $newArtistIds = [];
-            foreach ($data['artists'] as $artistData) {
-                if (isset($artistData['id'])) {
-                    $newArtistIds[] = $artistData['id'];
-                }
-            }
-
-            // Remove artists not anymore associated
-            foreach ($release->getArtists() as $artist) {
-                if (!in_array($artist->getId(), $newArtistIds)) {
-                    $release->removeArtist($artist);
-                }
-            }
-
-            // Add new artists
-            foreach ($newArtistIds as $artistId) {
-                if (!in_array($artistId, $currentArtistIds)) {
-                    $artist = $this->artistRepository->find($artistId);
-                    if ($artist) {
-                        $release->addArtist($artist);
-                    }
-                }
-            }
-        }
-
-        // Format
-        if (isset($data['format'])) {
-            if (isset($data['format']['id'])) {
-                $formatRepository = $this->em->getRepository(\App\Entity\Format::class);
-                $format = $formatRepository->find($data['format']['id']);
-
-                if ($format) {
-                    $release->setFormat($format);
-                }
-            } elseif ($data['format'] === null) {
-                // If explicitely set as null, remove the relation
-                $release->setFormat(null);
-            }
-        }
-
-        // Shelf
-        if (isset($data['shelf'])) {
-            if (isset($data['shelf']['id'])) {
-                $shelfRepository = $this->em->getRepository(\App\Entity\Shelf::class);
-                $shelf = $shelfRepository->find($data['shelf']['id']);
-
-                if ($shelf) {
-                    $release->setShelf($shelf);
-                }
-            } elseif ($data['shelf'] === null) {
-                // If explicitely set as null, remove the relation
-                $release->setShelf(null);
-            }
-        }
-
-        $release->setUpdatedAt(new \DateTimeImmutable());
-
         $this->em->flush();
 
         return $release;
