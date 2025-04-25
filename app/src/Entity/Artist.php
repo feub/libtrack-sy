@@ -7,9 +7,13 @@ use App\Repository\ArtistRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArtistRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity('name')]
+#[UniqueEntity('slug')]
 class Artist
 {
     #[ORM\Id]
@@ -19,8 +23,16 @@ class Artist
     private ?int $id = null;
 
     #[ORM\Column(length: 100, unique: true)]
+    #[Assert\Length(min: 1, groups: ['Extra'])]
+    #[Assert\Length(max: 100, groups: ['Extra'])]
     #[Groups(['api.release.list'])]
     private ?string $name = null;
+
+    #[ORM\Column(length: 150)]
+    #[Assert\Length(min: 5)]
+    #[Assert\Length(max: 150)]
+    #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
+    private ?string $slug = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $thumbnail = null;
@@ -36,9 +48,6 @@ class Artist
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\Column(length: 150)]
-    private ?string $slug = null;
 
     public function __construct()
     {

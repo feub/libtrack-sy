@@ -51,6 +51,7 @@ class ShelfType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Shelf::class,
+            'validation_groups' => ['Default', 'Extra']
         ]);
     }
 }

@@ -7,8 +7,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ShelfRepository::class)]
+#[UniqueEntity('location')]
+#[UniqueEntity('slug')]
 class Shelf
 {
     #[ORM\Id]
@@ -18,10 +22,19 @@ class Shelf
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\Length(min: 1, groups: ['Extra'])]
+    #[Assert\Length(max: 50, groups: ['Extra'])]
     #[Groups(['api.release.list'])]
     private ?string $location = null;
 
+    #[ORM\Column(length: 150)]
+    #[Assert\Length(min: 1)]
+    #[Assert\Length(max: 150)]
+    #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
+    private ?string $slug = null;
+
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $description = null;
 
     /**
@@ -29,9 +42,6 @@ class Shelf
      */
     #[ORM\OneToMany(targetEntity: Release::class, mappedBy: 'shelf')]
     private Collection $releases;
-
-    #[ORM\Column(length: 150)]
-    private ?string $slug = null;
 
     public function __construct()
     {

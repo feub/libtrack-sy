@@ -7,8 +7,12 @@ use App\Repository\FormatRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FormatRepository::class)]
+#[UniqueEntity('name')]
+#[UniqueEntity('slug')]
 class Format
 {
     #[ORM\Id]
@@ -18,10 +22,15 @@ class Format
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\Length(min: 1, groups: ['Extra'])]
+    #[Assert\Length(max: 100, groups: ['Extra'])]
     #[Groups(['api.release.list'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\Length(min: 1)]
+    #[Assert\Length(max: 100)]
+    #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
     private ?string $slug = null;
 
     /**

@@ -106,6 +106,7 @@ class ReleaseType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Release::class,
+            'validation_groups' => ['Default', 'Extra']
         ]);
     }
 }

@@ -8,9 +8,13 @@ use App\Repository\ReleaseRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReleaseRepository::class)]
 #[ORM\Table(name: '`release`')]
+#[UniqueEntity('slug')]
+#[UniqueEntity('barcode')]
 class Release
 {
     #[ORM\Id]
@@ -20,10 +24,21 @@ class Release
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\Length(min: 1, groups: ['Extra'])]
+    #[Assert\Length(max: 150, groups: ['Extra'])]
     #[Groups(['api.release.list'])]
     private ?string $title = null;
 
+    #[ORM\Column(length: 150)]
+    #[Assert\Length(min: 1)]
+    #[Assert\Length(maw: 150)]
+    #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
+    #[Groups(['api.release.list'])]
+    private ?string $slug = null;
+
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Positive()]
+    #[Assert\GreaterThan(value: 1000)]
     #[Groups(['api.release.list'])]
     private ?int $release_date = null;
 
@@ -49,10 +64,6 @@ class Release
     #[ORM\Column]
     #[Groups(['api.release.list'])]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\Column(length: 150)]
-    #[Groups(['api.release.list'])]
-    private ?string $slug = null;
 
     #[ORM\ManyToOne(inversedBy: 'releases')]
     #[Groups(['api.release.list'])]
