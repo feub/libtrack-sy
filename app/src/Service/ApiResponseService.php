@@ -29,11 +29,17 @@ class ApiResponseService
         return new JsonResponse($serializedData, $statusCode, [], true);
     }
 
-    public function error(string $message, int $statusCode = Response::HTTP_BAD_REQUEST): JsonResponse
+    public function error(string $message, int $statusCode = Response::HTTP_BAD_REQUEST, array $data = []): JsonResponse
     {
-        return new JsonResponse([
+        $responseData = [
             'type' => 'error',
             'message' => $message
-        ], $statusCode);
+        ];
+
+        if (!empty($data)) {
+            $responseData = array_merge($responseData, $data);
+        }
+
+        return new JsonResponse($responseData, $statusCode);
     }
 }
