@@ -13,6 +13,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class ReleaseService
 {
@@ -26,9 +27,64 @@ class ReleaseService
         private DiscogsService $discogsService,
         private ReleaseRepository $releaseRepository,
         private ArtistRepository $artistRepository,
-        private Security $security
+        private Security $security,
+        private NormalizerInterface $serializer
     ) {
         $this->coverDir = $params->get('cover_dir');
+    }
+
+    /**
+     * Get paginated releases
+     *
+     * @param int $page Current page number
+     * @param int $limit Number of items per page
+     * @param string $searchTerm Optional search term
+     * @return array Array containing releases data, total releases, max page and current page
+     */
+    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $searchTerm = ''): array
+    {
+        $totalReleases = $this->releaseRepository->getTotalReleases();
+        $releases = $this->releaseRepository->paginatedReleases($page, $limit, $searchTerm);
+
+        if (!empty($searchTerm)) {
+            $totalReleases = $releases->count();
+        }
+
+        $maxpage = ceil($totalReleases / $limit);
+
+        return [
+            'releases' => $releases->getItems(),
+            'totalReleases' => $totalReleases,
+            'maxPage' => $maxpage,
+            'page' => $page
+        ];
+    }
+
+    /**
+     * Get formated release data
+     *
+     * @param int $id Release ID
+     * @return array Formated release data
+     * @throws NotFoundHttpException If the release does not exist
+     */
+    public function getReleaseFormatted(int $id): array
+    {
+        $release = $this->releaseRepository->getRelease($id);
+
+        if (!$release) {
+            throw new NotFoundHttpException('Release not found');
+        }
+
+        return $this->serializer->normalize(
+            $release,
+            null,
+            [
+                'circular_reference_handler' => function ($object) {
+                    return $object->getId();
+                },
+                'groups' => ['api.release.list']
+            ]
+        );
     }
 
     public function downloadCovertArt(string $coverUrl, string $id): string
@@ -300,56 +356,6 @@ class ReleaseService
         return $release;
     }
 
-    /**
-     * Get formated release data
-     *
-     * @param int $id Release ID
-     * @return array Formated release data
-     * @throws NotFoundHttpException If the release does not exist
-     */
-    public function getReleaseFormatted(int $id): array
-    {
-        $release = $this->releaseRepository->getRelease($id);
-
-        if (!$release) {
-            throw new NotFoundHttpException('Release not found');
-        }
-
-        $artists = $release->getArtists();
-        $artistsData = [];
-
-        $format = $release->getFormat();
-        $shelf = $release->getShelf();
-
-        foreach ($artists as $artist) {
-            $artistsData[] = [
-                'id' => $artist->getId(),
-                'name' => $artist->getName(),
-            ];
-        }
-
-        return [
-            'id' => $release->getId(),
-            'title' => $release->getTitle(),
-            'slug' => $release->getSlug(),
-            'cover' => $release->getCover(),
-            'release_date' => $release->getReleaseDate(),
-            'artists' => $artistsData,
-            'barcode' => $release->getBarcode(),
-            'format' => $format ? [
-                'id' => $format->getId(),
-                'name' => $format->getName(),
-                'slug' => $format->getSlug()
-            ] : null,
-            'shelf' => $shelf ? [
-                'id' => $shelf->getId(),
-                'location' => $shelf->getLocation(),
-                'slug' => $shelf->getSlug(),
-                'description' => $shelf->getDescription()
-            ] : null
-        ];
-    }
-
     private function stripArtistName(string $artistName): string
     {
         return preg_replace('/\s*\(\d+\)$/', '', $artistName);
@@ -376,33 +382,6 @@ class ReleaseService
             $this->logger->error("An error occurred while deleting the release: " . $e->getMessage());
             throw new \RuntimeException("Failed to delete the release: " . $e->getMessage());
         }
-    }
-
-    /**
-     * Get paginated releases
-     *
-     * @param int $page Current page number
-     * @param int $limit Number of items per page
-     * @param string $searchTerm Optional search term
-     * @return array Array containing releases data, total releases, max page and current page
-     */
-    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $searchTerm = ''): array
-    {
-        $totalReleases = $this->releaseRepository->getTotalReleases();
-        $releases = $this->releaseRepository->paginatedReleases($page, $limit, $searchTerm);
-
-        if (!empty($searchTerm)) {
-            $totalReleases = $releases->count();
-        }
-
-        $maxpage = ceil($totalReleases / $limit);
-
-        return [
-            'releases' => $releases->getItems(),
-            'totalReleases' => $totalReleases,
-            'maxPage' => $maxpage,
-            'page' => $page
-        ];
     }
 
     /**
