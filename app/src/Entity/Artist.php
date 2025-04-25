@@ -32,6 +32,7 @@ class Artist
     #[Assert\Length(min: 5)]
     #[Assert\Length(max: 150)]
     #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
+    #[Groups(['api.artist.list'])]
     private ?string $slug = null;
 
     #[ORM\Column(length: 255, nullable: true)]
