@@ -1,6 +1,8 @@
 export type ArtistType = {
   id: number;
   name: string;
+  slug: string;
+  thumbnail?: string;
 };
 
 export type ShelfType = {

@@ -55,7 +55,12 @@ const router = createBrowserRouter([
           },
           {
             path: "artist",
-            element: <ArtistPage />,
+            children: [
+              {
+                index: true,
+                element: <ArtistPage />,
+              },
+            ],
           },
         ],
       },
