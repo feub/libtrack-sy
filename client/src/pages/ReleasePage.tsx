@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "../utils/apiRequest";
+import { validateApiResponse, handleApiError } from "../utils/errorHandling";
 import { ListReleasesType } from "@/types/releaseTypes";
 import {
   Table,
@@ -59,31 +60,13 @@ export default function ReleasePage() {
         },
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(
-          "ERROR (response): " + errorData.message ||
-            "Getting releases list failed",
-        );
-        throw new Error(
-          "ERROR (response): " + errorData.message ||
-            "Getting releases list failed",
-        );
-      }
-
-      const data = await response.json();
-
-      if (data.type !== "success") {
-        toast.error("ERROR: problem getting releases.");
-        throw "ERROR: problem getting releases.";
-      }
+      const data = await validateApiResponse(response, "Fetching releases");
 
       setReleases(data.data.releases);
       setMaxPage(data.data.maxPage);
       setTotalReleases(data.data.totalReleases);
     } catch (error) {
-      toast.error("Releases list error: " + error);
-      throw "ERROR (T/C): " + error;
+      handleApiError(error, "Fetching releases");
     } finally {
       setIsLoading(false);
     }
@@ -103,28 +86,12 @@ export default function ReleasePage() {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(
-          "ERROR (response): " + errorData.message || "Deleting release failed",
-        );
-        throw new Error(
-          "ERROR (response): " + errorData.message || "Deleting release failed",
-        );
-      }
+      await validateApiResponse(response, "Deleting release");
 
-      const data = await response.json();
       setReleases(releases.filter((rel) => rel.id !== id));
-
-      if (data.type !== "success") {
-        toast.error("ERROR: problem deleting release.");
-        throw "ERROR: problem deleting release.";
-      }
-
       toast.success("Releases successfully deleted.");
     } catch (error) {
-      toast.error("Deleting release error: " + error);
-      throw "ERROR (T/C): " + error;
+      handleApiError(error, "Deleting release");
     }
   };
 
