@@ -4,7 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-hot-toast";
 import { apiRequest, api } from "@/utils/apiRequest";
-import { ListReleasesType } from "@/types/releaseTypes";
+import {
+  ListReleasesType,
+  ShelfType,
+  FormatType,
+  ArtistType,
+} from "@/types/releaseTypes";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -70,26 +75,6 @@ const formSchema = z.object({
     .nullable()
     .optional(),
 });
-
-type ShelfType = {
-  id: number;
-  location: string;
-  description: string;
-  slug: string;
-};
-
-type FormatType = {
-  id: number;
-  name: string;
-  slug: string;
-};
-
-type ArtistType = {
-  id: number;
-  name: string;
-  slug: string;
-  thumbnail: string;
-};
 
 export default function ReleaseForm({
   release,
