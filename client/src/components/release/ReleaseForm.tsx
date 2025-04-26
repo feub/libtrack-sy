@@ -38,7 +38,8 @@ const formSchema = z.object({
     .regex(/^[a-zA-Z0-9-]+$/, {
       message: "Slug must contain only alphanumerical caracters and hyphen.",
     })
-    .optional(),
+    .nullish()
+    .or(z.literal("")),
   release_date: z.coerce
     .number()
     .int()
@@ -350,7 +351,10 @@ export default function ReleaseForm({
               <FormItem className="col-span-2">
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input
+                    {...field}
+                    value={field.value === null ? "" : field.value}
+                  />
                 </FormControl>
                 <FormDescription>
                   The slug will be added automatically if you leave the field
