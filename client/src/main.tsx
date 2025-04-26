@@ -10,10 +10,9 @@ import ArtistPage from "./pages/ArtistPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import AddByBarcodePage from "./pages/AddByBarcodePage.tsx";
-import ReleaseEdit from "./pages/ReleaseEdit.tsx";
-import ReleaseCreate from "./pages/ReleaseCreate.tsx";
-import "./index.css";
+import ReleaseForm from "./pages/ReleaseForm.tsx";
 import ArtistForm from "./pages/ArtistForm.tsx";
+import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -42,11 +41,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "create",
-                element: <ReleaseCreate />,
+                element: <ReleaseForm mode="create" />,
               },
               {
                 path: "edit/:id",
-                element: <ReleaseEdit />,
+                element: <ReleaseForm mode="update" />,
               },
               {
                 path: "scan",
