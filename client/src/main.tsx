@@ -13,6 +13,7 @@ import AddByBarcodePage from "./pages/AddByBarcodePage.tsx";
 import ReleaseEdit from "./pages/ReleaseEdit.tsx";
 import ReleaseCreate from "./pages/ReleaseCreate.tsx";
 import "./index.css";
+import ArtistForm from "./pages/ArtistForm.tsx";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,14 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <ArtistPage />,
+              },
+              {
+                path: "create",
+                element: <ArtistForm mode="create" />,
+              },
+              {
+                path: "edit/:id",
+                element: <ArtistForm mode="update" />,
               },
             ],
           },
