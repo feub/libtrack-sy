@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { ScannedReleaseType } from "@/types/releaseTypes";
 import AddByBarcodeForm from "@/components/release/AddByBarcodeForm";
@@ -13,8 +14,6 @@ export default function AddByBarcodePage() {
     releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSearchSubmit = async (barcode: number | null) => {
     if (barcode === null) {
@@ -35,6 +34,7 @@ export default function AddByBarcodePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        toast.error("Getting releases list failed");
         throw new Error(
           "ERROR (response): " + errorData.message ||
             "Getting releases list failed",
@@ -43,12 +43,14 @@ export default function AddByBarcodePage() {
 
       const data = await response.json();
 
-      setReleases(data);
+      setReleases(data.data);
 
       if (data.type !== "success") {
+        toast.error("Getting releases list failed");
         throw "ERROR: problem getting releases.";
       }
     } catch (error) {
+      toast.error("Getting releases list failed");
       console.error("Releases list error:", error);
       throw "ERROR (T/C): " + error;
     } finally {
@@ -64,21 +66,26 @@ export default function AddByBarcodePage() {
         release_id,
       });
 
+      console.log(response);
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error(
           "Error adding release:",
           errorData.message || "Unknown error",
         );
-        setError(errorData.message || "Failed to add release");
+        toast.error("Adding release failed");
         setIsLoading(false);
-        return;
+        throw new Error(
+          "ERROR (response): " + errorData.message ||
+            "Getting releases list failed",
+        );
       }
 
-      setSuccessMessage("Release added successfully!");
+      toast.success("Release added successfully!");
     } catch (error) {
-      console.error("SCan add error:", error);
-      setError("Failed to add release. Please try again.");
+      toast.error("Adding release failed");
+      console.error("Scan add error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +103,6 @@ export default function AddByBarcodePage() {
             <h3 className="text-xl font-bold">
               Found {releases.releases.length} results for barcode "{barcode}":
             </h3>
-          )}
-          {error && <div className="text-red-500 mt-2">{error}</div>}
-          {successMessage && (
-            <div className="text-green-500 mt-2">{successMessage}</div>
           )}
           {releases?.releases.map((release, index) => (
             <ScanResultCard
