@@ -13,9 +13,13 @@ import { Input } from "../ui/input";
 import { X, Search } from "lucide-react";
 
 const formSchema = z.object({
-  barcode: z.coerce.number().max(9999999999999, {
-    message: "The barcode must be 13 digits or less.",
-  }),
+  barcode: z.coerce
+    .number({
+      invalid_type_error: "Barcode must contain only numbers",
+    })
+    .max(9999999999999, {
+      message: "The barcode must be 13 digits or less.",
+    }),
 });
 
 export default function AddByBarcodeForm({
@@ -73,7 +77,11 @@ export default function AddByBarcodeForm({
             </FormItem>
           )}
         />
-        <Button type="submit" className="ml-2">
+        <Button
+          type="submit"
+          className="ml-2"
+          disabled={!form.watch("barcode")}
+        >
           <Search />
         </Button>
       </form>
