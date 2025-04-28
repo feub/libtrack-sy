@@ -1,6 +1,5 @@
 import { ScannedReleaseType } from "@/types/releaseTypes";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "../ui/button";
 import { CirclePlus } from "lucide-react";
 
 export default function ScanResultCard({
@@ -18,13 +17,10 @@ export default function ScanResultCard({
         <div>
           <div className="flex flex-col">
             <div className="flex items-center mb-2">
-              <Button
-                variant="ghost"
+              <CirclePlus
+                className="w-[2.5em] h-[2.5em] mr-2 text-orange-500 hover:text-orange-800"
                 onClick={() => handleAddRelease(barcode, scannedRelease.id)}
-                className="text-orange-500"
-              >
-                <CirclePlus />
-              </Button>
+              />
               <div className="text-2xl font-bold">{scannedRelease.title}</div>
             </div>
           </div>
