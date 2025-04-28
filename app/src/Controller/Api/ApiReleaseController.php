@@ -15,8 +15,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/release', name: 'api.release.')]
@@ -218,7 +216,7 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $release = $releaseService->addRelease($releaseId, $barcode);
+        $release = $releaseService->addScannedRelease($releaseId, $barcode);
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" added successfully'
         );
