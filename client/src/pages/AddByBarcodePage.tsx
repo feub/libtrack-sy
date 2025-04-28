@@ -59,36 +59,39 @@ export default function AddByBarcodePage() {
   };
 
   const handleAddRelease = async (barcode: number, release_id: number) => {
-    setIsLoading(true);
-    try {
-      const response = await api.post(`${apiURL}/api/release/scan/add`, {
-        barcode,
-        release_id,
-      });
+    // Create a promise to track the API request
+    const addReleasePromise = new Promise<void>((resolve, reject) => {
+      api
+        .post(`${apiURL}/api/release/scan/add`, {
+          barcode,
+          release_id,
+        })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(
+              "Error adding release:",
+              errorData.message || "Unknown error",
+            );
+            reject(
+              new Error(errorData.message || "Getting releases list failed"),
+            );
+          } else {
+            resolve();
+          }
+        })
+        .catch((error) => {
+          console.error("Scan add error:", error);
+          reject(error);
+        });
+    });
 
-      console.log(response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          "Error adding release:",
-          errorData.message || "Unknown error",
-        );
-        toast.error("Adding release failed");
-        setIsLoading(false);
-        throw new Error(
-          "ERROR (response): " + errorData.message ||
-            "Getting releases list failed",
-        );
-      }
-
-      toast.success("Release added successfully!");
-    } catch (error) {
-      toast.error("Adding release failed");
-      console.error("Scan add error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Use toast.promise to show loading/success/error states
+    toast.promise(addReleasePromise, {
+      loading: "Adding release...",
+      success: "Release added successfully!",
+      error: (err) => `${err.message || "Adding release failed"}`,
+    });
   };
 
   return (
