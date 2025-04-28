@@ -3,6 +3,32 @@ import { AuthContext, User } from "./AuthContext";
 
 const apiURL = import.meta.env.VITE_API_URL;
 const REFRESH_BUFFER_MS = 60 * 1000; // Refresh 1 minute before expiry
+const CLOCK_SKEW_TOLERANCE_MS = 5 * 60 * 1000; // 5 minute tolerance for clock differences
+
+// Helper function to standardize date handling
+const parseTokenExpiryDate = (dateString: string | null): Date | null => {
+  if (!dateString) return null;
+
+  try {
+    const date = new Date(dateString);
+    // Validate the date is valid
+    if (isNaN(date.getTime())) return null;
+    return date;
+  } catch (e) {
+    console.warn("Error parsing date:", e);
+    return null;
+  }
+};
+
+// Helper to log time information for debugging
+const logTimeInfo = (message: string, date: Date | null) => {
+  console.log(
+    `${message} ` +
+      `Local: ${new Date().toISOString()} (${new Date().toString()}), ` +
+      `UTC now: ${new Date().toUTCString()}, ` +
+      `Token date: ${date ? date.toISOString() : "none"}`,
+  );
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
   const [tokenExpiresAt, setTokenExpiresAt] = useState<Date | null>(() => {
     const storedDate = localStorage.getItem("tokenExpiresAt");
-    return storedDate ? new Date(storedDate) : null;
+    return parseTokenExpiryDate(storedDate);
   });
 
   // Use a ref to track if a refresh is currently in progress
@@ -106,14 +132,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Received token_expires_at:", data.token_expires_at);
 
       // Improved date parsing with fallback mechanism
-      let newExpiryDate;
+      let newExpiryDate = parseTokenExpiryDate(data.token_expires_at);
 
-      if (data.token_expires_at) {
-        try {
-          newExpiryDate = new Date(data.token_expires_at);
-        } catch (e) {
-          console.warn("Error parsing date:", e);
-        }
+      if (!newExpiryDate) {
+        console.warn("Using fallback expiry calculation");
+        newExpiryDate = new Date(Date.now() + 55 * 60 * 1000); // 55 minutes
+        data.token_expires_at = newExpiryDate.toISOString();
       }
 
       // If we couldn't get a valid date, use a fallback
@@ -189,13 +213,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const now = Date.now();
+    logTimeInfo("Refresh scheduler:", tokenExpiresAt);
+
     const expiryTime = tokenExpiresAt.getTime();
-    const timeUntilRefresh = expiryTime - now - REFRESH_BUFFER_MS;
+    // Add skew tolerance to avoid premature logout if clocks are slightly different
+    const effectiveExpiryTime = expiryTime + CLOCK_SKEW_TOLERANCE_MS;
+    const timeUntilRefresh = effectiveExpiryTime - now - REFRESH_BUFFER_MS;
 
     console.log(
       `Refresh scheduler: Now=${new Date(
         now,
-      ).toISOString()}, Expiry=${tokenExpiresAt.toISOString()}`,
+      ).toISOString()}, Expiry=${tokenExpiresAt.toISOString()}, ` +
+        `Time until refresh: ${Math.round(
+          timeUntilRefresh / 1000,
+        )}s (includes ${CLOCK_SKEW_TOLERANCE_MS / 1000}s tolerance)`,
     );
 
     // If the token is already expired or needs immediate refresh
@@ -205,7 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       refreshTimerId.current = setTimeout(() => {
         refreshAccessToken();
         refreshTimerId.current = null; // Clear ref after execution
-      }, 0);
+      }, 100);
     } else {
       console.log(
         `Refresh scheduler: Scheduling refresh in ${Math.round(
@@ -260,16 +291,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const data = await response.json();
-        const newExpiryDate = new Date(data.token_expires_at);
+        const newExpiryDate = parseTokenExpiryDate(data.token_expires_at);
 
-        if (isNaN(newExpiryDate.getTime())) {
-          throw new Error(
-            "Received invalid token expiry date from server during login.",
-          );
+        if (!newExpiryDate) {
+          console.warn("Using fallback expiry calculation during login");
+          // Fallback: Use current time plus a reasonable interval
+          const fallbackExpiry = new Date(Date.now() + 55 * 60 * 1000); // 55 minutes
+          data.token_expires_at = fallbackExpiry.toISOString();
+          setTokenExpiresAt(fallbackExpiry);
+        } else {
+          logTimeInfo("Login success with expiry:", newExpiryDate);
+          setTokenExpiresAt(newExpiryDate);
         }
 
         console.log(
-          `Login successful. Token expires at: ${newExpiryDate.toISOString()}`,
+          `Login successful. Token expires at: ${
+            newExpiryDate ? newExpiryDate.toISOString() : "unknown"
+          }`,
         );
 
         localStorage.setItem("token", data.token);
