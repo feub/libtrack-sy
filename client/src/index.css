@@ -118,3 +118,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Slowing the loader */
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
