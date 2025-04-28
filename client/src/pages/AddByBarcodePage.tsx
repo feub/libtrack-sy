@@ -9,13 +9,13 @@ import ScanResultCard from "@/components/release/ScanResultCard";
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function AddByBarcodePage() {
-  const [barcode, setBarcode] = useState<number | null>(null);
+  const [barcode, setBarcode] = useState<string>("");
   const [releases, setReleases] = useState<{
     releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSearchSubmit = async (barcode: number | null) => {
+  const handleSearchSubmit = async (barcode: string | null) => {
     if (barcode === null) {
       console.warn("Barcode is null");
       return;
@@ -25,7 +25,7 @@ export default function AddByBarcodePage() {
     searchReleases(barcode);
   };
 
-  const searchReleases = async (barcode: number) => {
+  const searchReleases = async (barcode: string) => {
     setIsLoading(true);
     try {
       const response = await api.post(`${apiURL}/api/release/scan`, {
@@ -58,7 +58,7 @@ export default function AddByBarcodePage() {
     }
   };
 
-  const handleAddRelease = async (barcode: number, release_id: number) => {
+  const handleAddRelease = async (barcode: string, release_id: number) => {
     // Create a promise to track the API request
     const addReleasePromise = new Promise<void>((resolve, reject) => {
       api
@@ -110,7 +110,7 @@ export default function AddByBarcodePage() {
           {releases?.releases.map((release, index) => (
             <ScanResultCard
               key={index}
-              barcode={barcode ?? 0}
+              barcode={barcode}
               scannedRelease={release}
               handleAddRelease={handleAddRelease}
             />

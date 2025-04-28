@@ -14,7 +14,7 @@ import { X, Search } from "lucide-react";
 
 const formSchema = z.object({
   barcode: z.coerce
-    .number({
+    .string({
       invalid_type_error: "Barcode must contain only numbers",
     })
     .max(9999999999999, {
@@ -25,17 +25,17 @@ const formSchema = z.object({
 export default function AddByBarcodeForm({
   handleBarcodeSearch,
 }: {
-  handleBarcodeSearch: (barcode: number | null) => void;
+  handleBarcodeSearch: (barcode: string | null) => void;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      barcode: undefined,
+      barcode: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const barcode = parseInt(values.barcode.toString());
+    const barcode = values.barcode.toString();
     handleBarcodeSearch(barcode);
   }
 
