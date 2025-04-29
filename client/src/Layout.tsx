@@ -15,6 +15,10 @@ function Layout() {
             <Outlet />
             <Toaster
               toastOptions={{
+                style: {
+                  width: "40vw",
+                  maxWidth: "unset",
+                },
                 success: {
                   style: {
                     backgroundColor: "#15803d",
