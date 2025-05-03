@@ -90,6 +90,55 @@ final class ApiArtistController extends AbstractApiController
         );
     }
 
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function edit(
+        int $id,
+        Request $request,
+        ArtistService $artistService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a PUT request to create an artist
+        // {
+        //     "name": "Nightfall",
+        //     "slug": "nightfall",
+        //     "thumbnail": "nightfall.jpg"
+        //   }
+
+        $artistOrResponse = $this->findOr404(Artist::class, $id);
+
+        if ($artistOrResponse instanceof Response) {
+            return $artistOrResponse;
+        }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $artistDto = ArtistDto::fromArray($data);
+        $violations = $validator->validate($artistDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        // Create the artist
+        $artist = $artistService->updateFromDto($artistOrResponse, $artistDto);
+
+        return $this->apiResponseService->success(
+            'Artist "' . $artist->getName() . '" updated successfully'
+        );
+    }
+
     #[Route('/{id}', name: 'view', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function view(int $id, ArtistRepository $artistRepository): Response
