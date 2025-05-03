@@ -16,8 +16,9 @@ function Layout() {
             <Toaster
               toastOptions={{
                 style: {
-                  width: "40vw",
-                  maxWidth: "unset",
+                  width: "auto",
+                  minWidth: "200px",
+                  maxWidth: "80vw",
                 },
                 success: {
                   style: {
