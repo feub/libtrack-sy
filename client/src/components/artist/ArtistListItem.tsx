@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { ArtistType } from "../../types/releaseTypes";
 import { TableRow, TableCell } from "../ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { CircleX, FilePenLine } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -14,6 +24,13 @@ export default function ArtistListItem({
   artist: ArtistType;
   handleDelete: (id: number) => void;
 }) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const handleDeleteAndClose = (id: number) => {
+    handleDelete(id);
+    setOpen(false);
+  };
+
   return (
     <>
       <TableRow>
@@ -39,13 +56,29 @@ export default function ArtistListItem({
           >
             <FilePenLine className="h-4 w-4" />
           </Link>
-          <Button
-            variant="ghost"
-            onClick={() => handleDelete(artist.id)}
-            className="text-neutral-600 hover:text-red-600"
-          >
-            <CircleX />
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger className="text-neutral-600 hover:text-red-600">
+              <CircleX />
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure?</DialogTitle>
+                <DialogDescription>
+                  This will permanently delete the artist (unless at least one
+                  release is attached to it).
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleDeleteAndClose(artist.id)}
+                  className="hover:bg-red-600 hover:text-red-200 text-red-600"
+                >
+                  <CircleX /> Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TableCell>
       </TableRow>
     </>

@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from "@/components/ui/table";
 import ThePagination from "../components/ThePagination";
 import TheLoader from "@/components/TheLoader";
 import ArtistListItem from "@/components/artist/ArtistListItem";
