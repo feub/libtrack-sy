@@ -28,6 +28,8 @@ class ArtistRepository extends ServiceEntityRepository
                 ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
         }
 
+        $builder->orderBy('a.createdAt', 'DESC');
+
         return $this->paginator->paginate(
             $builder,
             $page,
