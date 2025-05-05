@@ -1,40 +1,59 @@
 const apiURL = import.meta.env.VITE_API_URL;
 
+// Track refresh promise to prevent multiple simultaneous refreshes
+let refreshingPromise: Promise<boolean> | null = null;
+
 async function refreshAccessToken(): Promise<boolean> {
+  //   The idea here is that:
+  // // If multiple API requests fail with 401 simultaneously, only the first one will trigger an actual token refresh
+  // All subsequent requests will wait for that same refresh operation to complete
+  // Once the refresh is done, all queued requests will continue with the new token
+  // If there's already a refresh in progress, return that promise
+  if (refreshingPromise) {
+    return refreshingPromise;
+  }
+
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) return false;
 
-  try {
-    const response = await fetch(`${apiURL}/api/token/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
+  // Create a new refresh promise
+  refreshingPromise = (async () => {
+    try {
+      const response = await fetch(`${apiURL}/api/token/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
 
-    if (!response.ok) {
-      let errorMsg = "Refresh failed";
-      try {
-        const errorData = await response.json();
-        errorMsg = errorData.message || `Refresh failed (${response.status})`;
-      } catch {
-        errorMsg = `Refresh failed (${response.status})`;
+      if (!response.ok) {
+        let errorMsg = "Refresh failed";
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || `Refresh failed (${response.status})`;
+        } catch {
+          errorMsg = `Refresh failed (${response.status})`;
+        }
+        throw new Error(errorMsg);
       }
-      throw new Error(errorMsg);
-      // return false;
+
+      const data = await response.json();
+
+      localStorage.setItem("access_token", data.token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+
+      return true;
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      return false;
+    } finally {
+      // Clear the refresh promise
+      refreshingPromise = null;
     }
+  })();
 
-    const data = await response.json();
-
-    localStorage.setItem("access_token", data.token);
-    localStorage.setItem("refresh_token", data.refresh_token);
-
-    return true;
-  } catch (error) {
-    console.error("Token refresh error:", error);
-    return false;
-  }
+  return refreshingPromise;
 }
 
 export async function apiRequest(url: string, options: RequestInit = {}) {
