@@ -66,8 +66,6 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 
   // Add authorization header if token exists
   if (token) {
-    console.log("apiRequest ~ token exists, Add authorization header");
-
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
 
@@ -78,7 +76,6 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 
   // Handle 401 unauthorized by attempting to refresh token first
   if (response.status === 401) {
-    console.log("apiRequest.ts ~ 401, attempting to refresh token");
     const refreshSuccessful = await refreshAccessToken();
 
     if (refreshSuccessful) {

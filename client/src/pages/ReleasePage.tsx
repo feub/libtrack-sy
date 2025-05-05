@@ -53,15 +53,9 @@ export default function ReleasePage() {
         limit: limit.toString(),
       });
 
-      console.log(
-        "ReleasePage.tsx ~ getReleases:",
-        `${apiURL}/api/release?${params.toString()}`,
-      );
       const response = await api.get(
         `${apiURL}/api/release?${params.toString()}`,
       );
-
-      console.log("ReleasePage.tsx ~ getReleases:", response);
 
       const data = await validateApiResponse(response, "Fetching releases");
 
