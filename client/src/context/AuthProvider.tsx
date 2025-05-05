@@ -11,9 +11,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     : null;
 
   const [token, setToken] = useState<string | null>(currentToken);
-  const [refreshToken, setRefreshToken] = useState<string | null>(
-    currentRefreshToken,
-  );
+  const [, setRefreshToken] = useState<string | null>(currentRefreshToken);
   const [user, setUser] = useState<User | null>(currentUser);
 
   const loginUser = async (email: string, password: string) => {
@@ -48,13 +46,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("AuthProvider ~ login ~ refresh_token", data.refresh_token);
   };
 
-  const logoutUser = () => {
+  const logoutUser = async () => {
     setToken(null);
     setRefreshToken(null);
     setUser(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+    return Promise.resolve();
   };
 
   const contextData = {
