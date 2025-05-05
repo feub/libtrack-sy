@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { toast } from "react-hot-toast";
-import { apiRequest, api } from "../utils/apiRequest";
-import { validateApiResponse, handleApiError } from "../utils/errorHandling";
+import { api } from "@/utils/apiRequest";
+import { validateApiResponse, handleApiError } from "@/utils/errorHandling";
 import { ListReleasesType } from "@/types/releaseTypes";
 import {
   Table,
@@ -10,11 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import ReleaseListItem from "../components/release/ReleaseListItem";
-import ThePagination from "../components/ThePagination";
-import SearchBar from "../components/release/SearchBar";
+import ReleaseListItem from "@/components/release/ReleaseListItem";
+import ThePagination from "@/components/ThePagination";
+import SearchBar from "@/components/release/SearchBar";
 import TheLoader from "@/components/TheLoader";
-import { Link } from "react-router";
 import { CirclePlus } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -79,9 +79,7 @@ export default function ReleasePage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await apiRequest(`${apiURL}/api/release/${id}`, {
-        method: "DELETE",
-      });
+      const response = await api.delete(`${apiURL}/api/release/${id}`);
 
       await validateApiResponse(response, "Deleting release.");
 
