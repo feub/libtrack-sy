@@ -48,10 +48,10 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { user, logout } = useAuth();
+  const { user, logoutUser } = useAuth();
 
   const handleLogout = () => {
-    logout();
+    logoutUser();
   };
 
   return (

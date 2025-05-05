@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { apiRequest } from "../utils/apiRequest";
+import { apiRequest, api } from "../utils/apiRequest";
 import { validateApiResponse, handleApiError } from "../utils/errorHandling";
 import { ListReleasesType } from "@/types/releaseTypes";
 import {
@@ -53,12 +53,15 @@ export default function ReleasePage() {
         limit: limit.toString(),
       });
 
-      const response = await apiRequest(
+      console.log(
+        "ReleasePage.tsx ~ getReleases:",
         `${apiURL}/api/release?${params.toString()}`,
-        {
-          method: "GET",
-        },
       );
+      const response = await api.get(
+        `${apiURL}/api/release?${params.toString()}`,
+      );
+
+      console.log("ReleasePage.tsx ~ getReleases:", response);
 
       const data = await validateApiResponse(response, "Fetching releases");
 

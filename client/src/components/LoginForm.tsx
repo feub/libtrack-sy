@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth";
-import { cn } from "../lib/utils";
-import { Button } from "./ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,11 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Input } from "./ui/input";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Label } from "./ui/label";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
+import { PasswordVisibilityIcon } from "@/components/PasswordVisibilityIcon";
 import { AlertCircle } from "lucide-react";
-import { PasswordVisibilityIcon } from "./PasswordVisibilityIcon";
 
 export function LoginForm({
   className,
@@ -26,7 +26,7 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(true);
 
-  const { login } = useAuth();
+  const { loginUser } = useAuth();
   const navigate = useNavigate();
 
   const switchPasswordVisibility = () => {
@@ -39,7 +39,7 @@ export function LoginForm({
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await loginUser(email, password);
       navigate("/release");
     } catch (err) {
       setError(

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-hot-toast";
-import { apiRequest, api } from "../utils/apiRequest";
+import { api } from "@/utils/apiRequest";
 import {
   ListReleasesType,
   ShelfType,
@@ -111,9 +111,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
   const getRelease = async (id: number) => {
     setIsLoading(true);
     try {
-      const response = await apiRequest(`${apiURL}/api/release/${id}`, {
-        method: "GET",
-      });
+      const response = await api.get(`${apiURL}/api/release/${id}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -137,81 +135,84 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     }
   };
 
-  const getShelves = async () => {
+  const getShelves = async (): Promise<boolean> => {
     try {
-      const response = await apiRequest(`${apiURL}/api/shelf`, {
-        method: "GET",
-      });
+      const response = await api.get(`${apiURL}/api/shelf`);
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
+        console.error(
           "ERROR (response): " + errorData.message || "Getting shelves failed",
         );
+        return false;
       }
 
       const data = await response.json();
 
       if (data.type !== "success") {
-        throw "ERROR: problem getting shelves.";
+        console.error("ERROR: problem getting shelves.");
+        return false;
       }
 
       setShelves(data.data.shelves);
+      return true;
     } catch (error) {
       console.error("Shelves list error:", error);
-      throw "ERROR (T/C): " + error;
+      return false;
     }
   };
 
-  const getFormats = async () => {
+  const getFormats = async (): Promise<boolean> => {
     try {
-      const response = await apiRequest(`${apiURL}/api/format`, {
-        method: "GET",
-      });
+      const response = await api.get(`${apiURL}/api/format`);
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
+        console.error(
           "ERROR (response): " + errorData.message || "Getting formats failed",
         );
+        return false;
       }
 
       const data = await response.json();
 
       if (data.type !== "success") {
-        throw "ERROR: problem getting formats.";
+        console.error("ERROR: problem getting formats.");
+        return false;
       }
 
       setFormats(data.data.formats);
+      return true;
     } catch (error) {
       console.error("Formats list error:", error);
-      throw "ERROR (T/C): " + error;
+      return false;
     }
   };
 
-  const getArtists = async () => {
+  const getArtists = async (): Promise<boolean> => {
     try {
-      const response = await apiRequest(`${apiURL}/api/artist`, {
-        method: "GET",
-      });
+      const response = await api.get(`${apiURL}/api/artist`);
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
+        console.error(
           "ERROR (response): " + errorData.message || "Getting artists failed",
         );
+        return false;
       }
 
       const data = await response.json();
 
       if (data.type !== "success") {
-        throw "ERROR: problem getting artists.";
+        console.error("ERROR: problem getting artists.");
+        return false;
       }
 
       setArtists(data.data.artists);
+      return true;
     } catch (error) {
       console.error("Artists list error:", error);
-      throw "ERROR (T/C): " + error;
+      return false;
     }
   };
 
@@ -219,7 +220,21 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
   useEffect(() => {
     // First, get the data needed for the selects
     const loadData = async () => {
-      await Promise.all([getShelves(), getFormats()]);
+      const [shelvesSuccess, formatsSuccess, artistsSuccess] =
+        await Promise.all([getShelves(), getFormats(), getArtists()]);
+
+      if (!shelvesSuccess) {
+        toast.error("Failed to load shelf locations");
+      }
+
+      if (!formatsSuccess) {
+        toast.error("Failed to load formats");
+      }
+
+      if (!artistsSuccess) {
+        toast.error("Failed to load artists");
+      }
+
       if (isUpdateMode && release) {
         // Set the artists as an array of names
         if (release.artists && release.artists.length > 0) {
@@ -254,10 +269,6 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     };
 
     loadData();
-
-    getArtists();
-    getShelves();
-    getFormats();
   }, [release, isUpdateMode, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {

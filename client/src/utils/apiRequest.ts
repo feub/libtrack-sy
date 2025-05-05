@@ -1,7 +1,7 @@
 const apiURL = import.meta.env.VITE_API_URL;
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) return false;
 
   try {
@@ -14,14 +14,21 @@ async function refreshAccessToken(): Promise<boolean> {
     });
 
     if (!response.ok) {
-      return false;
+      let errorMsg = "Refresh failed";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || `Refresh failed (${response.status})`;
+      } catch {
+        errorMsg = `Refresh failed (${response.status})`;
+      }
+      throw new Error(errorMsg);
+      // return false;
     }
 
     const data = await response.json();
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("refreshToken", data.refresh_token);
-    localStorage.setItem("tokenExpiresAt", data.token_expires_at);
+    localStorage.setItem("access_token", data.token);
+    localStorage.setItem("refresh_token", data.refresh_token);
 
     return true;
   } catch (error) {
@@ -31,7 +38,7 @@ async function refreshAccessToken(): Promise<boolean> {
 }
 
 export async function apiRequest(url: string, options: RequestInit = {}) {
-  let token = localStorage.getItem("token");
+  let token = localStorage.getItem("access_token");
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -52,13 +59,13 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 
   // Handle 401 unauthorized by attempting to refresh token first
   if (response.status === 401) {
-    console.log("apiRequest ~ 401, attempting to refresh token");
+    console.log("apiRequest.ts ~ 401, attempting to refresh token");
     const refreshSuccessful = await refreshAccessToken();
 
     if (refreshSuccessful) {
-      console.log("apiRequest ~ token refreshed");
+      console.log("apiRequest.ts ~ token refreshed");
       // If refresh was successful, update the token and retry the request
-      token = localStorage.getItem("token");
+      token = localStorage.getItem("access_token");
 
       // Update authorization header with new token
       (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
@@ -76,10 +83,11 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
     }
 
     // If we got here, either the refresh failed or the retry failed
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("tokenExpiresAt");
-    localStorage.removeItem("userEmail");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+
+    console.log("apiRequest.ts ~ apiRequest ~ redirect to login");
 
     window.location.href = "/login";
     throw new Error("Authentication failed");
