@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { toast } from "react-hot-toast";
-import { apiRequest } from "../utils/apiRequest";
-import { validateApiResponse, handleApiError } from "../utils/errorHandling";
+import { api } from "@/utils/apiRequest";
+import { validateApiResponse, handleApiError } from "@/utils/errorHandling";
 import { ArtistType } from "@/types/releaseTypes";
 import {
   Table,
@@ -10,10 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import ThePagination from "../components/ThePagination";
+import ThePagination from "@/components/ThePagination";
 import TheLoader from "@/components/TheLoader";
 import ArtistListItem from "@/components/artist/ArtistListItem";
-import { Link } from "react-router";
 import { CirclePlus } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -38,11 +38,8 @@ export default function ArtistPage() {
         limit: limit.toString(),
       });
 
-      const response = await apiRequest(
+      const response = await api.get(
         `${apiURL}/api/artist?${params.toString()}`,
-        {
-          method: "GET",
-        },
       );
 
       const data = await validateApiResponse(response, "Fetching artists");
@@ -67,9 +64,7 @@ export default function ArtistPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await apiRequest(`${apiURL}/api/artist/${id}`, {
-        method: "DELETE",
-      });
+      const response = await api.delete(`${apiURL}/api/artist/${id}`);
 
       await validateApiResponse(response, "Deleting artist.");
 
