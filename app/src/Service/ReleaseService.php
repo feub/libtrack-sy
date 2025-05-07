@@ -2,21 +2,22 @@
 
 namespace App\Service;
 
-use App\Entity\Release;
-use App\Dto\ReleaseDto;
 use App\Entity\Artist;
+use App\Dto\ReleaseDto;
+use App\Entity\Release;
 use Psr\Log\LoggerInterface;
+use App\Mapper\ReleaseDtoMapper;
 use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
-use App\Mapper\ReleaseDtoMapper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReleaseService
 {
@@ -155,7 +156,7 @@ class ReleaseService
             $releaseData = $this->discogsService->getReleaseById($releaseId);
             $formattedData = [
                 'title' => $releaseData['title'] ?? null,
-                'release_date' => $releaseData['year'] ?? null,
+                'release_date' => $releaseData['year'] <= 1000 ? null : $releaseData['year'],
                 'barcode' => $barcode,
                 'cover' => $releaseData['images'][0]['uri'] ? $this->downloadCovertArt($releaseData['images'][0]['uri'], $releaseData['id']) : null,
                 'artists' => array_map(function ($artist) {
@@ -172,7 +173,8 @@ class ReleaseService
         // Check if the release does NOT already exist
         if ($this->releaseRepository->findOneBy(['barcode' => $barcode])) {
             $this->logger->error('Barcode "' . $barcode . '" already exists.');
-            throw new BadRequestHttpException('Barcode "' . $barcode . '" already exists.');
+            // ConflictHttpException: status 409 (conflict)
+            throw new ConflictHttpException('Barcode "' . $barcode . '" already exists.');
         }
 
         // Create and validate DTO
@@ -185,7 +187,7 @@ class ReleaseService
                 $errors[$violation->getPropertyPath()] = $violation->getMessage();
             }
 
-            throw new BadRequestHttpException('Vaidation failed');
+            throw new BadRequestHttpException('Validation failed: ' . json_encode($errors));
         }
 
         // Create the release
