@@ -200,6 +200,7 @@ final class ApiReleaseController extends AbstractApiController
         $data = json_decode($request->getContent(), true);
         $releaseId = $data['release_id'] ?? null;
         $barcode = $data['barcode'] ?? null;
+        $shelf = $data['shelf'] ?? null;
 
         if (!$releaseId) {
             return $this->apiResponseService->error(
@@ -216,7 +217,7 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $release = $releaseService->addScannedRelease($releaseId, $barcode);
+        $release = $releaseService->addScannedRelease($releaseId, $barcode, $shelf);
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" added successfully'
         );

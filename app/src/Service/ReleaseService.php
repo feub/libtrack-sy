@@ -150,6 +150,7 @@ class ReleaseService
     public function addScannedRelease(
         string $releaseId,
         string $barcode,
+        ?int $shelf
     ) {
         // Fetch the complete release data
         try {
@@ -162,7 +163,8 @@ class ReleaseService
                 'artists' => array_map(function ($artist) {
                     return ['id' => $this->getArtistIdByName($artist['name'])];
                 }, $releaseData['artists'] ?? []),
-                'format' => $releaseData['formats'][0]["name"] ? $this->setFormat($releaseData['formats'][0]["name"]) : null
+                'format' => $releaseData['formats'][0]["name"] ? $this->setFormat($releaseData['formats'][0]["name"]) : null,
+                'shelf' => ["id" => $shelf] ?? null,
             ];
         } catch (\Exception $e) {
             $this->logger->error("Release data not found: $e");
