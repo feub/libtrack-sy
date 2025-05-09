@@ -64,4 +64,16 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function getFormatsStats()
+    {
+        $stats = $this->createQueryBuilder('r')
+            ->leftJoin('r.format', 'f')
+            ->select('f.id AS format_id', 'f.name AS format_name', 'COUNT(r.id) AS count')
+            ->groupBy('f.id')
+            ->getQuery()
+            ->getResult();
+
+        return $stats;
+    }
 }
