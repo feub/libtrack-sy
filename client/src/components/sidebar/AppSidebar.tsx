@@ -20,6 +20,7 @@ import {
   ChevronUp,
   User2,
   LogOut,
+  ChartPie,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,6 +31,11 @@ import {
 import { ModeToggle } from "@/components/ModeToggle";
 
 const items = [
+  {
+    title: "Statistics",
+    url: "/",
+    icon: ChartPie,
+  },
   {
     title: "Releases",
     url: "/release",
