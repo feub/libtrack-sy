@@ -26,7 +26,7 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchTerm = '', ?int $searchShelf = null): PaginationInterface
+    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchTerm = '', ?string $searchShelf = ''): PaginationInterface
     {
         $builder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
@@ -39,8 +39,8 @@ class ReleaseRepository extends ServiceEntityRepository
                 ->setParameter('searchTerm', $searchTerm);
         }
 
-        if (!$searchShelf !== null) {
-            $searchShelf = trim($searchShelf);
+        if (!empty($searchShelf)) {
+            $searchShelf = (int) trim($searchShelf);
             $builder->andWhere('s.id = :searchShelf')
                 ->setParameter('searchShelf', $searchShelf);
         }
