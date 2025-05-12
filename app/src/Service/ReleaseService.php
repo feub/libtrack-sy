@@ -47,10 +47,10 @@ class ReleaseService
      * @param string $searchTerm Optional search term
      * @return array Array containing releases data, total releases, max page and current page
      */
-    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $searchTerm = ''): array
+    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $searchTerm = '', ?int $searchShelf = null): array
     {
         $totalReleases = $this->releaseRepository->getTotalReleases();
-        $releases = $this->releaseRepository->paginatedReleases($page, $limit, $searchTerm);
+        $releases = $this->releaseRepository->paginatedReleases($page, $limit, $searchTerm, $searchShelf);
 
         if (!empty($searchTerm)) {
             $totalReleases = $releases->count();
