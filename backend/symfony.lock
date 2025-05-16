@@ -67,6 +67,9 @@
             "config/packages/lexik_jwt_authentication.yaml"
         ]
     },
+    "liip/test-fixtures-bundle": {
+        "version": "2.9.2"
+    },
     "nelmio/api-doc-bundle": {
         "version": "5.0",
         "recipe": {
