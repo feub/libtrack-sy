@@ -23,14 +23,14 @@ class Artist
     private ?int $id = null;
 
     #[ORM\Column(length: 100, unique: true)]
-    #[Assert\Length(min: 1, groups: ['Extra'])]
-    #[Assert\Length(max: 100, groups: ['Extra'])]
+    #[Assert\Length(min: 1)]
+    #[Assert\Length(max: 100)]
     #[Groups(['api.artist.list', 'api.release.list'])]
     private ?string $name = null;
 
-    #[ORM\Column(length: 150)]
-    #[Assert\Length(min: 5)]
-    #[Assert\Length(max: 150)]
+    #[ORM\Column(length: 100)]
+    #[Assert\Length(min: 1)]
+    #[Assert\Length(max: 100)]
     #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
     #[Groups(['api.artist.list'])]
     private ?string $slug = null;
