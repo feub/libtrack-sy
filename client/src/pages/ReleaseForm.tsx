@@ -195,7 +195,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getArtists = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/artist`);
+      const response = await api.get(`${apiURL}/api/artist?limit=1000`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -222,7 +222,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getGenres = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/genre`);
+      const response = await api.get(`${apiURL}/api/genre?limit=1000`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -328,12 +328,6 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         })
         .filter((artist) => artist !== null);
 
-      // Replace the artist names array with the array of artist objects
-      // const formData = {
-      //   ...values,
-      //   artists: artistsWithIds,
-      // };
-
       // Convert genre names to genre objects with IDs
       const genresWithIds = values.genres
         ?.map((genreName) => {
@@ -342,7 +336,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         })
         .filter((genre) => genre !== null);
 
-      // Replace the genre names array with the array of genre objects
+      // Replace the artist/genre names array with the array of artist/genre objects
       const formData = {
         ...values,
         artists: artistsWithIds,
@@ -406,13 +400,13 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className=" grid grid-cols-2 gap-4 p-4"
+                className="grid md:grid-cols-4 gap-4 p-4"
               >
                 <FormField
                   control={form.control}
                   name="artists"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4 md:col-span-2">
                       <FormLabel>Artist(s)</FormLabel>
                       <FormControl>
                         <SelectPills
@@ -435,9 +429,34 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
                 <FormField
                   control={form.control}
+                  name="genres"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4 md:col-span-2">
+                      <FormLabel>Genres(s)</FormLabel>
+                      <FormControl>
+                        <SelectPills
+                          data={(genres || []).map((genre) => ({
+                            ...genre,
+                            id: genre.id.toString(),
+                          }))}
+                          value={field.value}
+                          // defaultValue={release?.genres?.map((genre) =>
+                          //   genre.name.toString(),
+                          // )}
+                          onValueChange={field.onChange}
+                          placeholder="Search for a genre..."
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="title"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4">
                       <FormLabel>Title</FormLabel>
                       <FormControl>
                         <Input {...field} />
@@ -451,7 +470,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="slug"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4 md:col-span-2">
                       <FormLabel>Slug</FormLabel>
                       <FormControl>
                         <Input
@@ -472,7 +491,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="barcode"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="col-span-4 md:col-span-2">
                       <FormLabel>Barcode</FormLabel>
                       <FormControl>
                         <Input
@@ -489,7 +508,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="release_date"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="col-span-4 md:col-span-1">
                       <FormLabel>Year</FormLabel>
                       <FormControl>
                         <Input {...field} />
@@ -503,12 +522,11 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="cover"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4 md:col-span-1">
                       <FormLabel>Cover art</FormLabel>
                       <FormControl>
                         <Input {...field} disabled />
                       </FormControl>
-                      <FormDescription>Disabled for now.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -518,7 +536,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="shelf"
                   render={({ field }) => (
-                    <FormItem className="">
+                    <FormItem className="col-span-4 md:col-span-1">
                       <FormLabel>Shelf location</FormLabel>
                       <FormControl>
                         <Select
@@ -570,31 +588,6 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                           </SelectContent>
                         </Select>
                       </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="genres"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel>Genres(s)</FormLabel>
-                      <FormControl>
-                        <SelectPills
-                          data={(genres || []).map((genre) => ({
-                            ...genre,
-                            id: genre.id.toString(),
-                          }))}
-                          value={field.value}
-                          // defaultValue={release?.artists?.map((artist) =>
-                          //   artist.name.toString(),
-                          // )}
-                          onValueChange={field.onChange}
-                          placeholder="Search for a genre..."
-                        />
-                      </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
