@@ -8,6 +8,7 @@ use App\Entity\Release;
 use Psr\Log\LoggerInterface;
 use App\Mapper\ReleaseDtoMapper;
 use App\Repository\ArtistRepository;
+use App\Repository\GenreRepository;
 use App\Repository\ReleaseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -31,6 +32,7 @@ class ReleaseService
         private DiscogsService $discogsService,
         private ReleaseRepository $releaseRepository,
         private ArtistRepository $artistRepository,
+        private GenreRepository $genreRepository,
         private Security $security,
         private NormalizerInterface $serializer,
         private ReleaseDtoMapper $releaseDtoMapper,
@@ -45,7 +47,7 @@ class ReleaseService
      * @param int $page Current page number
      * @param int $limit Number of items per page
      * @param string $searchTerm Optional search term
-     * @return array Array containing releases data, total releases, max page and current page
+     * @return array Array containing releases data, total, max page and current page
      */
     public function getPaginatedReleases(int $page = 1, int $limit = 20, ?string $searchTerm = '', ?string $searchShelf = ''): array
     {

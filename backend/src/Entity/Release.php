@@ -77,6 +77,7 @@ class Release
      * @var Collection<int, Genre>
      */
     #[ORM\ManyToMany(targetEntity: Genre::class, mappedBy: 'releases')]
+    #[Groups(['api.release.list'])]
     private Collection $genres;
 
     public function __construct()

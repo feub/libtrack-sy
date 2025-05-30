@@ -30,8 +30,9 @@ class ReleaseRepository extends ServiceEntityRepository
     {
         $builder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
+            ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
-            ->select('r', 'a', 's');
+            ->select('r', 'a', 's', 'g');
 
         if (!empty($searchTerm)) {
             $searchTerm = '%' . trim($searchTerm) . '%';
@@ -62,9 +63,10 @@ class ReleaseRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
+            ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
             ->leftJoin('r.format', 'f')
-            ->select('r', 'a', 's', 'f')
+            ->select('r', 'a', 's', 'f', 'g')
             ->where('r.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
