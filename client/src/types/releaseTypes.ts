@@ -5,6 +5,12 @@ export type ArtistType = {
   thumbnail?: string;
 };
 
+export type GenreType = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
 export type ShelfType = {
   id: number;
   location: string;
@@ -28,6 +34,7 @@ export type ListReleasesType = {
   barcode?: number;
   format?: FormatType;
   shelf?: ShelfType;
+  genres?: GenreType[];
 };
 
 export type ScannedFormatType = {

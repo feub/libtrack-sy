@@ -59,6 +59,8 @@ export default function ReleasePage() {
 
       const data = await validateApiResponse(response, "Fetching releases");
 
+      console.log(data.data.releases);
+
       setReleases(data.data.releases);
       setMaxPage(data.data.maxPage);
       setTotalReleases(data.data.totalReleases);
@@ -121,6 +123,7 @@ export default function ReleasePage() {
                   <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
                     Artist(s)
                   </TableHead>
+                  <TableHead className="text-center">Genre(s)</TableHead>
                   <TableHead className="text-center">Format</TableHead>
                   <TableHead className="text-center">Year</TableHead>
                   <TableHead className="text-center">Barcode</TableHead>

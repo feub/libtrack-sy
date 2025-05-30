@@ -45,6 +45,10 @@ export default function ReleaseListItem({
           {release.artists &&
             release.artists.map((artist) => artist.name).join(", ")}
         </TableCell>
+        <TableCell className="max-w-[200px] truncate whitespace-normal break-words">
+          {release.genres &&
+            release.genres.map((genre) => genre.name).join(", ")}
+        </TableCell>
         <TableCell className="text-center">
           <div className="flex justify-center items-center">
             {release.format?.name?.includes("CD") ? (
