@@ -10,6 +10,7 @@ import {
   ShelfType,
   FormatType,
   ArtistType,
+  GenreType,
 } from "@/types/releaseTypes";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,6 +77,7 @@ const formSchema = z.object({
     .object({ id: z.number().or(z.string()) })
     .nullable()
     .optional(),
+  genres: z.array(z.string()).optional(),
 });
 
 export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
@@ -83,6 +85,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
   const [shelves, setShelves] = useState<ShelfType[] | null>(null);
   const [formats, setFormats] = useState<FormatType[] | null>(null);
   const [artists, setArtists] = useState<ArtistType[] | null>(null);
+  const [genres, setGenres] = useState<GenreType[] | null>(null);
   const [release, setRelease] = useState<ListReleasesType | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -105,6 +108,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
       artists: [] as string[],
       shelf: null,
       format: null,
+      genres: [] as string[],
     },
   });
 
@@ -216,12 +220,44 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     }
   };
 
+  const getGenres = async (): Promise<boolean> => {
+    try {
+      const response = await api.get(`${apiURL}/api/genre`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          "ERROR (response): " + errorData.message || "Getting genres failed",
+        );
+        return false;
+      }
+
+      const data = await response.json();
+
+      if (data.type !== "success") {
+        console.error("ERROR: problem getting genres.");
+        return false;
+      }
+
+      setGenres(data.data.genres);
+      return true;
+    } catch (error) {
+      console.error("Genres list error:", error);
+      return false;
+    }
+  };
+
   // Populate form with existing values
   useEffect(() => {
     // First, get the data needed for the selects
     const loadData = async () => {
-      const [shelvesSuccess, formatsSuccess, artistsSuccess] =
-        await Promise.all([getShelves(), getFormats(), getArtists()]);
+      const [shelvesSuccess, formatsSuccess, artistsSuccess, genresSuccess] =
+        await Promise.all([
+          getShelves(),
+          getFormats(),
+          getArtists(),
+          getGenres(),
+        ]);
 
       if (!shelvesSuccess) {
         toast.error("Failed to load shelf locations");
@@ -235,11 +271,21 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         toast.error("Failed to load artists");
       }
 
+      if (!genresSuccess) {
+        toast.error("Failed to load genres");
+      }
+
       if (isUpdateMode && release) {
         // Set the artists as an array of names
         if (release.artists && release.artists.length > 0) {
           const artistNames = release.artists.map((artist) => artist.name);
           form.setValue("artists", artistNames);
+        }
+
+        // Set the genres as an array of names
+        if (release.genres && release.genres.length > 0) {
+          const genreNames = release.genres.map((genre) => genre.name);
+          form.setValue("genres", genreNames);
         }
 
         form.setValue("title", release.title || "");
@@ -283,9 +329,24 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         .filter((artist) => artist !== null);
 
       // Replace the artist names array with the array of artist objects
+      // const formData = {
+      //   ...values,
+      //   artists: artistsWithIds,
+      // };
+
+      // Convert genre names to genre objects with IDs
+      const genresWithIds = values.genres
+        ?.map((genreName) => {
+          const genre = genres?.find((g) => g.name === genreName);
+          return genre ? { id: genre.id } : null;
+        })
+        .filter((genre) => genre !== null);
+
+      // Replace the genre names array with the array of genre objects
       const formData = {
         ...values,
         artists: artistsWithIds,
+        genres: genresWithIds,
       };
 
       if (isUpdateMode) {
@@ -509,6 +570,31 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                           </SelectContent>
                         </Select>
                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="genres"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Genres(s)</FormLabel>
+                      <FormControl>
+                        <SelectPills
+                          data={(genres || []).map((genre) => ({
+                            ...genre,
+                            id: genre.id.toString(),
+                          }))}
+                          value={field.value}
+                          // defaultValue={release?.artists?.map((artist) =>
+                          //   artist.name.toString(),
+                          // )}
+                          onValueChange={field.onChange}
+                          placeholder="Search for a genre..."
+                        />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />

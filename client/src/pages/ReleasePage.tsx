@@ -59,8 +59,6 @@ export default function ReleasePage() {
 
       const data = await validateApiResponse(response, "Fetching releases");
 
-      console.log(data.data.releases);
-
       setReleases(data.data.releases);
       setMaxPage(data.data.maxPage);
       setTotalReleases(data.data.totalReleases);
