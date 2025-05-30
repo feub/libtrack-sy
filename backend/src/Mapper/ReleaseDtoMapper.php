@@ -2,11 +2,12 @@
 
 namespace App\Mapper;
 
-use App\Dto\ReleaseDto;
+use App\Entity\Genre;
+use App\Entity\Shelf;
 use App\Entity\Artist;
 use App\Entity\Format;
+use App\Dto\ReleaseDto;
 use App\Entity\Release;
-use App\Entity\Shelf;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -89,6 +90,11 @@ class ReleaseDtoMapper
         if ($dto->shelf !== null) {
             $this->mapShelf($dto->shelf, $release);
         }
+
+        // Handle genres
+        if ($dto->genres !== null) {
+            $this->mapGenres($dto->genres, $release);
+        }
     }
 
     /**
@@ -134,6 +140,27 @@ class ReleaseDtoMapper
             $shelf = $this->entityManager->getRepository(Shelf::class)->find($shelfData['id']);
             if ($shelf) {
                 $release->setShelf($shelf);
+            }
+        }
+    }
+
+    /**
+     * Map genres from DTO to entity
+     */
+    private function mapGenres(array $genresData, Release $release): void
+    {
+        // Clear existing genre relations for proper update
+        foreach ($release->getGenres() as $existingGenre) {
+            $release->removeGenre($existingGenre);
+        }
+
+        // Add new genres
+        foreach ($genresData as $genreData) {
+            if (isset($genreData['id'])) {
+                $genre = $this->entityManager->getRepository(Genre::class)->find($genreData['id']);
+                if ($genre) {
+                    $release->addGenre($genre);
+                }
             }
         }
     }

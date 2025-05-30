@@ -125,7 +125,10 @@ final class ApiReleaseController extends AbstractApiController
         //     },
         //     "shelf": {
         //       "id": 2
-        //     }
+        //     },
+        // "genres": [
+        //          {"id": 3}
+        //     ],
         //   }
 
         $releaseOrResponse = $this->findOr404(Release::class, $id);

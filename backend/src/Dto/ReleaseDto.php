@@ -45,6 +45,11 @@ class ReleaseDto
     public ?array $shelf = null;
 
     /**
+     * @var array<array{id: int}>|null
+     */
+    public ?array $genres = null;
+
+    /**
      * Create a new ReleaseDto from request data
      */
     public static function fromArray(array $data): self
@@ -58,6 +63,7 @@ class ReleaseDto
         $dto->artists = $data['artists'] ?? null;
         $dto->format = $data['format'] ?? null;
         $dto->shelf = $data['shelf'] ?? null;
+        $dto->genres = $data['genres'] ?? null;
 
         return $dto;
     }
