@@ -28,7 +28,7 @@ final class ApiGenreController extends AbstractApiController
     }
 
     #[Route('/', name: 'list', methods: ['GET'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function list(Request $request, GenreService $genreService): Response
     {
         $page = $request->query->getInt('page', 1);
@@ -47,7 +47,7 @@ final class ApiGenreController extends AbstractApiController
     }
 
     #[Route('/{id}', name: 'view', methods: ['GET'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function view(int $id, GenreRepository $genreRepository): Response
     {
         try {
@@ -72,7 +72,7 @@ final class ApiGenreController extends AbstractApiController
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    // #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(int $id, GenreService $genreService): Response
     {
         // Use findOr404 method to find the entity or return a 404
