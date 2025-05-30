@@ -5,39 +5,41 @@ namespace App\Repository;
 use App\Entity\Genre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\PaginatorInterface;
+use Knp\Component\Pager\Pagination\PaginationInterface;
 
 /**
  * @extends ServiceEntityRepository<Genre>
  */
 class GenreRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
     {
         parent::__construct($registry, Genre::class);
     }
 
-    //    /**
-    //     * @return Genre[] Returns an array of Genre objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('g.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function paginatedGenres(?int $page = 1, ?int $limit = 20): PaginationInterface
+    {
+        $builder = $this->createQueryBuilder('g')
+            ->select('g')
+            ->orderBy('g.name', 'ASC');
 
-    //    public function findOneBySomeField($value): ?Genre
-    //    {
-    //        return $this->createQueryBuilder('g')
-    //            ->andWhere('g.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $this->paginator->paginate(
+            $builder,
+            $page,
+            $limit,
+            [
+                'distinct' => false,
+                'sortFieldAllowList' => ['g.name']
+            ]
+        );
+    }
+
+    public function getTotalGenres(): int
+    {
+        return $this->createQueryBuilder('g')
+            ->select('COUNT(g.id) AS count')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
