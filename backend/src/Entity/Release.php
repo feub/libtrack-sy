@@ -73,9 +73,16 @@ class Release
     #[Groups(['api.release.list'])]
     private ?Format $format = null;
 
+    /**
+     * @var Collection<int, Genre>
+     */
+    #[ORM\ManyToMany(targetEntity: Genre::class, mappedBy: 'releases')]
+    private Collection $genres;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
+        $this->genres = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -211,6 +218,33 @@ class Release
     public function setFormat(?Format $format): static
     {
         $this->format = $format;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Genre>
+     */
+    public function getGenres(): Collection
+    {
+        return $this->genres;
+    }
+
+    public function addGenre(Genre $genre): static
+    {
+        if (!$this->genres->contains($genre)) {
+            $this->genres->add($genre);
+            $genre->addRelease($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGenre(Genre $genre): static
+    {
+        if ($this->genres->removeElement($genre)) {
+            $genre->removeRelease($this);
+        }
 
         return $this;
     }
