@@ -91,7 +91,7 @@ export default function FormatStatsCard() {
           <CardContent className="flex-1 pb-0">
             <ChartContainer
               config={chrtConfig}
-              className="mx-auto aspect-square max-h-[250px]"
+              className="mx-auto aspect-square max-h-[250px] w-[250px]"
             >
               <PieChart>
                 <ChartTooltip
