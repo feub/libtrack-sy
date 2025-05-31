@@ -84,4 +84,17 @@ class ReleaseRepository extends ServiceEntityRepository
 
         return $stats;
     }
+
+    public function getGenresStats()
+    {
+        $stats = $this->createQueryBuilder('r')
+            ->leftJoin('r.genres', 'g')
+            ->select('g.id AS genre_id', 'g.name AS genre_name', 'COUNT(r.id) AS count')
+            ->groupBy('g.id', 'g.name')
+            ->orderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $stats;
+    }
 }

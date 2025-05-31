@@ -29,4 +29,16 @@ final class ApiStatsController extends AbstractApiController
             200
         );
     }
+
+    #[Route('/genres', name: 'genres', methods: ['GET'])]
+    public function getGenresStats(ReleaseRepository $releaseRepository)
+    {
+        $stats = $releaseRepository->getGenresStats();
+
+        return $this->apiResponseService->success(
+            'Genres stats',
+            $stats,
+            200
+        );
+    }
 }
