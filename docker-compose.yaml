@@ -34,7 +34,7 @@ services:
   client:
     build: ./client
     command: npm run dev -- --host
-    restart: always
+    # restart: always
     # environment:
     #   - VITE_API_URL=http://localhost:8080
     ports:
