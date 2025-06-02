@@ -581,7 +581,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   control={form.control}
                   name="format"
                   render={({ field }) => (
-                    <FormItem className="">
+                    <FormItem className="col-span-4 md:col-span-1">
                       <FormLabel>Format</FormLabel>
                       <FormControl>
                         <Select
@@ -606,32 +606,29 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                     </FormItem>
                   )}
                 />
-
-                <Button
-                  type="submit"
-                  className="ml-2 w-[80px]"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader /> Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save /> Save
-                    </>
-                  )}
-                </Button>
               </form>
             </Form>
           </div>
-          <Button
-            onClick={handleBackToReleases}
-            className="mt-4"
-            variant="outline"
-          >
-            <ChevronsLeft /> back to releases
-          </Button>
+          <div className="flex justify-between mt-4">
+            <Button
+              onClick={handleBackToReleases}
+              className=""
+              variant="outline"
+            >
+              <ChevronsLeft /> back to releases
+            </Button>
+            <Button type="submit" className="w-[80px]" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save /> Save
+                </>
+              )}
+            </Button>
+          </div>
         </>
       )}
     </>
