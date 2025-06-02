@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useLocation } from "react-router";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { validateApiResponse, handleApiError } from "@/utils/errorHandling";
@@ -20,6 +20,7 @@ import { CirclePlus } from "lucide-react";
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function ReleasePage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [releases, setReleases] = useState<ListReleasesType[]>([]);
 
@@ -119,6 +120,9 @@ export default function ReleasePage() {
         <h2 className="font-bold text-3xl">Releases ({totalReleases})</h2>
         <Link
           to="/release/create"
+          state={{
+            returnTo: `${location.pathname}${location.search}`,
+          }}
           className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-9 px-4 py-2 has-[>svg]:px-3"
         >
           <CirclePlus />

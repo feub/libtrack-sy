@@ -1,6 +1,6 @@
-import { Link } from "react-router";
-import { ListReleasesType } from "../../types/releaseTypes";
-import { TableRow, TableCell } from "../ui/table";
+import { Link, useLocation } from "react-router";
+import { ListReleasesType } from "@/types/releaseTypes";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
 
@@ -14,6 +14,8 @@ export default function ReleaseListItem({
   release: ListReleasesType;
   handleDelete: (id: number) => void;
 }) {
+  const location = useLocation();
+
   return (
     <>
       <TableRow key={release.id}>
@@ -65,6 +67,9 @@ export default function ReleaseListItem({
         <TableCell>
           <Link
             to={`/release/edit/${release.id}`}
+            state={{
+              returnTo: `${location.pathname}${location.search}`,
+            }}
             className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-neutral-600 hover:text-neutral-400"
           >
             <FilePenLine className="h-4 w-4" />

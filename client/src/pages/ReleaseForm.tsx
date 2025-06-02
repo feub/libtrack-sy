@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useLocation, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Save, Loader } from "lucide-react";
+import { Save, Loader, ChevronsLeft } from "lucide-react";
 import { SelectPills } from "@/components/SelectPills";
 import TheLoader from "@/components/TheLoader";
 
@@ -81,6 +81,21 @@ const formSchema = z.object({
 });
 
 export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get referrer URL from navigation state
+  const referrerUrl = location.state?.returnTo;
+
+  const handleBackToReleases = () => {
+    if (referrerUrl) {
+      navigate(referrerUrl);
+    } else {
+      // Fallback to releases page
+      navigate("/release");
+    }
+  };
+
   const isUpdateMode = mode === "update";
   const [shelves, setShelves] = useState<ShelfType[] | null>(null);
   const [formats, setFormats] = useState<FormatType[] | null>(null);
@@ -610,6 +625,13 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
               </form>
             </Form>
           </div>
+          <Button
+            onClick={handleBackToReleases}
+            className="mt-4"
+            variant="outline"
+          >
+            <ChevronsLeft /> back to releases
+          </Button>
         </>
       )}
     </>
