@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
 use App\Service\ApiResponseService;
 use App\Service\ReleaseService;
@@ -16,6 +17,30 @@ final class ApiStatsController extends AbstractApiController
         ApiResponseService $apiResponseService
     ) {
         parent::__construct($entityManagerInterface, $apiResponseService);
+    }
+
+    #[Route('/releases/count', name: 'releases.count', methods: ['GET'])]
+    public function getReleasesCountStats(ReleaseRepository $releaseRepository)
+    {
+        $count = $releaseRepository->getTotalReleases();
+
+        return $this->apiResponseService->success(
+            'Releases count',
+            ['count' => $count],
+            200
+        );
+    }
+
+    #[Route('/artists/count', name: 'artists.count', methods: ['GET'])]
+    public function getArtistsCountStats(ArtistRepository $artistRepository)
+    {
+        $count = $artistRepository->getTotalArtists();
+
+        return $this->apiResponseService->success(
+            'Artists count',
+            ['count' => $count],
+            200
+        );
     }
 
     #[Route('/formats', name: 'formats', methods: ['GET'])]
