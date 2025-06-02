@@ -1,4 +1,5 @@
-import FormatStatsCard from "@/components/stats/FormatStatsCard";
+import FormatPieChartCard from "@/components/stats/FormatPieChartCard";
+import GenreBarChartCard from "@/components/stats/GenreBarChartCard";
 
 export default function StatsPage() {
   return (
@@ -7,7 +8,8 @@ export default function StatsPage() {
         <h2 className="font-bold text-3xl">Statistics</h2>
       </div>
       <div className="flex gap-4">
-        <FormatStatsCard />
+        <FormatPieChartCard />
+        <GenreBarChartCard />
       </div>
     </>
   );

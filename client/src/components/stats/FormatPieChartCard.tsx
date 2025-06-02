@@ -27,7 +27,7 @@ type FormatsStatsType = {
   count: number;
 };
 
-export default function FormatStatsCard() {
+export default function FormatPieChartCard() {
   const [chrtData, setChrtData] = useState<Array<FormatsStatsType>>([]);
   const [chrtConfig, setChrtConfig] = useState<ChartConfigType>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -86,12 +86,12 @@ export default function FormatStatsCard() {
       ) : (
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Number of releases by formats</CardTitle>
+            <CardTitle>Releases by formats</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
               config={chrtConfig}
-              className="mx-auto aspect-square max-h-[250px] w-[250px]"
+              className="mx-auto aspect-square max-h-[450px] w-[350px] format-pie-chart"
             >
               <PieChart>
                 <ChartTooltip
