@@ -411,224 +411,229 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
               <span>Add a release</span>
             )}
           </h2>
-          <div className="overflow-hidden rounded-md border mt-4">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="grid md:grid-cols-4 gap-4 p-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="artists"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-2">
-                      <FormLabel>Artist(s)</FormLabel>
-                      <FormControl>
-                        <SelectPills
-                          data={(artists || []).map((artist) => ({
-                            ...artist,
-                            id: artist.id.toString(),
-                          }))}
-                          value={field.value}
-                          // defaultValue={release?.artists?.map((artist) =>
-                          //   artist.name.toString(),
-                          // )}
-                          onValueChange={field.onChange}
-                          placeholder="Search for an artist..."
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="overflow-hidden rounded-md border mt-4">
+                <div className="grid md:grid-cols-4 gap-4 p-4">
+                  <FormField
+                    control={form.control}
+                    name="artists"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-2">
+                        <FormLabel>Artist(s)</FormLabel>
+                        <FormControl>
+                          <SelectPills
+                            data={(artists || []).map((artist) => ({
+                              ...artist,
+                              id: artist.id.toString(),
+                            }))}
+                            value={field.value}
+                            // defaultValue={release?.artists?.map((artist) =>
+                            //   artist.name.toString(),
+                            // )}
+                            onValueChange={field.onChange}
+                            placeholder="Search for an artist..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="genres"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-2">
-                      <FormLabel>Genres(s)</FormLabel>
-                      <FormControl>
-                        <SelectPills
-                          data={(genres || []).map((genre) => ({
-                            ...genre,
-                            id: genre.id.toString(),
-                          }))}
-                          value={field.value}
-                          // defaultValue={release?.genres?.map((genre) =>
-                          //   genre.name.toString(),
-                          // )}
-                          onValueChange={field.onChange}
-                          placeholder="Search for a genre..."
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="genres"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-2">
+                        <FormLabel>Genres(s)</FormLabel>
+                        <FormControl>
+                          <SelectPills
+                            data={(genres || []).map((genre) => ({
+                              ...genre,
+                              id: genre.id.toString(),
+                            }))}
+                            value={field.value}
+                            // defaultValue={release?.genres?.map((genre) =>
+                            //   genre.name.toString(),
+                            // )}
+                            onValueChange={field.onChange}
+                            placeholder="Search for a genre..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4">
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4">
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-2">
-                      <FormLabel>Slug</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value === null ? "" : field.value}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The slug will be added automatically if you leave the
-                        field empty.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-2">
+                        <FormLabel>Slug</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value === null ? "" : field.value}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          The slug will be added automatically if you leave the
+                          field empty.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="barcode"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-2">
-                      <FormLabel>Barcode</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value === null ? "" : field.value}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="barcode"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-2">
+                        <FormLabel>Barcode</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value === null ? "" : field.value}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="release_date"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-1">
-                      <FormLabel>Year</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="release_date"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-1">
+                        <FormLabel>Year</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="cover"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-1">
-                      <FormLabel>Cover art</FormLabel>
-                      <FormControl>
-                        <Input {...field} disabled />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="cover"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-1">
+                        <FormLabel>Cover art</FormLabel>
+                        <FormControl>
+                          <Input {...field} disabled />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="shelf"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-1">
-                      <FormLabel>Shelf location</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange({ id: parseInt(value) })
-                          }
-                          value={field.value?.id?.toString() || ""}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select a shelf location" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {shelves &&
-                              shelves.map((shelf, idx) => (
-                                <SelectItem key={idx} value={String(shelf.id)}>
-                                  {shelf.location}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="shelf"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-1">
+                        <FormLabel>Shelf location</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) =>
+                              field.onChange({ id: parseInt(value) })
+                            }
+                            value={field.value?.id?.toString() || ""}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a shelf location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {shelves &&
+                                shelves.map((shelf, idx) => (
+                                  <SelectItem
+                                    key={idx}
+                                    value={String(shelf.id)}
+                                  >
+                                    {shelf.location}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="format"
-                  render={({ field }) => (
-                    <FormItem className="col-span-4 md:col-span-1">
-                      <FormLabel>Format</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange({ id: parseInt(value) })
-                          }
-                          value={field.value?.id?.toString() || ""}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select a format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formats &&
-                              formats.map((format, idx) => (
-                                <SelectItem key={idx} value={String(format.id)}>
-                                  {format.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
+                  <FormField
+                    control={form.control}
+                    name="format"
+                    render={({ field }) => (
+                      <FormItem className="col-span-4 md:col-span-1">
+                        <FormLabel>Format</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) =>
+                              field.onChange({ id: parseInt(value) })
+                            }
+                            value={field.value?.id?.toString() || ""}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {formats &&
+                                formats.map((format, idx) => (
+                                  <SelectItem
+                                    key={idx}
+                                    value={String(format.id)}
+                                  >
+                                    {format.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between mt-4">
+                <Button
+                  onClick={handleBackToReleases}
+                  className=""
+                  variant="outline"
+                >
+                  <ChevronsLeft /> back to releases
+                </Button>
+                <Button type="submit" className="w-[80px]" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader /> Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save /> Save
+                    </>
                   )}
-                />
-              </form>
-            </Form>
-          </div>
-          <div className="flex justify-between mt-4">
-            <Button
-              onClick={handleBackToReleases}
-              className=""
-              variant="outline"
-            >
-              <ChevronsLeft /> back to releases
-            </Button>
-            <Button type="submit" className="w-[80px]" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader /> Saving...
-                </>
-              ) : (
-                <>
-                  <Save /> Save
-                </>
-              )}
-            </Button>
-          </div>
+                </Button>
+              </div>
+            </form>
+          </Form>
         </>
       )}
     </>
