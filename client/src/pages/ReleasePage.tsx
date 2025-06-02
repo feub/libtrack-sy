@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { validateApiResponse, handleApiError } from "@/utils/errorHandling";
@@ -20,17 +20,40 @@ import { CirclePlus } from "lucide-react";
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function ReleasePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [releases, setReleases] = useState<ListReleasesType[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Get initial page from URL params, default to 1
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const pageParam = searchParams.get("page");
+    return pageParam ? parseInt(pageParam, 10) : 1;
+  });
+
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
   const [totalReleases, setTotalReleases] = useState<number>(0);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const [searchTerm, setSearchTerm] = useState<string>(() => {
+    return searchParams.get("search") || "";
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     getReleases(currentPage, limit, searchTerm);
   }, [currentPage, limit, searchTerm]);
+
+  useEffect(() => {
+    // Update URL params when currentPage or searchTerm changes
+    const newSearchParams = new URLSearchParams();
+    if (currentPage > 1) {
+      newSearchParams.set("page", currentPage.toString());
+    }
+    if (searchTerm) {
+      newSearchParams.set("search", searchTerm);
+    }
+    setSearchParams(newSearchParams, { replace: true });
+  }, [currentPage, searchTerm, setSearchParams]);
 
   const handleSearchSubmit = async (search: string) => {
     if (search !== searchTerm) {
