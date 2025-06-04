@@ -1,3 +1,6 @@
 /mysql/
 etc/ssl
 etc/ssl/mycert.key
+
+.env
+.env.dev

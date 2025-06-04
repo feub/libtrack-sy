@@ -2,11 +2,12 @@ services:
   database:
     container_name: database
     image: mysql:8.0
+    env_file: ./.env.dev
     environment:
-      MYSQL_ROOT_PASSWORD: secretpassword
-      MYSQL_DATABASE: libtrack
-      MYSQL_USER: symfony
-      MYSQL_PASSWORD: secretpassword
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
     ports:
       - '4306:3306'
     volumes:
@@ -16,8 +17,9 @@ services:
     container_name: php
     build:
       context: ./php
-    # environment:
-    #   APP_ENV: dev
+      target: development
+    environment:
+      APP_ENV: dev
     ports:
       - 8080:80
       - 8443:443
@@ -32,11 +34,11 @@ services:
       - database
 
   client:
-    build: ./client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: development
     command: npm run dev -- --host
-    # restart: always
-    # environment:
-    #   - VITE_API_URL=http://localhost:8080
     ports:
       - 5173:5173
     volumes:
@@ -46,11 +48,12 @@ services:
   phpma:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
+    env_file: ./.env
     environment:
       PMA_ARBITRARY: 1
-      PMA_HOST: database
+      PMA_HOST: "${DB_HOST}"
       PMA_USER: root
-      PMA_PASSWORD: secretpassword
+      PMA_PASSWORD: "${DB_ROOT_PASSWORD}"
       UPLOAD_LIMIT: 20M
     ports:
       - 8899:80
