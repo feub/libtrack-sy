@@ -1,0 +1,78 @@
+services:
+  database:
+    container_name: libtrack_database_prod
+    image: mysql:8.0
+    env_file: ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - database_data:/var/lib/mysql
+    networks:
+      - backend
+    restart: unless-stopped
+
+  php:
+    container_name: libtrack_php_prod
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+      target: production
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: 0
+    ports:
+      - "8080:80"
+      - "443:443"
+    volumes:
+      - ./apache/default.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+      - ./apache/default-ssl.conf:/etc/apache2/sites-enabled/000-default-ssl.conf:ro
+      - ./etc/ssl:/etc/ssl:ro
+      # Only mount volumes that need to persist or be writable
+      - covers_data:/var/www/public/covers
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - database
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: production
+    container_name: libtrack_client_prod
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  database_data:
+    driver: local
+  app_var:
+    driver: local
+  covers_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge

@@ -35,7 +35,7 @@ RUN mkdir -p /var/www/public/covers && \
 FROM base AS production
 
 # Copy production php.ini configuration
-COPY custom-php-prod.ini /usr/local/etc/php/php.ini
+COPY php/custom-php-prod.ini /usr/local/etc/php/php.ini
 
 # Copy the Symfony application from the backend directory
 COPY ../backend /var/www
