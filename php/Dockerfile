@@ -21,7 +21,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 FROM base AS development
 
 # Copy custom php.ini file to the container
-COPY custom-php.ini /usr/local/etc/php/php.ini
+COPY php/custom-php.ini /usr/local/etc/php/php.ini
 
 # Install Symfony CLI
 RUN curl -sS https://get.symfony.com/cli/installer | bash
@@ -38,25 +38,32 @@ FROM base AS production
 COPY php/custom-php-prod.ini /usr/local/etc/php/php.ini
 
 # Copy the Symfony application from the backend directory
-COPY ../backend /var/www
+COPY backend /var/www
 
-# Create necessary directories and set permissions
-RUN mkdir -p /var/www/var/cache /var/www/var/log /var/www/public/covers \
-    && chown -R www-data:www-data /var/www \
+# Create necessary directories
+RUN mkdir -p /var/www/var/cache /var/www/var/log /var/www/public/covers
+
+# Set proper ownership
+RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www \
     && chmod -R 775 /var/www/var /var/www/public/covers
 
 # Install production dependencies only
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --prefer-dist
 
-# Set environment to production
-ENV APP_ENV=prod
-ENV APP_DEBUG=0
+# Set environment for Symfony
+# ENV APP_ENV=prod
+# ENV APP_DEBUG=0
+# ENV DATABASE_URL="mysql://symfony:5bNIGHZ0BRpb@database:3306/libtrack_prod?serverVersion=8.0&charset=utf8mb4"
+
+
+# Debug: Check if console exists and environment
+RUN ls -la bin/ && php -v
 
 # Clear and warm up cache for production
-RUN php bin/console cache:clear --env=prod --no-debug \
-    && php bin/console cache:warmup --env=prod --no-debug \
-    && chown -R www-data:www-data /var/www/var
+# RUN php bin/console cache:clear --env=prod --no-debug \
+#     && php bin/console cache:warmup --env=prod --no-debug \
+#     && chown -R www-data:www-data /var/www/var
 
 # Switch to www-data user for security
 USER www-data
