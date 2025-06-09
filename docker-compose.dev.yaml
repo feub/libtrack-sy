@@ -53,9 +53,9 @@ services:
     env_file: ./.env.dev
     environment:
       PMA_ARBITRARY: 1
-      PMA_HOST: "${DB_HOST}"
+      PMA_HOST: database
       PMA_USER: root
-      PMA_PASSWORD: "${DB_ROOT_PASSWORD}"
+      PMA_PASSWORD: secretpassword
       UPLOAD_LIMIT: 20M
     ports:
       - 8899:80
