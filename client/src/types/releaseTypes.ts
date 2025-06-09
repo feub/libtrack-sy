@@ -49,6 +49,7 @@ export type ScannedImageType = {
 export type ScannedReleaseType = {
   id: number;
   artists: ArtistType[];
+  styles: string[];
   title: string;
   year: number;
   formats: ScannedFormatType[];
