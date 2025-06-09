@@ -4,3 +4,4 @@ etc/ssl/mycert.key
 
 .env
 .env.dev
+caddyfile
