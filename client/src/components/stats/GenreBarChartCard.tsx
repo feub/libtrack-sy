@@ -49,30 +49,38 @@ export default function GenreBarChartCard() {
       const data = await validateApiResponse(response, "Fetching genres stats");
 
       const chrtConfig: ChartConfigType = {};
-      data.data.forEach((d: GenresStatsType, idx: number) => {
-        const genreName = d.genre_name === null ? "undefined" : d.genre_name;
-        const sanitizedGenreName = genreName.toLowerCase().replace(/\s+/g, "-");
 
-        chrtConfig[sanitizedGenreName] = {
-          label: d.genre_name || "Not set",
-          color: `hsl(var(--chart-${idx + 1}))`,
-        };
+      data.data.forEach((d: GenresStatsType, idx: number) => {
+        if (d.genre_name) {
+          const genreName = d.genre_name === null ? "undefined" : d.genre_name;
+          const sanitizedGenreName = genreName
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+
+          chrtConfig[sanitizedGenreName] = {
+            label: d.genre_name || "Not set",
+            color: `hsl(var(--chart-${idx + 1}))`,
+          };
+        }
       });
 
       chrtConfig.label = {
         color: "hsl(var(--background))",
       };
 
-      const chrtData = data.data.map((d: GenresStatsType) => {
-        const genreName = d.genre_name === null ? "undefined" : d.genre_name;
-        const sanitizedGenreName = genreName.toLowerCase().replace(/\s+/g, "-");
+      const chrtData = data.data
+        .filter((d: GenresStatsType) => d.genre_name !== null)
+        .map((d: GenresStatsType) => {
+          const genreName = d.genre_name === null ? "undefined" : d.genre_name;
+          const sanitizedGenreName = genreName
+            .toLowerCase()
+            .replace(/\s+/g, "-");
 
-        return {
-          genre: sanitizedGenreName,
-          count: d.count,
-          //   fill: `var(--color-${sanitizedGenreName})`,
-        };
-      });
+          return {
+            genre: sanitizedGenreName,
+            count: d.count,
+          };
+        });
 
       setChrtData(chrtData);
       setChrtConfig(chrtConfig);
