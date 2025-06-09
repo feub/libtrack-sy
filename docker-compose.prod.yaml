@@ -4,10 +4,10 @@ services:
     image: mysql:8.0
     env_file: ./.env
     environment:
-      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
-      MYSQL_DATABASE: "${DB_NAME}"
-      MYSQL_USER: "${DB_USER}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - database_data:/var/lib/mysql
     networks:
@@ -23,13 +23,16 @@ services:
     environment:
       APP_ENV: prod
       APP_DEBUG: 0
+      TRUSTED_PROXIES: "172.16.0.0/12,192.168.0.0/16,10.0.0.0/8"
+      TRUSTED_HOSTS: "libtrack.rholala.net"
+      HTTPS: "on"
+      # APP_SECRET: "${APP_SECRET}"
+      # DATABASE_URL: "mysql://symfony:5bNIGHZ0BRpb@database:3306/libtrack_prod?serverVersion=8.0&charset=utf8mb4"
+      # JWT_PASSPHRASE: "${JWT_PASSPHRASE}"
     ports:
       - "8080:80"
-      - "443:443"
     volumes:
       - ./apache/default.conf:/etc/apache2/sites-enabled/000-default.conf:ro
-      - ./apache/default-ssl.conf:/etc/apache2/sites-enabled/000-default-ssl.conf:ro
-      - ./etc/ssl:/etc/ssl:ro
       # Only mount volumes that need to persist or be writable
       - covers_data:/var/www/public/covers
     networks:
@@ -43,6 +46,25 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  phpma:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    env_file: ./.env
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: ${DB_HOST}
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 20M
+      PMA_ABSOLUTE_URI: https://libtrack.rholala.net/pma/
+    ports:
+      - 8888:80
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - database
 
   client:
     build:
