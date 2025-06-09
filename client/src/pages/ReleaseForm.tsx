@@ -156,7 +156,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getShelves = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/shelf`);
+      const response = await api.get(`${apiURL}/api/shelf/`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -183,7 +183,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getFormats = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/format`);
+      const response = await api.get(`${apiURL}/api/format/`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -210,7 +210,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getArtists = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/artist?limit=1000`);
+      const response = await api.get(`${apiURL}/api/artist/?limit=1000`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -237,7 +237,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
   const getGenres = async (): Promise<boolean> => {
     try {
-      const response = await api.get(`${apiURL}/api/genre?limit=1000`);
+      const response = await api.get(`${apiURL}/api/genre/?limit=1000`);
 
       if (!response.ok) {
         const errorData = await response.json();

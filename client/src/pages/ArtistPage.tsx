@@ -39,7 +39,7 @@ export default function ArtistPage() {
       });
 
       const response = await api.get(
-        `${apiURL}/api/artist?${params.toString()}`,
+        `${apiURL}/api/artist/?${params.toString()}`,
       );
 
       const data = await validateApiResponse(response, "Fetching artists");

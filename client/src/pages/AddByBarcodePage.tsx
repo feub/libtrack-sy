@@ -28,7 +28,7 @@ export default function AddByBarcodePage() {
   const searchReleases = async (barcode: string) => {
     setIsLoading(true);
     try {
-      const response = await api.post(`${apiURL}/api/release/scan`, {
+      const response = await api.post(`${apiURL}/api/release/scan/`, {
         barcode,
       });
 
@@ -62,7 +62,7 @@ export default function AddByBarcodePage() {
     // Create a promise to track the API request
     const addReleasePromise = new Promise<void>((resolve, reject) => {
       api
-        .post(`${apiURL}/api/release/scan/add`, {
+        .post(`${apiURL}/api/release/scan/add/`, {
           barcode,
           release_id,
         })

@@ -78,7 +78,7 @@ export default function ReleasePage() {
       });
 
       const response = await api.get(
-        `${apiURL}/api/release?${params.toString()}`,
+        `${apiURL}/api/release/?${params.toString()}`,
       );
 
       const data = await validateApiResponse(response, "Fetching releases");
