@@ -21,6 +21,7 @@ import {
   User2,
   LogOut,
   ChartPie,
+  ListMusic,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,6 +51,11 @@ const items = [
     title: "Artists",
     url: "/artist",
     icon: PersonStanding,
+  },
+  {
+    title: "Genres",
+    url: "/genre",
+    icon: ListMusic,
   },
 ];
 
