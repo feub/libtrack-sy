@@ -1,18 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { ThemeProvider } from "./context/ThemeProvider.tsx";
-import { AuthProvider } from "./context/AuthProvider";
-import Layout from "./Layout.tsx";
-import ErrorPage from "./pages/ErrorPage.tsx";
-import ReleasePage from "./pages/ReleasePage.tsx";
-import ArtistPage from "./pages/ArtistPage.tsx";
-import LoginPage from "./pages/LoginPage.tsx";
-import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
-import AddByBarcodePage from "./pages/AddByBarcodePage.tsx";
-import ReleaseForm from "./pages/ReleaseForm.tsx";
-import ArtistForm from "./pages/ArtistForm.tsx";
-import StatsPage from "./pages/StatsPage.tsx";
+import { ThemeProvider } from "@/context/ThemeProvider.tsx";
+import { AuthProvider } from "@/context/AuthProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute.tsx";
+import Layout from "@/Layout.tsx";
+import ErrorPage from "@/pages/ErrorPage.tsx";
+import ReleasePage from "@/pages/ReleasePage.tsx";
+import ArtistPage from "@/pages/ArtistPage.tsx";
+import GenrePage from "@/pages/GenrePage.tsx";
+import LoginPage from "@/pages/LoginPage.tsx";
+import AddByBarcodePage from "@/pages/AddByBarcodePage.tsx";
+import ReleaseForm from "@/pages/ReleaseForm.tsx";
+import ArtistForm from "@/pages/ArtistForm.tsx";
+import StatsPage from "@/pages/StatsPage.tsx";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -68,6 +69,15 @@ const router = createBrowserRouter([
               {
                 path: "edit/:id",
                 element: <ArtistForm mode="update" />,
+              },
+            ],
+          },
+          {
+            path: "genre",
+            children: [
+              {
+                index: true,
+                element: <GenrePage />,
               },
             ],
           },
