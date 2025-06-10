@@ -15,6 +15,7 @@ import ReleaseForm from "@/pages/ReleaseForm.tsx";
 import ArtistForm from "@/pages/ArtistForm.tsx";
 import StatsPage from "@/pages/StatsPage.tsx";
 import "./index.css";
+import GenreForm from "./pages/GenreForm";
 
 const router = createBrowserRouter([
   {
@@ -78,6 +79,14 @@ const router = createBrowserRouter([
               {
                 index: true,
                 element: <GenrePage />,
+              },
+              {
+                path: "create",
+                element: <GenreForm mode="create" />,
+              },
+              {
+                path: "edit/:id",
+                element: <GenreForm mode="update" />,
               },
             ],
           },

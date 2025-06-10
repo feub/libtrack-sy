@@ -35,7 +35,7 @@ export default function GenreListItem({
         <TableCell className="text-neutral-600 italic">{genre.slug}</TableCell>
         <TableCell className="text-right">
           <Link
-            to={`/artist/edit/${genre.id}`}
+            to={`/genre/edit/${genre.id}`}
             className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-neutral-600 hover:text-neutral-400"
           >
             <FilePenLine className="h-[16px] w-[16px]" />
