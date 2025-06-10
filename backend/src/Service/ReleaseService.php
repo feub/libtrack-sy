@@ -2,13 +2,14 @@
 
 namespace App\Service;
 
+use App\Entity\Genre;
 use App\Entity\Artist;
 use App\Dto\ReleaseDto;
 use App\Entity\Release;
 use Psr\Log\LoggerInterface;
 use App\Mapper\ReleaseDtoMapper;
-use App\Repository\ArtistRepository;
 use App\Repository\GenreRepository;
+use App\Repository\ArtistRepository;
 use App\Repository\ReleaseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -154,6 +155,13 @@ class ReleaseService
         string $barcode,
         ?int $shelf
     ) {
+        // Check if the release does NOT already exist
+        if ($this->releaseRepository->findOneBy(['barcode' => $barcode])) {
+            $this->logger->error('Barcode "' . $barcode . '" already exists.');
+            // ConflictHttpException: status 409 (conflict)
+            throw new ConflictHttpException('Barcode "' . $barcode . '" already exists.');
+        }
+
         // Fetch the complete release data
         try {
             $releaseData = $this->discogsService->getReleaseById($releaseId);
@@ -167,18 +175,13 @@ class ReleaseService
                 }, $releaseData['artists'] ?? []),
                 'format' => $releaseData['formats'][0]["name"] ? $this->setFormat($releaseData['formats'][0]["name"]) : null,
                 'shelf' => ["id" => $shelf] ?? null,
+                'genres' => array_map(function ($style) {
+                    return ['id' => $this->getGenreIdByName($style)];
+                }, $releaseData['styles'] ?? []),
             ];
         } catch (\Exception $e) {
             $this->logger->error("Release data not found: $e");
             throw new NotFoundHttpException('Release data not found.', $e);
-        }
-
-
-        // Check if the release does NOT already exist
-        if ($this->releaseRepository->findOneBy(['barcode' => $barcode])) {
-            $this->logger->error('Barcode "' . $barcode . '" already exists.');
-            // ConflictHttpException: status 409 (conflict)
-            throw new ConflictHttpException('Barcode "' . $barcode . '" already exists.');
         }
 
         // Create and validate DTO
@@ -235,6 +238,32 @@ class ReleaseService
         }
 
         return $artist->getId();
+    }
+
+    /**
+     * Find or create a genre by name and return its ID
+     *
+     * @param string $genreName The name of the genre to find or create
+     * @return int The ID of the found or created genre
+     */
+    private function getGenreIdByName(string $genreName): int
+    {
+        $genre = $this->genreRepository->findOneBy(['name' => $genreName]);
+
+        if (!$genre) {
+            $genre = new Genre;
+            $genre->setName($genreName);
+
+            $slug = $this->slugger->slug(strtolower($genreName))->toString();
+            $genre->setSlug($slug);
+
+            $this->em->persist($genre);
+            $this->em->flush();
+
+            $this->logger->info("Created new genre: $genreName");
+        }
+
+        return $genre->getId();
     }
 
     public function deleteRelease(Release $release): void
