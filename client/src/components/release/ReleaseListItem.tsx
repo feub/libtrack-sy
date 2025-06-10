@@ -88,11 +88,11 @@ export default function ReleaseListItem({
             }}
             className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-neutral-600 hover:text-neutral-400"
           >
-            <FilePenLine className="h-4 w-4" />
+            <FilePenLine className="h-[16px] w-[16px]" />
           </Link>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className="text-neutral-600 hover:text-red-600">
-              <CircleX />
+              <CircleX className="h-[16px] w-[16px]" />
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
