@@ -46,7 +46,7 @@ export default function GenrePage() {
 
       setGenres(data.data.genres);
       setMaxPage(data.data.maxPage);
-      setTotalGenres(data.data.totalGenres);
+      setTotalGenres(data.data.total);
     } catch (error) {
       handleApiError(error, "Fetching genres");
     } finally {
