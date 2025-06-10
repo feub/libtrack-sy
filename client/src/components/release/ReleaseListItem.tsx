@@ -2,7 +2,17 @@ import { Link, useLocation } from "react-router";
 import { ListReleasesType } from "@/types/releaseTypes";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
+import { useState } from "react";
 
 const apiURL = import.meta.env.VITE_API_URL;
 const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
@@ -15,6 +25,12 @@ export default function ReleaseListItem({
   handleDelete: (id: number) => void;
 }) {
   const location = useLocation();
+  const [open, setOpen] = useState<boolean>(false);
+
+  const handleDeleteAndClose = (id: number) => {
+    handleDelete(id);
+    setOpen(false);
+  };
 
   return (
     <>
@@ -74,13 +90,34 @@ export default function ReleaseListItem({
           >
             <FilePenLine className="h-4 w-4" />
           </Link>
-          <Button
-            variant="ghost"
-            onClick={() => handleDelete(release.id)}
-            className="text-neutral-600 hover:text-red-600"
-          >
-            <CircleX />
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger className="text-neutral-600 hover:text-red-600">
+              <CircleX />
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure?</DialogTitle>
+                <DialogDescription>
+                  This will permanently delete the release.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="ghost"
+                  onClick={() => setOpen(false)}
+                  className="text-neutral-600 hover:text-neutral-400"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDeleteAndClose(release.id)}
+                >
+                  <CircleX /> Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TableCell>
       </TableRow>
     </>
