@@ -86,7 +86,13 @@ export default function AddByBarcodeForm({
         </Button>
       </form>
       <p className="mb-6 text-neutral-500 text-sm">
-        Ex.: 016861923822 (Death "Human" CD)
+        Ex.:
+        <br />
+        5020157105125 (Anathema "Pentecost III" CD)
+        <br /> 016861923822 (Death "Human" CD)
+        <br />
+        075678235825 (Tori Amos "Little Earthquake" CD)
+        <br />
       </p>
     </Form>
   );
