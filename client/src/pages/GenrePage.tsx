@@ -64,7 +64,7 @@ export default function GenrePage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await api.delete(`${apiURL}/api/genres/${id}`);
+      const response = await api.delete(`${apiURL}/api/genre/${id}`);
 
       await validateApiResponse(response, "Deleting genre.");
 
