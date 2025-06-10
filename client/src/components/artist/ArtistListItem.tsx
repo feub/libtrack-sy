@@ -54,11 +54,11 @@ export default function ArtistListItem({
             to={`/artist/edit/${artist.id}`}
             className="inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-neutral-600 hover:text-neutral-400"
           >
-            <FilePenLine className="h-4 w-4" />
+            <FilePenLine className="h-[16px] w-[16px]" />
           </Link>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger className="text-neutral-600 hover:text-red-600">
-              <CircleX />
+              <CircleX className="h-[16px] w-[16px]" />
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -71,8 +71,14 @@ export default function ArtistListItem({
               <DialogFooter>
                 <Button
                   variant="ghost"
+                  onClick={() => setOpen(false)}
+                  className="text-neutral-600 hover:text-neutral-400"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
                   onClick={() => handleDeleteAndClose(artist.id)}
-                  className="hover:bg-red-600 hover:text-red-200 text-red-600"
                 >
                   <CircleX /> Delete
                 </Button>
