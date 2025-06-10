@@ -2,15 +2,18 @@
 
 namespace App\Service;
 
+use App\Dto\GenreDto;
 use App\Entity\Genre;
 use Psr\Log\LoggerInterface;
+use App\Mapper\GenreDtoMapper;
 use App\Repository\GenreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class GenreService
 {
@@ -22,6 +25,7 @@ class GenreService
         private GenreRepository $genreRepository,
         private Security $security,
         private NormalizerInterface $serializer,
+        private GenreDtoMapper $genreDtoMapper
     ) {}
 
     /**
@@ -69,6 +73,36 @@ class GenreService
      */
     public function getGenre(int $id): ?Genre
     {
-        return $this->genreRepository->getArtist($id);
+        return $this->genreRepository->getGenre($id);
+    }
+
+    // Create genre from DTO
+    public function createFromDto(GenreDto $dto): Genre
+    {
+        // Check if the genre already exists
+        if ($this->genreRepository->findOneBy(['name' => $dto->name])) {
+            $this->logger->error('Genre name "' . $dto->name . '" already exists.');
+            throw new BadRequestHttpException('Genre name "' . $dto->name . '" already exists.');
+        }
+
+        // Create a new genre entity from the DTO
+        $genre = $this->genreDtoMapper->createEntityFromDto($dto);
+
+        // Persist and flush
+        $this->em->persist($genre);
+        $this->em->flush();
+
+        return $genre;
+    }
+
+    // Update from DTO
+    public function updateFromDto(Genre $genre, GenreDto $dto): Genre
+    {
+        // Update the genre from the DTO
+        $this->genreDtoMapper->updateEntityFromDto($dto, $genre);
+
+        $this->em->flush();
+
+        return $genre;
     }
 }

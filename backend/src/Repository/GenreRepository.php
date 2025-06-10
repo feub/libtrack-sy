@@ -42,4 +42,17 @@ class GenreRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @return Genre Returns a Genre object
+     */
+    public function findGenreByid($id): Genre
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.id = :val')
+            ->setParameter('val', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

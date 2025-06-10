@@ -2,10 +2,11 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\GenreDto;
 use App\Entity\Genre;
 use App\Service\GenreService;
-use App\Service\ApiResponseService;
 use App\Repository\GenreRepository;
+use App\Service\ApiResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[Route('/api/genre', name: 'api.genre.')]
@@ -43,6 +45,95 @@ final class ApiGenreController extends AbstractApiController
             [
                 "groups" => ['api.genre.list']
             ]
+        );
+    }
+
+    #[Route('/', name: 'create', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function create(
+        Request $request,
+        GenreService $genreService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a POST request to create a genre
+        // {
+        //     "name": "Doom",
+        //     "slug": "doom",
+        //   }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $genreDto = GenreDto::fromArray($data);
+        $violations = $validator->validate($genreDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        // Create the genre
+        $genre = $genreService->createFromDto($genreDto);
+
+        return $this->apiResponseService->success(
+            'Genre "' . $genre->getName() . '" created successfully'
+        );
+    }
+
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function edit(
+        int $id,
+        Request $request,
+        GenreService $genreService,
+        ValidatorInterface $validator
+    ): Response {
+        // Example of a PUT request to create a genre
+        // {
+        //     "name": "Doom",
+        //     "slug": "doom",
+        //   }
+
+        $genreOrResponse = $this->findOr404(Genre::class, $id);
+
+        if ($genreOrResponse instanceof Response) {
+            return $genreOrResponse;
+        }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        // Create and validate DTO
+        $genreDto = GenreDto::fromArray($data);
+        $violations = $validator->validate($genreDto);
+
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
+            return $this->apiResponseService->error(
+                'Validation failed',
+                Response::HTTP_BAD_REQUEST,
+                ['errors' => $errors]
+            );
+        }
+
+        // Create the genre
+        $genre = $genreService->updateFromDto($genreOrResponse, $genreDto);
+
+        return $this->apiResponseService->success(
+            'Genre "' . $genre->getName() . '" updated successfully'
         );
     }
 
