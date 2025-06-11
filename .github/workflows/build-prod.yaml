@@ -1,6 +1,8 @@
 name: Build and Push Libtrack Docker Images
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches: ["main"]
 
 jobs:
   build:
