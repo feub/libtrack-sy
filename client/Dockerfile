@@ -13,10 +13,10 @@ CMD ["npm", "run", "dev"]
 FROM node:lts-alpine AS build
 
 WORKDIR /app
-# COPY package*.json ./
 COPY client/package*.json ./
 RUN npm ci
 COPY client/ .
+RUN echo "Environment variables:" && cat .env.production
 RUN npm run build
 
 # Production stage - serves the built files
