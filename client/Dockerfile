@@ -16,7 +16,7 @@ WORKDIR /app
 COPY client/package*.json ./
 RUN npm ci
 COPY client/ .
-RUN echo "Environment variables:" && cat .env.production
+RUN echo "Environment variables:" && cat client/.env.production
 RUN npm run build
 
 # Production stage - serves the built files
