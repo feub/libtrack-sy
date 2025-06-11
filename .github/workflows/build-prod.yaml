@@ -1,0 +1,34 @@
+name: Build and Push Libtrack Docker Images
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: feub
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build and push backend
+      - name: Build and push backend
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./php/Dockerfile
+          push: true
+          tags: feub/libtrack-backend:latest
+
+      # Build and push frontend
+      - name: Build and push frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./client/Dockerfile
+          push: true
+          tags: feub/libtrack-frontend-react:latest
