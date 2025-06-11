@@ -15,11 +15,7 @@ services:
     restart: unless-stopped
 
   php:
-    container_name: libtrack_php_prod
-    build:
-      context: .
-      dockerfile: ./php/Dockerfile
-      target: production
+    image: feub/libtrack-backend
     environment:
       APP_ENV: prod
       APP_DEBUG: 0
@@ -27,7 +23,7 @@ services:
       TRUSTED_HOSTS: "libtrack.rholala.net"
       HTTPS: "on"
       # APP_SECRET: "${APP_SECRET}"
-      # DATABASE_URL: "mysql://symfony:5bNIGHZ0BRpb@database:3306/libtrack_prod?serverVersion=8.0&charset=utf8mb4"
+      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@database:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4"
       # JWT_PASSPHRASE: "${JWT_PASSPHRASE}"
     ports:
       - "8080:80"
@@ -67,11 +63,7 @@ services:
       - database
 
   client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-      target: production
-    container_name: libtrack_client_prod
+    image: feub/libtrack-frontend-react
     environment:
       NODE_ENV: production
     ports:
