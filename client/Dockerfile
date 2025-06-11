@@ -13,9 +13,10 @@ CMD ["npm", "run", "dev"]
 FROM node:lts-alpine AS build
 
 WORKDIR /app
-COPY package*.json ./
+# COPY package*.json ./
+COPY client/package*.json ./
 RUN npm ci
-COPY . .
+COPY client/ .
 RUN npm run build
 
 # Production stage - serves the built files
