@@ -13,10 +13,19 @@ CMD ["npm", "run", "dev"]
 FROM node:lts-alpine AS build
 
 WORKDIR /app
+
+# Define build arguments
+ARG VITE_API_URL
+ARG VITE_COVER_PATH
+
+# Set environment variables from build args
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_COVER_PATH=${VITE_COVER_PATH}
+
 COPY client/package*.json ./
 RUN npm ci
 COPY client/ .
-RUN echo "Environment variables:" && cat client/.env.production
+# RUN echo "Environment variables:" && cat client/.env.production
 RUN npm run build
 
 # Production stage - serves the built files
