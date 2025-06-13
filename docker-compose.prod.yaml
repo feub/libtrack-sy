@@ -29,6 +29,9 @@ services:
       - "8080:80"
     volumes:
       - ./apache/default.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+      - ./backend/.env:/var/www/.env:ro
+      - ./backend/.env.local:/var/www/.env.local:ro
+      - ./backend/config/jwt:/var/www/config/jwt:ro
       # Only mount volumes that need to persist or be writable
       - covers_data:/var/www/public/covers
     networks:
@@ -66,6 +69,7 @@ services:
     image: feub/libtrack-frontend-react
     environment:
       NODE_ENV: production
+      VITE_API_URL: "https://libtrack.rholala.net"
     ports:
       - "3000:3000"
     networks:
