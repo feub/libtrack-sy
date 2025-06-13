@@ -32,5 +32,8 @@ jobs:
         with:
           context: .
           file: ./client/Dockerfile
+          build-args: |
+            VITE_API_URL=${{ vars.API_URL }}
+            VITE_COVER_PATH=${{ vars.COVER_PATH }}
           push: true
           tags: feub/libtrack-frontend-react:latest
