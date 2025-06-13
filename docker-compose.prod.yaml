@@ -24,7 +24,6 @@ services:
       HTTPS: "on"
       # APP_SECRET: "${APP_SECRET}"
       DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@database:3306/${DB_NAME}?serverVersion=8.0&charset=utf8mb4"
-      # JWT_PASSPHRASE: "${JWT_PASSPHRASE}"
     ports:
       - "8080:80"
     volumes:
