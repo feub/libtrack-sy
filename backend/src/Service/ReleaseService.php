@@ -133,7 +133,25 @@ class ReleaseService
         }
 
         $coverPath = $this->coverDir . $id . '.jpg';
-        $coverContent = file_get_contents($coverUrl);
+
+        // $coverContent = file_get_contents($coverUrl);
+        // file_put_contents($coverPath, $coverContent);
+
+        // Use cURL instead of file_get_contents
+        $ch = curl_init($coverUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $coverContent = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            $this->logger->error('Cover download failed: ' . curl_error($ch));
+            curl_close($ch);
+            return '';
+        }
+
+        curl_close($ch);
         file_put_contents($coverPath, $coverContent);
 
         return $id . '.jpg';

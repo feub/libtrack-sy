@@ -45,24 +45,24 @@ services:
       timeout: 10s
       retries: 3
 
-  phpma:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    env_file: ./.env
-    environment:
-      PMA_ARBITRARY: 1
-      PMA_HOST: ${DB_HOST}
-      PMA_USER: root
-      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
-      UPLOAD_LIMIT: 20M
-      PMA_ABSOLUTE_URI: https://libtrack.rholala.net/pma/
-    ports:
-      - 8888:80
-    networks:
-      - backend
-      - frontend
-    depends_on:
-      - database
+  # phpma:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   env_file: ./.env
+  #   environment:
+  #     PMA_ARBITRARY: 1
+  #     PMA_HOST: ${DB_HOST}
+  #     PMA_USER: root
+  #     PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+  #     UPLOAD_LIMIT: 20M
+  #     PMA_ABSOLUTE_URI: https://libtrack.rholala.net/pma/
+  #   ports:
+  #     - 8888:80
+  #   networks:
+  #     - backend
+  #     - frontend
+  #   depends_on:
+  #     - database
 
   client:
     image: feub/libtrack-frontend-react
