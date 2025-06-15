@@ -175,7 +175,6 @@ final class ApiReleaseController extends AbstractApiController
         $by = $body['by'] ?? "release_title";
         $search = $body['search'] ?? null;
 
-
         if (!$search) {
             return $this->apiResponseService->error(
                 'Search cannot be empty',
@@ -202,9 +201,10 @@ final class ApiReleaseController extends AbstractApiController
         Request $request,
         DiscogsService $discogsService
     ): Response {
-        $barcode = $request->toArray();
-        $barcode = $barcode['barcode'];
-        $releases = null;
+        $body = $request->toArray();
+        $barcode = $body['barcode'];
+        $limit = $body['limit'] ?? 5;
+        $page = $body['page'] ?? 1;
 
         if (!$barcode) {
             return $this->apiResponseService->error(
@@ -214,13 +214,17 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $releases = $discogsService->getReleaseByBarcode($barcode);
+        $result = $discogsService->searchRelease('barcode', $barcode, $limit, $page);
 
         return $this->apiResponseService->success(
             'Available releases for the barcode: ' . $barcode,
             [
                 'barcode' => $barcode,
-                'releases' => $releases
+                'releases' => $result["releases"],
+                "per_page" => $result['per_page'],
+                "page" => $result['page'],
+                "pages" => $result['pages'],
+                "items" => $result['items'],
             ]
         );
     }
