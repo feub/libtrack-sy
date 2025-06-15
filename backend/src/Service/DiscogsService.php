@@ -91,12 +91,14 @@ class DiscogsService
    * @param string $search
    * @return array
    */
-  public function searchRelease(string $by, string $search): array
+  public function searchRelease(string $by, string $search, int $per_page = 5, int $page = 1): array
   {
     try {
       $response = $this->httpClient->request('GET', $this->endpoint . 'database/search', [
         'query' => [
           $by => $search,
+          'per_page' => $per_page,
+          'page' => $page,
           'key' => $this->discogs_key,
           'secret' => $this->discogs_secret
         ],
@@ -123,6 +125,12 @@ class DiscogsService
       throw new \Exception('Unexpected response status: ' . $th->getMessage());
     }
 
-    return $releases;
+    return [
+      "releases" => $releases,
+      "per_page" => $response['pagination']['per_page'],
+      "page" => $response['pagination']['page'],
+      "pages" => $response['pagination']['pages'],
+      "items" => $response['pagination']['items'],
+    ];
   }
 }
