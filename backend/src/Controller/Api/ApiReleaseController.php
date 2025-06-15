@@ -165,6 +165,37 @@ final class ApiReleaseController extends AbstractApiController
         );
     }
 
+    #[Route('/search', name: 'search', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function search(
+        Request $request,
+        DiscogsService $discogsService
+    ): Response {
+        $body = $request->toArray();
+        $by = $body['by'] ?? "release_title";
+        $search = $body['search'] ?? null;
+
+
+        if (!$search) {
+            return $this->apiResponseService->error(
+                'Search cannot be empty',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // ApiExceptionSubscriber handles exceptions
+        $releases = $discogsService->searchRelease($by, $search);
+
+        return $this->apiResponseService->success(
+            'Available releases for the : ' . $by . ': ' . $search,
+            [
+                'by' => $by,
+                'search' => $search,
+                'releases' => $releases
+            ]
+        );
+    }
+
     #[Route('/scan', name: 'scan', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
