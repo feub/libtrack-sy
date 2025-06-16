@@ -51,7 +51,7 @@ const router = createBrowserRouter([
                 element: <ReleaseForm mode="update" />,
               },
               {
-                path: "scan",
+                path: "music-service-search",
                 element: <MusicServiceSearch />,
               },
             ],

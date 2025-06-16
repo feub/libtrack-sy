@@ -44,7 +44,7 @@ const items = [
   },
   {
     title: "Music Service Search",
-    url: "/release/scan",
+    url: "/release/music-service-search",
     icon: ScanBarcode,
   },
   {
