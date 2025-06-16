@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { ScannedReleaseType } from "@/types/releaseTypes";
@@ -8,12 +9,34 @@ import ScanResultCard from "@/components/release/ScanResultCard";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
-export default function AddByBarcodePage() {
+export default function MusicServiceSearch() {
   const [barcode, setBarcode] = useState<string>("");
   const [releases, setReleases] = useState<{
     releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pagination, setPagination] = useState<{
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  }>({
+    total: 0,
+    page: 1,
+    limit: 3,
+    pages: 0,
+  });
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const page = searchParams.get("page") || 1;
+  const limit = searchParams.get("limit") || 3;
+
+  useEffect(() => {
+    setSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+  }, [page, limit, setSearchParams]);
 
   const handleSearchSubmit = async (barcode: string | null) => {
     if (barcode === null) {
@@ -27,9 +50,17 @@ export default function AddByBarcodePage() {
 
   const searchReleases = async (barcode: string) => {
     setIsLoading(true);
+    console.log(
+      "Searching releases for barcode:",
+      barcode,
+      pagination.limit,
+      pagination.page,
+    );
     try {
       const response = await api.post(`${apiURL}/api/release/scan`, {
         barcode,
+        limit: pagination.limit,
+        page: pagination.page,
       });
 
       if (!response.ok) {
@@ -43,7 +74,19 @@ export default function AddByBarcodePage() {
 
       const data = await response.json();
 
+      console.log("Releases list data:", data);
+
       setReleases(data.data);
+      setPagination({
+        total: data.data.items,
+        page: data.data.page,
+        limit: data.data.per_page,
+        pages: data.data.pages,
+      });
+      setSearchParams({
+        page: data.data.page.toString() || 1,
+        limit: data.data.per_page.toString() || 3,
+      });
 
       if (data.type !== "success") {
         toast.error("Getting releases list failed");
@@ -115,6 +158,38 @@ export default function AddByBarcodePage() {
               handleAddRelease={handleAddRelease}
             />
           ))}
+          <div>
+            {/* {pagination.page > 1 && (
+              <button
+                className="btn btn-secondary mr-2"
+                onClick={() => {
+                  const newPage = Math.max(1, pagination.page - 1);
+                  setSearchParams({ page: newPage.toString(), limit });
+                  searchReleases(barcode);
+                }}
+              >
+                Previous
+              </button>
+            )} */}
+            {pagination.page < pagination.pages && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setSearchParams({
+                    page: (pagination.page + 1).toString(),
+                    limit: pagination.limit.toString(),
+                  });
+                  searchReleases(barcode);
+                }}
+              >
+                Next
+              </button>
+            )}
+            <p className="mt-2">
+              Page {pagination.page} of {pagination.pages} ({pagination.total}{" "}
+              total results)
+            </p>
+          </div>
         </>
       )}
     </>
