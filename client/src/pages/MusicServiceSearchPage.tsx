@@ -23,7 +23,7 @@ export default function MusicServiceSearch() {
     items: number;
   }>({
     total: 0,
-    page: 1,
+    page: 0,
     limit: 4,
     pages: 0,
     items: 0,
@@ -147,11 +147,13 @@ export default function MusicServiceSearch() {
               handleAddRelease={handleAddRelease}
             />
           ))}
-          <ThePagination
-            currentPage={pagination.page}
-            maxPage={pagination.pages}
-            onPageChange={handlePageChange}
-          />
+          {pagination.pages > 0 && (
+            <ThePagination
+              currentPage={pagination.page}
+              maxPage={pagination.pages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
     </>
