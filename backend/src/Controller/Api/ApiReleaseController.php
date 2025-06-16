@@ -183,14 +183,18 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $releases = $discogsService->searchRelease($by, $search);
+        $result = $discogsService->searchRelease($by, $search);
 
         return $this->apiResponseService->success(
             'Available releases for the : ' . $by . ': ' . $search,
             [
                 'by' => $by,
                 'search' => $search,
-                'releases' => $releases
+                'releases' => $result['releases'],
+                "per_page" => $result['per_page'],
+                "page" => $result['page'],
+                "pages" => $result['pages'],
+                "items" => $result['items'],
             ]
         );
     }
