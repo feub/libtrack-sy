@@ -80,7 +80,9 @@ export default function ScanResultCard({
               );
             })()
           ) : (
-            <p>No cover</p>
+            <div className="w-[150px] h-[150px] text-neutral-700 bg-black justify-center items-center flex rounded-md">
+              No cover
+            </div>
           )}
         </div>
       </CardContent>
