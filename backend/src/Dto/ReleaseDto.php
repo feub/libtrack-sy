@@ -23,7 +23,7 @@ class ReleaseDto
     public ?string $cover = null;
 
     #[Assert\Regex(
-        pattern: '/^\d+$/',
+        pattern: '/^$|^\d+$/', // allow either empty strings (^$) or numeric strings (^\d+$)
         message: "Barcode must contain only numbers"
     )]
     public ?string $barcode = null;

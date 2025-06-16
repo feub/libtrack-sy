@@ -100,9 +100,11 @@ class ReleaseService
     public function createFromDto(ReleaseDto $dto): Release
     {
         // Check if the release already exists
-        if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
-            $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
-            throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
+        if (!empty($dto->barcode) && $dto->barcode !== null) {
+            if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
+                $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
+                throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
+            }
         }
 
         // Create a new release entity from the DTO
@@ -170,23 +172,16 @@ class ReleaseService
 
     public function addScannedRelease(
         string $releaseId,
-        string $barcode,
+        ?string $barcode,
         ?int $shelf
     ) {
-        // Check if the release does NOT already exist
-        if ($this->releaseRepository->findOneBy(['barcode' => $barcode])) {
-            $this->logger->error('Barcode "' . $barcode . '" already exists.');
-            // ConflictHttpException: status 409 (conflict)
-            throw new ConflictHttpException('Barcode "' . $barcode . '" already exists.');
-        }
-
         // Fetch the complete release data
         try {
             $releaseData = $this->discogsService->getReleaseById($releaseId);
             $formattedData = [
                 'title' => $releaseData['title'] ?? null,
                 'release_date' => $releaseData['year'] <= 1000 ? null : $releaseData['year'],
-                'barcode' => $barcode,
+                'barcode' => (!$barcode || $barcode === '') ? null : $barcode, // Use provided barcode or null as empty strings are treated as actual values
                 'cover' => $releaseData['images'][0]['uri'] ? $this->downloadCovertArt($releaseData['images'][0]['uri'], $releaseData['id']) : null,
                 'artists' => array_map(function ($artist) {
                     return ['id' => $this->getArtistIdByName($artist['name'])];

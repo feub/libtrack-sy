@@ -132,7 +132,7 @@ class Release
         return $this->barcode;
     }
 
-    public function setBarcode(string $barcode): static
+    public function setBarcode(?string $barcode): static
     {
         $this->barcode = $barcode;
 
