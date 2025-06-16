@@ -8,8 +8,8 @@ export default function ScanResultCard({
   handleAddRelease,
 }: {
   scannedRelease: ScannedReleaseType;
-  barcode: string;
-  handleAddRelease: (barcode: string, releaseId: number) => void;
+  barcode: string | null;
+  handleAddRelease: (barcode: string | null, releaseId: number) => void;
 }) {
   return (
     <Card className="mt-6 mb-4">
