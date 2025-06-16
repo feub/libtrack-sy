@@ -43,7 +43,7 @@ const items = [
     icon: Music,
   },
   {
-    title: "Add by Barcode",
+    title: "Music Service Search",
     url: "/release/scan",
     icon: ScanBarcode,
   },
