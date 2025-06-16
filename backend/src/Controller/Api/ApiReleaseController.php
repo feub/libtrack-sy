@@ -174,6 +174,8 @@ final class ApiReleaseController extends AbstractApiController
         $body = $request->toArray();
         $by = $body['by'] ?? "release_title";
         $search = $body['search'] ?? null;
+        $limit = $body['limit'] ?? 5;
+        $page = $body['page'] ?? 1;
 
         if (!$search) {
             return $this->apiResponseService->error(
@@ -183,7 +185,7 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $result = $discogsService->searchRelease($by, $search);
+        $result = $discogsService->searchRelease($by, $search, $limit, $page);
 
         return $this->apiResponseService->success(
             'Available releases for the : ' . $by . ': ' . $search,
