@@ -10,7 +10,7 @@ import ThePagination from "@/components/ThePagination";
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function MusicServiceSearch() {
-  const [barcode, setBarcode] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
   const [releases, setReleases] = useState<{
     releases: ScannedReleaseType[];
   } | null>(null);
@@ -24,38 +24,54 @@ export default function MusicServiceSearch() {
   }>({
     total: 0,
     page: 0,
-    limit: 4,
+    limit: 6,
     pages: 0,
     items: 0,
   });
+
+  const isBarcode = (input: string): boolean => {
+    return /^\d+$/.test(input.trim());
+  };
 
   const handlePageChange = (page: number) => {
     if (page === pagination.page || page < 1 || page > pagination.pages) {
       return;
     }
-    searchReleases(barcode, page);
+
+    searchReleases(search, page);
   };
 
-  const handleSearchSubmit = async (barcode: string | null) => {
-    if (barcode === null) {
-      console.warn("Barcode is null");
+  const handleSearchSubmit = async (searchInput: string | null) => {
+    if (searchInput === null || searchInput.trim() === "") {
       return;
     }
 
-    setBarcode(barcode);
-    searchReleases(barcode);
+    const trimmedInput = searchInput.trim();
+
+    setSearch(trimmedInput);
+    searchReleases(trimmedInput, pagination.page);
   };
 
-  const searchReleases = async (barcode: string, page?: number) => {
+  const searchReleases = async (searchInput: string, page?: number) => {
     setIsLoading(true);
-    const currentPage = page || pagination.page;
+    const currentPage = page || 1;
 
     try {
-      const response = await api.post(`${apiURL}/api/release/scan`, {
-        barcode,
-        limit: pagination.limit,
-        page: currentPage,
-      });
+      let response;
+      if (isBarcode(searchInput)) {
+        response = await api.post(`${apiURL}/api/release/scan`, {
+          barcode: searchInput,
+          limit: pagination.limit,
+          page: currentPage,
+        });
+      } else {
+        response = await api.post(`${apiURL}/api/release/search`, {
+          by: "release_title",
+          search: searchInput,
+          limit: pagination.limit,
+          page: currentPage,
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -136,13 +152,14 @@ export default function MusicServiceSearch() {
         <>
           {releases && (
             <h3 className="text-xl font-bold">
-              Found {pagination.items} results for barcode "{barcode}":
+              Found {pagination.items} results for{" "}
+              {isBarcode(search) ? "barcode" : "title"} "{search}":
             </h3>
           )}
           {releases?.releases.map((release, index) => (
             <ScanResultCard
               key={index}
-              barcode={barcode}
+              barcode={search}
               scannedRelease={release}
               handleAddRelease={handleAddRelease}
             />
