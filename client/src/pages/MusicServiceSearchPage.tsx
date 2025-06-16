@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { ScannedReleaseType } from "@/types/releaseTypes";
-import AddByBarcodeForm from "@/components/release/AddByBarcodeForm";
+import MusicServiceSearchForm from "@/components/release/MusicServiceSearchForm";
 import TheLoader from "@/components/TheLoader";
 import ScanResultCard from "@/components/release/ScanResultCard";
 import ThePagination from "@/components/ThePagination";
@@ -49,7 +49,7 @@ export default function MusicServiceSearch() {
     const trimmedInput = searchInput.trim();
 
     setSearch(trimmedInput);
-    searchReleases(trimmedInput, pagination.page);
+    searchReleases(trimmedInput, 1);
   };
 
   const searchReleases = async (searchInput: string, page?: number) => {
@@ -145,7 +145,7 @@ export default function MusicServiceSearch() {
   return (
     <>
       <h2 className="font-bold text-3xl">Music Service Search</h2>
-      <AddByBarcodeForm handleBarcodeSearch={handleSearchSubmit} />
+      <MusicServiceSearchForm handleSearch={handleSearchSubmit} />
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
