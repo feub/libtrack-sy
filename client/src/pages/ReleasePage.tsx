@@ -40,12 +40,30 @@ export default function ReleasePage() {
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // This effect runs when searchParams change (URL changes)
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    const searchParam = searchParams.get("search") || "";
+
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+
+    // Only update state if different from current to avoid loops
+    if (newPage !== currentPage) {
+      setCurrentPage(newPage);
+    }
+
+    if (searchParam !== searchTerm) {
+      setSearchTerm(searchParam);
+    }
+  }, [searchParams]);
+
+  // This effect runs when state changes (page or search term) to fetch data
   useEffect(() => {
     getReleases(currentPage, limit, searchTerm);
-  }, [currentPage, limit, searchTerm]);
+  }, [currentPage, searchTerm, limit]);
 
+  // This effect updates URL when state changes
   useEffect(() => {
-    // Update URL params when currentPage or searchTerm changes
     const newSearchParams = new URLSearchParams();
 
     if (currentPage > 1) {
@@ -56,12 +74,27 @@ export default function ReleasePage() {
       newSearchParams.set("search", searchTerm);
     }
 
-    setSearchParams(newSearchParams, { replace: true });
-  }, [currentPage, searchTerm, setSearchParams]);
+    // Avoid unnecessary URL updates by comparing with current
+    const currentQueryString = searchParams.toString();
+    const newQueryString = newSearchParams.toString();
+
+    if (currentQueryString !== newQueryString) {
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [currentPage, searchTerm]);
 
   const handleSearchSubmit = async (search: string) => {
-    setSearchTerm(search);
-    setCurrentPage(1); // Reset to the first page when searching
+    if (search !== searchTerm) {
+      // Only reset page when search changes
+      if (currentPage !== 1) {
+        setCurrentPage(1); // Reset to the first page when searching
+      } else {
+        // If we're already on page 1, we need to force a data refresh
+        getReleases(1, limit, search);
+      }
+
+      setSearchTerm(search);
+    }
     return Promise.resolve();
   };
 
@@ -99,6 +132,7 @@ export default function ReleasePage() {
     if (page === currentPage || page < 1 || page > maxPage) {
       return;
     }
+
     setCurrentPage(page);
   };
 
