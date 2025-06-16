@@ -254,13 +254,6 @@ final class ApiReleaseController extends AbstractApiController
             );
         }
 
-        if (!$barcode) {
-            return $this->apiResponseService->error(
-                'No barcode provided',
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-
         // ApiExceptionSubscriber handles exceptions
         $release = $releaseService->addScannedRelease($releaseId, $barcode, $shelf);
         return $this->apiResponseService->success(

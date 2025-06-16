@@ -106,12 +106,15 @@ export default function MusicServiceSearch() {
     }
   };
 
-  const handleAddRelease = async (barcode: string, release_id: number) => {
+  const handleAddRelease = async (
+    barcode: string | null,
+    release_id: number,
+  ) => {
     // Create a promise to track the API request
     const addReleasePromise = new Promise<void>((resolve, reject) => {
       api
         .post(`${apiURL}/api/release/scan/add`, {
-          barcode,
+          ...(barcode !== null && { barcode: barcode.trim() }),
           release_id,
         })
         .then(async (response) => {
@@ -159,7 +162,7 @@ export default function MusicServiceSearch() {
           {releases?.releases.map((release, index) => (
             <ScanResultCard
               key={index}
-              barcode={search}
+              barcode={isBarcode(search) ? search : null}
               scannedRelease={release}
               handleAddRelease={handleAddRelease}
             />

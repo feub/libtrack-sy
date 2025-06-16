@@ -17,7 +17,7 @@ class ScanType extends AbstractType
             ->add('barcode', TextType::class, [
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/^\d*$/',
+                        'pattern' => '/^$|^\d+$/', // allow either empty strings (^$) or numeric strings (^\d+$)
                         'message' => 'Barcode can only contain numbers'
                     ])
                 ]
