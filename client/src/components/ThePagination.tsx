@@ -5,7 +5,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./ui/pagination";
+} from "@/components/ui/pagination";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 export default function ThePagination({

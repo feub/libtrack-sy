@@ -10,7 +10,7 @@ import ReleasePage from "@/pages/ReleasePage.tsx";
 import ArtistPage from "@/pages/ArtistPage.tsx";
 import GenrePage from "@/pages/GenrePage.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
-import AddByBarcodePage from "@/pages/AddByBarcodePage.tsx";
+import MusicServiceSearch from "@/pages/MusicServiceSearchPage";
 import ReleaseForm from "@/pages/ReleaseForm.tsx";
 import ArtistForm from "@/pages/ArtistForm.tsx";
 import StatsPage from "@/pages/StatsPage.tsx";
@@ -51,8 +51,8 @@ const router = createBrowserRouter([
                 element: <ReleaseForm mode="update" />,
               },
               {
-                path: "scan",
-                element: <AddByBarcodePage />,
+                path: "music-service-search",
+                element: <MusicServiceSearch />,
               },
             ],
           },

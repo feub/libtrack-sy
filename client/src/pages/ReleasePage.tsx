@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from "@/components/ui/table";
 import ReleaseListItem from "@/components/release/ReleaseListItem";
 import ThePagination from "@/components/ThePagination";
 import SearchBar from "@/components/release/SearchBar";
@@ -47,21 +47,22 @@ export default function ReleasePage() {
   useEffect(() => {
     // Update URL params when currentPage or searchTerm changes
     const newSearchParams = new URLSearchParams();
+
     if (currentPage > 1) {
       newSearchParams.set("page", currentPage.toString());
     }
+
     if (searchTerm) {
       newSearchParams.set("search", searchTerm);
     }
+
     setSearchParams(newSearchParams, { replace: true });
   }, [currentPage, searchTerm, setSearchParams]);
 
   const handleSearchSubmit = async (search: string) => {
-    if (search !== searchTerm) {
-      setSearchTerm(search);
-      setCurrentPage(1); // Reset to the first page when searching
-      return Promise.resolve();
-    }
+    setSearchTerm(search);
+    setCurrentPage(1); // Reset to the first page when searching
+    return Promise.resolve();
   };
 
   const getReleases = async (

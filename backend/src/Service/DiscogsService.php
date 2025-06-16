@@ -83,4 +83,54 @@ class DiscogsService
       throw new \Exception('Error fetching release data: ' . $th->getMessage(), 0, $th);
     }
   }
+
+  /**
+   * Undocumented function
+   *
+   * @param string $by -> title,release_title,artist,genre,country,year,format,barcode
+   * @param string $search
+   * @return array
+   */
+  public function searchRelease(string $by, string $search, int $per_page = 5, int $page = 1): array
+  {
+    try {
+      $response = $this->httpClient->request('GET', $this->endpoint . 'database/search', [
+        'query' => [
+          $by => $search,
+          'per_page' => $per_page,
+          'page' => $page,
+          'key' => $this->discogs_key,
+          'secret' => $this->discogs_secret
+        ],
+        'headers' => [
+          'User-Agent' => $this->userAgent
+        ]
+      ]);
+
+      if ($response->getStatusCode() === 200) {
+        $response = $response->toArray();
+        $releases = [];
+
+        foreach ($response['results'] as $rel) {
+          $releaseData = $this->getReleaseById($rel['id']);
+
+          if ($releaseData !== null) {
+            $releases[] = $releaseData;
+          }
+        }
+      } else {
+        throw new \Exception('Unexpected response status: ' . $response->getStatusCode());
+      }
+    } catch (\Throwable $th) {
+      throw new \Exception('Unexpected response status: ' . $th->getMessage());
+    }
+
+    return [
+      "releases" => $releases,
+      "per_page" => $response['pagination']['per_page'],
+      "page" => $response['pagination']['page'],
+      "pages" => $response['pagination']['pages'],
+      "items" => $response['pagination']['items'],
+    ];
+  }
 }

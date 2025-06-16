@@ -1,61 +1,61 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { X, Search } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
-  barcode: z.coerce
-    .string({
-      invalid_type_error: "Barcode must contain only numbers",
-    })
-    .max(9999999999999, {
-      message: "The barcode must be 13 digits or less.",
-    }),
+  search: z.string({
+    invalid_type_error: "Search cannot be empty",
+  }),
 });
 
-export default function AddByBarcodeForm({
-  handleBarcodeSearch,
+export default function MusicServiceSearchForm({
+  handleSearch,
 }: {
-  handleBarcodeSearch: (barcode: string | null) => void;
+  handleSearch: (search: string | null) => void;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      barcode: "",
+      search: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const barcode = values.barcode.toString();
-    handleBarcodeSearch(barcode);
+    const search = values.search.toString();
+    handleSearch(search);
   }
 
   function resetForm() {
-    form.reset({ barcode: undefined });
-    handleBarcodeSearch(null);
+    form.reset({ search: undefined });
+    handleSearch(null);
   }
 
   return (
     <Form {...form}>
+      <div className="my-4">
+        <Label htmlFor="search">Search for a barcode or a title</Label>
+      </div>
       <form onSubmit={form.handleSubmit(onSubmit)} className="my-2 flex">
         <FormField
           control={form.control}
-          name="barcode"
+          name="search"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex-row items-end">
               <FormControl>
                 <div className="relative">
                   <Input
-                    placeholder="Search for a barcode..."
+                    placeholder="Search for a barcode or a title..."
                     {...field}
                     className="w-md"
                   />
@@ -77,11 +77,7 @@ export default function AddByBarcodeForm({
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          className="ml-2"
-          disabled={!form.watch("barcode")}
-        >
+        <Button type="submit" className="ml-2" disabled={!form.watch("search")}>
           <Search />
         </Button>
       </form>

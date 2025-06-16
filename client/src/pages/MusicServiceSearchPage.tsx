@@ -2,35 +2,76 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { ScannedReleaseType } from "@/types/releaseTypes";
-import AddByBarcodeForm from "@/components/release/AddByBarcodeForm";
+import MusicServiceSearchForm from "@/components/release/MusicServiceSearchForm";
 import TheLoader from "@/components/TheLoader";
 import ScanResultCard from "@/components/release/ScanResultCard";
+import ThePagination from "@/components/ThePagination";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
-export default function AddByBarcodePage() {
-  const [barcode, setBarcode] = useState<string>("");
+export default function MusicServiceSearch() {
+  const [search, setSearch] = useState<string>("");
   const [releases, setReleases] = useState<{
     releases: ScannedReleaseType[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [pagination, setPagination] = useState<{
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+    items: number;
+  }>({
+    total: 0,
+    page: 0,
+    limit: 6,
+    pages: 0,
+    items: 0,
+  });
 
-  const handleSearchSubmit = async (barcode: string | null) => {
-    if (barcode === null) {
-      console.warn("Barcode is null");
+  const isBarcode = (input: string): boolean => {
+    return /^\d+$/.test(input.trim());
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page === pagination.page || page < 1 || page > pagination.pages) {
       return;
     }
 
-    setBarcode(barcode);
-    searchReleases(barcode);
+    searchReleases(search, page);
   };
 
-  const searchReleases = async (barcode: string) => {
+  const handleSearchSubmit = async (searchInput: string | null) => {
+    if (searchInput === null || searchInput.trim() === "") {
+      return;
+    }
+
+    const trimmedInput = searchInput.trim();
+
+    setSearch(trimmedInput);
+    searchReleases(trimmedInput, 1);
+  };
+
+  const searchReleases = async (searchInput: string, page?: number) => {
     setIsLoading(true);
+    const currentPage = page || 1;
+
     try {
-      const response = await api.post(`${apiURL}/api/release/scan`, {
-        barcode,
-      });
+      let response;
+      if (isBarcode(searchInput)) {
+        response = await api.post(`${apiURL}/api/release/scan`, {
+          barcode: searchInput,
+          limit: pagination.limit,
+          page: currentPage,
+        });
+      } else {
+        response = await api.post(`${apiURL}/api/release/search`, {
+          by: "release_title",
+          search: searchInput,
+          limit: pagination.limit,
+          page: currentPage,
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -44,6 +85,13 @@ export default function AddByBarcodePage() {
       const data = await response.json();
 
       setReleases(data.data);
+      setPagination({
+        total: data.data.items,
+        page: data.data.page,
+        limit: data.data.per_page,
+        pages: data.data.pages,
+        items: data.data.items,
+      });
 
       if (data.type !== "success") {
         toast.error("Getting releases list failed");
@@ -96,25 +144,33 @@ export default function AddByBarcodePage() {
 
   return (
     <>
-      <h2 className="font-bold text-3xl">Add by barcode</h2>
-      <AddByBarcodeForm handleBarcodeSearch={handleSearchSubmit} />
+      <h2 className="font-bold text-3xl">Music Service Search</h2>
+      <MusicServiceSearchForm handleSearch={handleSearchSubmit} />
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
         <>
           {releases && (
             <h3 className="text-xl font-bold">
-              Found {releases.releases.length} results for barcode "{barcode}":
+              Found {pagination.items} results for{" "}
+              {isBarcode(search) ? "barcode" : "title"} "{search}":
             </h3>
           )}
           {releases?.releases.map((release, index) => (
             <ScanResultCard
               key={index}
-              barcode={barcode}
+              barcode={search}
               scannedRelease={release}
               handleAddRelease={handleAddRelease}
             />
           ))}
+          {pagination.pages > 0 && (
+            <ThePagination
+              currentPage={pagination.page}
+              maxPage={pagination.pages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
     </>

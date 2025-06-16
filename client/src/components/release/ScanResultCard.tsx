@@ -24,13 +24,13 @@ export default function ScanResultCard({
           </div>
           <div className="flex flex-col">
             <div>
-              <span className="font-bold">Artist(s):</span>{" "}
+              <span className="font-bold text-neutral-400">Artist(s):</span>{" "}
               {scannedRelease.artists && scannedRelease.artists.length > 0
                 ? scannedRelease.artists.map((artist) => artist.name).join(", ")
                 : "No artist"}
             </div>
             <div>
-              <span className="font-bold">Year:</span>{" "}
+              <span className="font-bold text-neutral-400">Year:</span>{" "}
               <span>
                 {scannedRelease.year && scannedRelease.year !== 0
                   ? scannedRelease.year
@@ -38,7 +38,7 @@ export default function ScanResultCard({
               </span>
             </div>
             <div>
-              <span className="font-bold">Format:</span>{" "}
+              <span className="font-bold text-neutral-400">Format:</span>{" "}
               <span>
                 {scannedRelease.formats && scannedRelease.formats.length > 0 ? (
                   scannedRelease.formats.map((format) => format.name)
@@ -48,7 +48,7 @@ export default function ScanResultCard({
               </span>
             </div>
             <div>
-              <span className="font-bold">Genre(s):</span>{" "}
+              <span className="font-bold text-neutral-400">Genre(s):</span>{" "}
               <span>
                 {scannedRelease.styles && scannedRelease.styles.length > 0 ? (
                   scannedRelease.styles.join(", ")
@@ -80,7 +80,9 @@ export default function ScanResultCard({
               );
             })()
           ) : (
-            <p>No cover</p>
+            <div className="w-[150px] h-[150px] text-neutral-700 bg-black justify-center items-center flex rounded-md">
+              No cover
+            </div>
           )}
         </div>
       </CardContent>

@@ -165,15 +165,52 @@ final class ApiReleaseController extends AbstractApiController
         );
     }
 
+    #[Route('/search', name: 'search', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function search(
+        Request $request,
+        DiscogsService $discogsService
+    ): Response {
+        $body = $request->toArray();
+        $by = $body['by'] ?? "release_title";
+        $search = $body['search'] ?? null;
+        $limit = $body['limit'] ?? 5;
+        $page = $body['page'] ?? 1;
+
+        if (!$search) {
+            return $this->apiResponseService->error(
+                'Search cannot be empty',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // ApiExceptionSubscriber handles exceptions
+        $result = $discogsService->searchRelease($by, $search, $limit, $page);
+
+        return $this->apiResponseService->success(
+            'Available releases for the : ' . $by . ': ' . $search,
+            [
+                'by' => $by,
+                'search' => $search,
+                'releases' => $result['releases'],
+                "per_page" => $result['per_page'],
+                "page" => $result['page'],
+                "pages" => $result['pages'],
+                "items" => $result['items'],
+            ]
+        );
+    }
+
     #[Route('/scan', name: 'scan', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function scan(
         Request $request,
         DiscogsService $discogsService
     ): Response {
-        $barcode = $request->toArray();
-        $barcode = $barcode['barcode'];
-        $releases = null;
+        $body = $request->toArray();
+        $barcode = $body['barcode'];
+        $limit = $body['limit'] ?? 5;
+        $page = $body['page'] ?? 1;
 
         if (!$barcode) {
             return $this->apiResponseService->error(
@@ -183,13 +220,17 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $releases = $discogsService->getReleaseByBarcode($barcode);
+        $result = $discogsService->searchRelease('barcode', $barcode, $limit, $page);
 
         return $this->apiResponseService->success(
             'Available releases for the barcode: ' . $barcode,
             [
                 'barcode' => $barcode,
-                'releases' => $releases
+                'releases' => $result["releases"],
+                "per_page" => $result['per_page'],
+                "page" => $result['page'],
+                "pages" => $result['pages'],
+                "items" => $result['items'],
             ]
         );
     }

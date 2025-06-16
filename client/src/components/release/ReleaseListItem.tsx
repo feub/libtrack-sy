@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
 import { useState } from "react";
+import NoCover from "./NoCover";
 
 const apiURL = import.meta.env.VITE_API_URL;
 const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
@@ -43,9 +44,7 @@ export default function ReleaseListItem({
               className="rounded-md"
             />
           ) : (
-            <div className="text-neutral-700 w-[100px] h-[100px] bg-neutral-900 justify-center items-center flex rounded-md">
-              No cover
-            </div>
+            <NoCover />
           )}
         </TableCell>
         <TableCell className="font-medium">
