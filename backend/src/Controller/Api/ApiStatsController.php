@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Repository\ArtistRepository;
+use App\Repository\GenreRepository;
 use App\Repository\ReleaseRepository;
 use App\Service\ApiResponseService;
 use App\Service\ReleaseService;
@@ -39,6 +40,18 @@ final class ApiStatsController extends AbstractApiController
         return $this->apiResponseService->success(
             'Artists count',
             ['count' => $count],
+            200
+        );
+    }
+
+    #[Route('/genres/count', name: 'genres.count', methods: ['GET'])]
+    public function getGenresCountStats(GenreRepository $genreRepository)
+    {
+        $stats = $genreRepository->getTotalGenres();
+
+        return $this->apiResponseService->success(
+            'Genres count',
+            ['count' => $stats],
             200
         );
     }
