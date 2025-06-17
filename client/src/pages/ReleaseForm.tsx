@@ -366,11 +366,18 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error(
-            "Error updating release:",
-            errorData.message || "Unknown error",
-          );
-          toast.error(errorData.message || "Failed to update release");
+
+          // Extract specific error messages if they exist
+          let errorMessage = errorData.message || "Failed to update release";
+
+          if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+            const specificErrors = Object.values(errorData.errors);
+            // Get the first error message
+            errorMessage = specificErrors[0]; // TODO: join all the error messages
+          }
+
+          console.error("Error updating release:", errorMessage);
+          toast.error(errorMessage);
           setIsLoading(false);
           return;
         }
@@ -380,11 +387,18 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error(
-            "Error creating release:",
-            errorData.message || "Unknown error",
-          );
-          toast.error(errorData.message || "Failed to create release");
+
+          // Extract specific error messages if they exist
+          let errorMessage = errorData.message || "Failed to update release";
+
+          if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+            const specificErrors = Object.values(errorData.errors);
+            // Get the first error message
+            errorMessage = specificErrors[0]; // TODO: join all the error messages
+          }
+
+          console.error("Error creating release:", errorMessage);
+          toast.error(errorMessage);
           setIsLoading(false);
           return;
         }
