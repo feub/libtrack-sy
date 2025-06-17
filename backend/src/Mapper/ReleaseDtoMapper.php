@@ -33,6 +33,8 @@ class ReleaseDtoMapper
 
         if ($dto->barcode === null || $dto->barcode === '') {
             $barcode = "nobarcode";
+        } else {
+            $barcode = $dto->barcode;
         }
 
         // Generate slug if not provided

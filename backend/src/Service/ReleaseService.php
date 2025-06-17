@@ -156,6 +156,25 @@ class ReleaseService
         return $id . '.jpg';
     }
 
+    public function setCover(int $id, ?string $cover): void
+    {
+        $release = $this->releaseRepository->find($id);
+
+        if (!$release) {
+            throw new NotFoundHttpException('Release not found');
+        }
+
+        if ($cover) {
+            $release->setCover($cover);
+        } else {
+            $release->setCover(null);
+        }
+
+        $this->em->persist($release);
+        $this->em->flush();
+    }
+
+
     public function setFormat(string $format): ?array
     {
         if ($format === "Vinyl") {

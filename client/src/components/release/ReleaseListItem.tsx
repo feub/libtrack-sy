@@ -44,7 +44,11 @@ export default function ReleaseListItem({
               className="rounded-md"
             />
           ) : (
-            <NoCover />
+            <NoCover
+              id={release.id}
+              title={release.title as string}
+              artist={release.artists?.[0]?.name as string}
+            />
           )}
         </TableCell>
         <TableCell className="font-medium">
