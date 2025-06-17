@@ -32,7 +32,8 @@ class ReleaseRepository extends ServiceEntityRepository
             ->leftJoin('r.artists', 'a')
             ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
-            ->select('r', 'a', 's', 'g');
+            ->leftJoin('r.format', 'f')
+            ->select('r', 'a', 's', 'g', 'f');
 
         if (!empty($searchTerm)) {
             $searchTerm = '%' . trim($searchTerm) . '%';
@@ -53,8 +54,8 @@ class ReleaseRepository extends ServiceEntityRepository
             $page,
             $limit,
             [
-                'distinct' => false,
-                'sortFieldAllowList' => ['r.id', 'r.title']
+                'distinct' => true,
+                'sortFieldAllowList' => ['r.id', 'r.title'],
             ]
         );
     }
