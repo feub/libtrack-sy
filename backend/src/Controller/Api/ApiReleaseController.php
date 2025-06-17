@@ -131,6 +131,38 @@ final class ApiReleaseController extends AbstractApiController
         );
     }
 
+    #[Route('/set-cover/{id}', name: 'set.cover', methods: ['PUT'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function setCover(
+        int $id,
+        Request $request,
+        ReleaseService $releaseService,
+    ): Response {
+        $releaseOrResponse = $this->findOr404(Release::class, $id);
+
+        if ($releaseOrResponse instanceof Response) {
+            return $releaseOrResponse;
+        }
+
+        // Parse request data
+        $data = json_decode($request->getContent(), true);
+
+        if ($data["coverImage"]) {
+            $newCover = $releaseService->downloadCovertArt($data["coverImage"], $id);
+            $releaseService->setCover($id, $newCover);
+
+            return $this->apiResponseService->success(
+                'Release cover image set successfully'
+            );
+        }
+
+        return $this->apiResponseService->error(
+            'No cover image found.',
+            Response::HTTP_BAD_REQUEST,
+            ['errors' => ['coverImage' => 'Cover image is required']]
+        );
+    }
+
     #[Route('/search', name: 'search', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function search(
