@@ -57,24 +57,6 @@ final class ApiReleaseController extends AbstractApiController
         ReleaseService $releaseService,
         ValidatorInterface $validator
     ): Response {
-        // Example of a POST request to create a release
-        // {
-        //     "title": "Nightfall Farmer",
-        //     "release_date": 1995,
-        //     "barcode": "1234567890",
-        //     "artists": [
-        // {
-        //     "id": 36
-        // }],
-        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
-        //     "format": {
-        //       "id": 2
-        //     },
-        //     "shelf": {
-        //       "id": 2
-        //     }
-        //   }
-
         // Parse request data
         $data = json_decode($request->getContent(), true);
 
@@ -111,26 +93,6 @@ final class ApiReleaseController extends AbstractApiController
         ReleaseService $releaseService,
         ValidatorInterface $validator
     ): Response {
-        // Example of a PUT request to edit a release
-        // {
-        //     "title": "Nightfall Farmer",
-        //     "release_date": 1995,
-        //     "barcode": "1234567890",
-        //     "artists": [
-        //          {"id": 37}
-        //     ],
-        //     "cover": "https://yukonwildlife.ca/2021-04-uneasy-neighbours-red-foxes-and-arctic-foxes-in-the-north/",
-        //     "format": {
-        //       "id": 2
-        //     },
-        //     "shelf": {
-        //       "id": 2
-        //     },
-        // "genres": [
-        //          {"id": 3}
-        //     ],
-        //   }
-
         $releaseOrResponse = $this->findOr404(Release::class, $id);
 
         if ($releaseOrResponse instanceof Response) {
@@ -139,6 +101,10 @@ final class ApiReleaseController extends AbstractApiController
 
         // Parse request data
         $data = json_decode($request->getContent(), true);
+
+        if ($data['barcode'] === "") {
+            $data['barcode'] = null;
+        }
 
         // Create and validate DTO
         $releaseDto = ReleaseDto::fromArray($data);
