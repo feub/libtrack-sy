@@ -54,6 +54,7 @@ export type ScannedReleaseType = {
   year: number;
   formats: ScannedFormatType[];
   images: ScannedImageType[];
+  uri: string;
 };
 
 export type ScannedResultType = {
