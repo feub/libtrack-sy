@@ -31,9 +31,13 @@ class ReleaseDtoMapper
         $release->setCreatedAt($now);
         $release->setUpdatedAt($now);
 
+        if ($dto->barcode === null || $dto->barcode === '') {
+            $barcode = "nobarcode";
+        }
+
         // Generate slug if not provided
         if (!$dto->slug) {
-            $slug = $this->slugger->slug(strtolower($dto->title . '-' . $dto->barcode . '-' . rand(10000, 79999)));
+            $slug = $this->slugger->slug(strtolower($dto->title . '-' . $barcode . '-' . rand(10000, 79999)));
             $release->setSlug($slug);
         }
 
@@ -47,6 +51,16 @@ class ReleaseDtoMapper
     {
         $this->mapDtoToEntity($dto, $release);
         $release->setUpdatedAt(new \DateTimeImmutable());
+
+        if ($dto->barcode === null || $dto->barcode === '') {
+            $barcode = "nobarcode";
+        }
+
+        // Generate slug if not provided
+        if (!$dto->slug) {
+            $slug = $this->slugger->slug(strtolower($dto->title . '-' . $barcode . '-' . rand(10000, 79999)));
+            $release->setSlug($slug);
+        }
 
         return $release;
     }
@@ -72,8 +86,10 @@ class ReleaseDtoMapper
             $release->setCover($dto->cover);
         }
 
-        if ($dto->barcode !== null) {
+        if ($dto->barcode !== null && $dto->barcode !== '') {
             $release->setBarcode($dto->barcode);
+        } else {
+            $release->setBarcode(null);
         }
 
         // Handle artists
