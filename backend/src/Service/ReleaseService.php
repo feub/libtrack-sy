@@ -136,9 +136,6 @@ class ReleaseService
 
         $coverPath = $this->coverDir . $id . '.jpg';
 
-        // $coverContent = file_get_contents($coverUrl);
-        // file_put_contents($coverPath, $coverContent);
-
         // Use cURL instead of file_get_contents
         $ch = curl_init($coverUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
