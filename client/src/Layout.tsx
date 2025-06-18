@@ -15,7 +15,7 @@ function Layout() {
         <div className="flex flex-col h-full">
           <SiteHeader />
           <div className="flex overflow-auto">
-            <div className="px-4 lg:gap-2 lg:p-6">
+            <div className="px-4 lg:gap-2 lg:p-6 w-full">
               <Outlet />
               <Toaster
                 toastOptions={{
