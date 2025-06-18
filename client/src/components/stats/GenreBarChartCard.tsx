@@ -48,6 +48,11 @@ export default function GenreBarChartCard() {
 
       const data = await validateApiResponse(response, "Fetching genres stats");
 
+      const sortedData = data.data.sort(
+        (a: GenresStatsType, b: GenresStatsType) => b.count - a.count,
+      );
+      data.data = sortedData.slice(0, 11);
+
       const chrtConfig: ChartConfigType = {};
 
       data.data.forEach((d: GenresStatsType, idx: number) => {
@@ -72,12 +77,9 @@ export default function GenreBarChartCard() {
         .filter((d: GenresStatsType) => d.genre_name !== null)
         .map((d: GenresStatsType) => {
           const genreName = d.genre_name === null ? "undefined" : d.genre_name;
-          const sanitizedGenreName = genreName
-            .toLowerCase()
-            .replace(/\s+/g, "-");
 
           return {
-            genre: sanitizedGenreName,
+            genre: genreName,
             count: d.count,
           };
         });
@@ -96,14 +98,14 @@ export default function GenreBarChartCard() {
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
-        <Card className="flex flex-col">
+        <Card className="flex flex-col w-full">
           <CardHeader className="items-center pb-0">
-            <CardTitle>Releases by genres</CardTitle>
+            <CardTitle>Top 10 genres</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
               config={chrtConfig}
-              className="mx-auto aspect-square max-h-[450px] w-[500px] genre-bar-chart"
+              className="mx-auto aspect-square genre-bar-chart w-full"
             >
               <BarChart
                 accessibilityLayer
@@ -139,14 +141,14 @@ export default function GenreBarChartCard() {
                     position="insideLeft"
                     offset={8}
                     className="fill-background"
-                    fontSize={12}
+                    fontSize={10}
                   />
                   <LabelList
                     dataKey="count"
                     position="right"
                     offset={8}
                     className="fill-foreground"
-                    fontSize={12}
+                    fontSize={14}
                   />
                 </Bar>
               </BarChart>
