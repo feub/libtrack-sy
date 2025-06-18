@@ -84,14 +84,14 @@ export default function FormatPieChartCard() {
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
-        <Card className="flex flex-col">
+        <Card className="flex flex-col w-full">
           <CardHeader className="items-center pb-0">
             <CardTitle>Releases by formats</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
               config={chrtConfig}
-              className="mx-auto aspect-square max-h-[450px] w-[350px] format-pie-chart"
+              className="mx-auto aspect-square format-pie-chart w-full"
             >
               <PieChart>
                 <ChartTooltip
