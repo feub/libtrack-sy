@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { SiteHeader } from "@/components/SiteHeader";
+import FooterApiVersion from "@/components/FooterApiVersion";
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -48,7 +49,9 @@ function Layout() {
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} LibTrack
               </p>
-              <p className="text-sm text-muted-foreground">Version {version}</p>
+              <p className="text-sm text-muted-foreground">
+                Version {version} - <FooterApiVersion />
+              </p>
             </div>
           </footer>
         </div>
