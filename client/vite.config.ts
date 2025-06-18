@@ -10,11 +10,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    // alias: [
-    //   {
-    //     find: "@",
-    //     replacement: path.resolve(__dirname, "./src"),
-    //   },
-    // ],
+  },
+  define: {
+    "import.meta.env.PACKAGE_VERSION": JSON.stringify(
+      process.env.npm_package_version,
+    ),
   },
 });

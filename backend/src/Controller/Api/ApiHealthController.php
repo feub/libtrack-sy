@@ -12,4 +12,10 @@ final class ApiHealthController extends AbstractApiController
     {
         return $this->apiResponseService->success('LibTrack API is running.');
     }
+
+    #[Route('/api/version', name: 'api.version', methods: ['GET'])]
+    public function version(): JsonResponse
+    {
+        return $this->apiResponseService->success('LibTrack API version: ' . $this->getParameter('app.version'));
+    }
 }
