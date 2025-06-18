@@ -37,3 +37,10 @@ jobs:
             VITE_COVER_PATH=${{ vars.COVER_PATH }}
           push: true
           tags: feub/libtrack-frontend-react:latest
+
+      # Deploy after both images are pushed
+      - name: Deploy application
+        run: |
+          curl -X POST ${{ secrets.DEPLOYMENT_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
