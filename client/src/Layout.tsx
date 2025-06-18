@@ -43,7 +43,7 @@ function Layout() {
               />
             </div>
           </div>
-          <footer className="border-t border-border bg-background py-2 px-4 mt-auto">
+          <footer className="border-t border-border rounded-b-xl bg-background py-2 px-4 mt-auto">
             <div className="container flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} LibTrack
