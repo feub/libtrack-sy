@@ -93,16 +93,17 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent">
-                  <User2 />
+              <DropdownMenuTrigger className="w-full">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent text-sm">
+                  <User2 className="w-[16px] h-[16px]" />
                   {user?.email}
                   <ChevronUp className="ml-auto" />
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
-                className="w-[--radix-popper-anchor-width]"
+                align="start"
+                className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)]"
               >
                 <ModeToggle />
                 <DropdownMenuItem>
