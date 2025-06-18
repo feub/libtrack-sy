@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { SiteHeader } from "@/components/SiteHeader";
+import FooterApiVersion from "@/components/FooterApiVersion";
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -14,7 +15,7 @@ function Layout() {
         <div className="flex flex-col h-full">
           <SiteHeader />
           <div className="flex overflow-auto">
-            <div className="px-4 lg:gap-2 lg:p-6">
+            <div className="px-4 lg:gap-2 lg:p-6 w-full">
               <Outlet />
               <Toaster
                 toastOptions={{
@@ -48,7 +49,9 @@ function Layout() {
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} LibTrack
               </p>
-              <p className="text-sm text-muted-foreground">Version {version}</p>
+              <p className="text-sm text-muted-foreground">
+                Version {version} - <FooterApiVersion />
+              </p>
             </div>
           </footer>
         </div>

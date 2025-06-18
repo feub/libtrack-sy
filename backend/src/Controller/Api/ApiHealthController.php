@@ -16,6 +16,12 @@ final class ApiHealthController extends AbstractApiController
     #[Route('/api/version', name: 'api.version', methods: ['GET'])]
     public function version(): JsonResponse
     {
-        return $this->apiResponseService->success('LibTrack API version: ' . $this->getParameter('app.version'));
+        $version = $this->getParameter('app.version');
+
+        return $this->apiResponseService->success(
+            'LibTrack API version: ' . $version,
+            ['version' => $version],
+            200
+        );
     }
 }
