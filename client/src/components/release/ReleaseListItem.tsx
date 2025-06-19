@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { ListReleasesType } from "@/types/releaseTypes";
 import { TableRow, TableCell } from "@/components/ui/table";
@@ -12,11 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
-import { useState } from "react";
-import NoCover from "./NoCover";
+import NoCover from "@/components/release/NoCover";
 
 const apiURL = import.meta.env.VITE_API_URL;
-const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
+const coverPath = import.meta.env.VITE_IMAGES_PATH + "/covers/";
 
 export default function ReleaseListItem({
   release,

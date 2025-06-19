@@ -39,7 +39,7 @@ class ReleaseService
         private ReleaseDtoMapper $releaseDtoMapper,
         private ValidatorInterface $validator
     ) {
-        $this->coverDir = $params->get('cover_dir');
+        $this->coverDir = $params->get('images_dir') . '/covers/';
     }
 
     /**

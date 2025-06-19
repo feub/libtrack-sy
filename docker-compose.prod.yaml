@@ -32,7 +32,7 @@ services:
       - ./backend/.env.local:/var/www/.env.local:ro
       - ./backend/config/jwt:/var/www/config/jwt:ro
       # Only mount volumes that need to persist or be writable
-      - covers_data:/var/www/public/covers
+      - images_data:/var/www/public/images
     networks:
       - backend
       - frontend
@@ -85,7 +85,7 @@ volumes:
     driver: local
   app_var:
     driver: local
-  covers_data:
+  images_data:
     driver: local
 
 networks:
