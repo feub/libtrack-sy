@@ -8,6 +8,7 @@ use App\Service\ArtistService;
 use App\Service\ApiResponseService;
 use App\Repository\ArtistRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -55,13 +56,6 @@ final class ApiArtistController extends AbstractApiController
         ArtistService $artistService,
         ValidatorInterface $validator
     ): Response {
-        // Example of a POST request to create an artist
-        // {
-        //     "name": "Nightfall",
-        //     "slug": "nightfall",
-        //     "thumbnail": "nightfall.jpg"
-        //   }
-
         // Parse request data
         $data = json_decode($request->getContent(), true);
 
@@ -98,13 +92,6 @@ final class ApiArtistController extends AbstractApiController
         ArtistService $artistService,
         ValidatorInterface $validator
     ): Response {
-        // Example of a PUT request to create an artist
-        // {
-        //     "name": "Nightfall",
-        //     "slug": "nightfall",
-        //     "thumbnail": "nightfall.jpg"
-        //   }
-
         $artistOrResponse = $this->findOr404(Artist::class, $id);
 
         if ($artistOrResponse instanceof Response) {
@@ -137,6 +124,28 @@ final class ApiArtistController extends AbstractApiController
         return $this->apiResponseService->success(
             'Artist "' . $artist->getName() . '" updated successfully'
         );
+    }
+
+    #[Route('/{id}/image', name: 'image', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function uploadImage(Request $request, Artist $artist, EntityManagerInterface $entityManager): Response
+    {
+        /** @var UploadedFile $uploadedFile */
+        $uploadedFile = $request->files->get('image');
+
+        if (!$uploadedFile) {
+            return $this->json(['error' => 'No file uploaded'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $artist->setThumbnailFile($uploadedFile);
+        $entityManager->persist($artist);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'imageName' => $artist->getThumbnail(),
+            'imageUrl' => '/images/artists/' . $artist->getThumbnail()
+        ]);
     }
 
     #[Route('/{id}', name: 'view', methods: ['GET'])]

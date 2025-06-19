@@ -30,7 +30,7 @@ services:
       - ./apache/default-ssl.conf:/etc/apache2/sites-enabled/000-default-ssl.conf
       - ./etc/ssl:/etc/ssl
       - ./backend:/var/www
-      - ./backend/public/covers:/var/www/public/covers:rw
+      - ./backend/public/images:/var/www/public/images:rw
     user: "${UID}:${GID}"
     depends_on:
       - database
