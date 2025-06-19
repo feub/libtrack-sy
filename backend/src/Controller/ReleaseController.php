@@ -36,7 +36,7 @@ final class ReleaseController extends AbstractController
         private HttpClientInterface $client,
         private SluggerInterface $slugger
     ) {
-        $this->coverDir = $params->get('cover_dir');
+        $this->coverDir = $params->get('images_dir') . '/covers';
     }
 
     #[Route('/', name: 'index', methods: ['GET', 'POST'])]
