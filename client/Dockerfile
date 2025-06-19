@@ -16,11 +16,11 @@ WORKDIR /app
 
 # Define build arguments
 ARG VITE_API_URL
-ARG VITE_COVER_PATH
+ARG VITE_IMAGES_PATH
 
 # Set environment variables from build args
 ENV VITE_API_URL=${VITE_API_URL}
-ENV VITE_COVER_PATH=${VITE_COVER_PATH}
+ENV VITE_IMAGES_PATH=${VITE_IMAGES_PATH}
 
 COPY client/package*.json ./
 RUN npm ci
