@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { ArtistType } from "../../types/releaseTypes";
-import { TableRow, TableCell } from "../ui/table";
+import { ArtistType } from "@/types/releaseTypes";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
 import { CircleX, FilePenLine } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
-const coverPath = import.meta.env.VITE_COVER_PATH || "/covers/";
+const imagePath = import.meta.env.VITE_IMAGES_PATH + "/artists/";
 
 export default function ArtistListItem({
   artist,
@@ -39,7 +39,7 @@ export default function ArtistListItem({
         <TableCell className="w-[100px] h-[100px] text-center">
           {artist.thumbnail ? (
             <img
-              src={`${apiURL}${coverPath}${artist.thumbnail}`}
+              src={`${apiURL}${imagePath}${artist.thumbnail}`}
               alt={artist.name}
               className="rounded-md"
             />
