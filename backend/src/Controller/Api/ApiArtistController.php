@@ -36,11 +36,11 @@ final class ApiArtistController extends AbstractApiController
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
-
-        $sortBy = $request->query->get('sort', 'a.name');
+        $sortBy = $request->query->get('sort', 'name');
         $sortDir = $request->query->get('order', 'ASC');
+        $searchArtistName = $request->query->get('search', '');
 
-        $artistsData = $artistService->getPaginatedArtists($page, $limit, $sortBy, $sortDir);
+        $artistsData = $artistService->getPaginatedArtists($page, $limit, $sortBy, $sortDir, $searchArtistName);
 
         return $this->apiResponseService->success(
             'Artist retrieved successfully',
