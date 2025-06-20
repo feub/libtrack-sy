@@ -35,12 +35,14 @@ class ArtistService
      *
      * @param int $page Current page number
      * @param int $limit Number of items per page
+     * @param string $sortBy Field to sort by
+     * @param string $sortDir Sort direction (ASC or DESC)
      * @return array Array containing artists data, total artists, max page and current page
      */
-    public function getPaginatedArtists(int $page = 1, int $limit = 20): array
+    public function getPaginatedArtists(int $page = 1, int $limit = 20, string $sortBy = 'name', string $sortDir = 'ASC'): array
     {
         $totalArtists = $this->artistRepository->getTotalArtists();
-        $artists = $this->artistRepository->paginatedArtists($page, $limit);
+        $artists = $this->artistRepository->paginatedArtists($page, $limit, $sortBy, $sortDir);
 
         $maxpage = ceil($totalArtists / $limit);
 

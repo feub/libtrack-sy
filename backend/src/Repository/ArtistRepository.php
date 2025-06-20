@@ -18,7 +18,7 @@ class ArtistRepository extends ServiceEntityRepository
         parent::__construct($registry, Artist::class);
     }
 
-    public function paginatedArtists(?int $page = 1, ?int $limit = 10, ?string $searchArtistName = ''): PaginationInterface
+    public function paginatedArtists(int $page = 1, int $limit = 10, string $sortBy = 'name', string $sortDir = 'ASC', ?string $searchArtistName = ''): PaginationInterface
     {
         $builder = $this->createQueryBuilder('a')
             ->select('a');
@@ -28,7 +28,7 @@ class ArtistRepository extends ServiceEntityRepository
                 ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
         }
 
-        $builder->orderBy('a.createdAt', 'DESC');
+        $builder->orderBy($sortBy, $sortDir);
 
         return $this->paginator->paginate(
             $builder,
@@ -36,7 +36,11 @@ class ArtistRepository extends ServiceEntityRepository
             $limit,
             [
                 'distinct' => false,
-                'sortFieldAllowList' => ['a.name']
+                'sortFieldAllowList' => ['a.name', 'a.createdAt'],
+                'sortFieldParameterName' => 'sort',
+                'sortDirectionParameterName' => 'order',
+                'defaultSortFieldName' => $sortBy,
+                'defaultSortDirection' => $sortDir
             ]
         );
     }
