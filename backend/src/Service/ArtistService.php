@@ -35,20 +35,24 @@ class ArtistService
      *
      * @param int $page Current page number
      * @param int $limit Number of items per page
-     * @return array Array containing artists data, total artists, max page and current page
+     * @param string $sortBy Field to sort by
+     * @param string $sortDir Sort direction (ASC or DESC)
+     * @param string $searchArtistName Search term for artist name
+     * @return array Array containing artists data, total artists, max page, current page and pagination properties
      */
-    public function getPaginatedArtists(int $page = 1, int $limit = 20): array
+    public function getPaginatedArtists(int $page = 1, int $limit = 20, string $sortBy = 'name', string $sortDir = 'ASC', string $searchArtistName = ''): array
     {
-        $totalArtists = $this->artistRepository->getTotalArtists();
-        $artists = $this->artistRepository->paginatedArtists($page, $limit);
-
-        $maxpage = ceil($totalArtists / $limit);
+        $paginationResult = $this->artistRepository->paginatedArtists($page, $limit, $sortBy, $sortDir, $searchArtistName);
 
         return [
-            'artists' => $artists->getItems(),
-            'totalArtists' => $totalArtists,
-            'maxPage' => $maxpage,
-            'page' => $page
+            'artists' => $paginationResult->getItems(),
+            'totalArtists' => $paginationResult->getTotalItems(),
+            'maxPage' => $paginationResult->getTotalPages(),
+            'page' => $paginationResult->getCurrentPage(),
+            'hasNextPage' => $paginationResult->hasNextPage(),
+            'hasPreviousPage' => $paginationResult->hasPreviousPage(),
+            'nextPage' => $paginationResult->getNextPage(),
+            'previousPage' => $paginationResult->getPreviousPage()
         ];
     }
 

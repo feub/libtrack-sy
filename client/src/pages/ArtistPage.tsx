@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/apiRequest";
 import { validateApiResponse, handleApiError } from "@/utils/errorHandling";
@@ -14,28 +14,44 @@ import {
 import ThePagination from "@/components/ThePagination";
 import TheLoader from "@/components/TheLoader";
 import ArtistListItem from "@/components/artist/ArtistListItem";
+import SortingArtistsButton from "@/components/artist/SortingArtistsButton";
 import { CirclePlus } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
 export default function ArtistPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [artists, setArtists] = useState<ArtistType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
+  const [sortBy, setSortBy] = useState<string>(
+    searchParams.get("sort") || "name",
+  );
+  const [sortOrderDir, setSortOrderDir] = useState<string>(
+    searchParams.get("order") || "asc",
+  );
   const [totalArtists, setTotalArtists] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    getArtists(currentPage, limit);
-  }, [currentPage, limit]);
+    getArtists(currentPage, limit, sortBy, sortOrderDir);
+  }, [currentPage, limit, sortBy, sortOrderDir]);
 
-  const getArtists = async (page: number = 1, limit: number = 10) => {
+  const getArtists = async (
+    page: number = 1,
+    limit: number = 10,
+    sort: string = "name",
+    orderDir: string = "asc",
+  ) => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
+        sort: sort.toString(),
+        order: orderDir.toString(),
       });
 
       const response = await api.get(
@@ -75,6 +91,19 @@ export default function ArtistPage() {
     }
   };
 
+  const handleSortChange = (sortBy: string, sortDir: string) => {
+    setSortBy(sortBy);
+    setSortOrderDir(sortDir);
+    setCurrentPage(1);
+
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("sort", sortBy);
+    newParams.set("order", sortDir);
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
   return (
     <>
       <div className="flex items-center justify-between mb-4">
@@ -91,10 +120,15 @@ export default function ArtistPage() {
         <TheLoader style="my-4" />
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <p className="mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
               {totalArtists} artists - page {currentPage}/{maxPage}
-            </p>
+            </div>
+            <SortingArtistsButton
+              currentSort={sortBy}
+              currentDirection={sortOrderDir}
+              onSortChange={handleSortChange}
+            />
           </div>
           <div className="overflow-hidden rounded-md border">
             <Table>

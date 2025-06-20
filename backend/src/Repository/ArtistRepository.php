@@ -3,43 +3,85 @@
 namespace App\Repository;
 
 use App\Entity\Artist;
+use App\Service\Pagination\PaginationResult;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use Knp\Component\Pager\PaginatorInterface;
-use Knp\Component\Pager\Pagination\PaginationInterface;
+// use Knp\Component\Pager\PaginatorInterface;
+// use Knp\Component\Pager\Pagination\PaginationInterface;
 
 /**
  * @extends ServiceEntityRepository<Artist>
  */
 class ArtistRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
+    public function __construct(ManagerRegistry $registry/* , private PaginatorInterface $paginator */)
     {
         parent::__construct($registry, Artist::class);
     }
 
-    public function paginatedArtists(?int $page = 1, ?int $limit = 10, ?string $searchArtistName = ''): PaginationInterface
+    public function paginatedArtists(int $page = 1, int $limit = 20, string $sortBy = 'name', string $sortDir = 'ASC', ?string $searchArtistName = ''): PaginationResult
     {
-        $builder = $this->createQueryBuilder('a')
+        $queryBuilder = $this->createQueryBuilder('a')
             ->select('a');
 
         if (!empty($searchArtistName)) {
-            $builder->andWhere('a.name LIKE :artistName')
+            $queryBuilder->andWhere('a.name LIKE :artistName')
                 ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
         }
 
-        $builder->orderBy('a.createdAt', 'DESC');
+        // Validate and sanitize sort parameters
+        $allowedSortFields = ['name', 'createdAt'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? 'a.' . $sortBy : 'a.name';
+        $sortDir = strtoupper($sortDir) === 'DESC' ? 'DESC' : 'ASC';
 
-        return $this->paginator->paginate(
-            $builder,
-            $page,
-            $limit,
-            [
-                'distinct' => false,
-                'sortFieldAllowList' => ['a.name']
-            ]
-        );
+        $queryBuilder->orderBy($sortBy, $sortDir);
+
+        // Create the main query for pagination
+        $query = $queryBuilder
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery();
+
+        // Use Doctrine Paginator
+        $paginator = new Paginator($query, true);
+        $totalItems = count($paginator);
+
+        // Get the items as array
+        $items = [];
+        foreach ($paginator as $item) {
+            $items[] = $item;
+        }
+
+        return new PaginationResult($items, $page, $limit, $totalItems);
     }
+
+    // public function paginatedArtists(int $page = 1, int $limit = 10, string $sortBy = 'name', string $sortDir = 'ASC', ?string $searchArtistName = ''): PaginationInterface
+    // {
+    //     $builder = $this->createQueryBuilder('a')
+    //         ->select('a');
+
+    //     if (!empty($searchArtistName)) {
+    //         $builder->andWhere('a.name LIKE :artistName')
+    //             ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
+    //     }
+
+    //     $builder->orderBy($sortBy, $sortDir);
+
+    //     return $this->paginator->paginate(
+    //         $builder,
+    //         $page,
+    //         $limit,
+    //         [
+    //             'distinct' => false,
+    //             'sortFieldAllowList' => ['a.name', 'a.createdAt'],
+    //             'sortFieldParameterName' => 'sort',
+    //             'sortDirectionParameterName' => 'order',
+    //             'defaultSortFieldName' => $sortBy,
+    //             'defaultSortDirection' => $sortDir
+    //         ]
+    //     );
+    // }
 
     /**
      * @return Artist[] Returns an array of Artist objects
@@ -62,9 +104,9 @@ class ArtistRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Artist Returns an Artist object
+     * @return Artist|null Returns an Artist object or null
      */
-    public function findArtistByid($id): Artist
+    public function findArtistByid($id): ?Artist
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.id = :val')
