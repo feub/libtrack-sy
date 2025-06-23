@@ -35,8 +35,8 @@ final class ApiReleaseController extends AbstractApiController
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
-        $sortBy = $request->query->get('sort', 'name');
-        $sortDir = $request->query->get('order', 'ASC');
+        $sortBy = $request->query->get('sort', 'createdAt');
+        $sortDir = $request->query->get('order', 'DESC');
         $searchTerm = $request->query->getString('search', '');
         $searchShelf = $request->query->getString('shelf', '');
 

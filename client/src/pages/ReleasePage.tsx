@@ -35,10 +35,10 @@ export default function ReleasePage() {
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
   const [sortBy, setSortBy] = useState<string>(
-    searchParams.get("sort") || "name",
+    searchParams.get("sort") || "createdAt",
   );
   const [sortOrderDir, setSortOrderDir] = useState<string>(
-    searchParams.get("order") || "asc",
+    searchParams.get("order") || "desc",
   );
   const [totalReleases, setTotalReleases] = useState<number>(0);
 
@@ -206,32 +206,35 @@ export default function ReleasePage() {
             </div>
           </div>
           <div className="overflow-hidden rounded-md border">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-muted">
-                <TableRow>
-                  <TableHead className="w-[100px]"></TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
-                    Artist(s)
-                  </TableHead>
-                  <TableHead className="text-center">Genre(s)</TableHead>
-                  <TableHead className="text-center">Format</TableHead>
-                  <TableHead className="text-center">Year</TableHead>
-                  <TableHead className="text-center">Barcode</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {releases &&
-                  releases.map((release, index) => (
+            {releases && releases.length > 0 ? (
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-muted">
+                  <TableRow>
+                    <TableHead className="w-[100px]"></TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
+                      Artist(s)
+                    </TableHead>
+                    <TableHead>Genre(s)</TableHead>
+                    <TableHead className="text-center">Format</TableHead>
+                    <TableHead className="text-center">Year</TableHead>
+                    <TableHead className="text-center">Barcode</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {releases.map((release, index) => (
                     <ReleaseListItem
                       key={index}
                       release={release}
                       handleDelete={handleDelete}
                     />
                   ))}
-              </TableBody>
-            </Table>
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="p-4 text-center">No releases found.</div>
+            )}
           </div>
           <div className="m-4">
             <ThePagination
