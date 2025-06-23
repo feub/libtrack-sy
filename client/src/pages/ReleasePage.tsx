@@ -15,6 +15,7 @@ import ReleaseListItem from "@/components/release/ReleaseListItem";
 import ThePagination from "@/components/ThePagination";
 import SearchBar from "@/components/release/SearchBar";
 import TheLoader from "@/components/TheLoader";
+import SortingReleasesButton from "@/components/release/SortingReleasesButton";
 import { CirclePlus } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -22,6 +23,7 @@ const apiURL = import.meta.env.VITE_API_URL;
 export default function ReleasePage() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [releases, setReleases] = useState<ListReleasesType[]>([]);
 
   // Get initial page from URL params, default to 1
@@ -32,6 +34,12 @@ export default function ReleasePage() {
 
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
+  const [sortBy, setSortBy] = useState<string>(
+    searchParams.get("sort") || "name",
+  );
+  const [sortOrderDir, setSortOrderDir] = useState<string>(
+    searchParams.get("order") || "asc",
+  );
   const [totalReleases, setTotalReleases] = useState<number>(0);
 
   const [searchTerm, setSearchTerm] = useState<string>(() => {
@@ -39,6 +47,10 @@ export default function ReleasePage() {
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    getReleases(currentPage, limit, sortBy, sortOrderDir, searchTerm);
+  }, [currentPage, limit, sortBy, sortOrderDir, searchTerm]);
 
   // This effect runs when searchParams change (URL changes)
   useEffect(() => {
@@ -56,11 +68,6 @@ export default function ReleasePage() {
       setSearchTerm(searchParam);
     }
   }, [searchParams]);
-
-  // This effect runs when state changes (page or search term) to fetch data
-  useEffect(() => {
-    getReleases(currentPage, limit, searchTerm);
-  }, [currentPage, searchTerm, limit]);
 
   // This effect updates URL when state changes
   useEffect(() => {
@@ -90,7 +97,7 @@ export default function ReleasePage() {
         setCurrentPage(1); // Reset to the first page when searching
       } else {
         // If we're already on page 1, we need to force a data refresh
-        getReleases(1, limit, search);
+        getReleases(1, limit, sortBy, sortOrderDir, search);
       }
 
       setSearchTerm(search);
@@ -101,6 +108,8 @@ export default function ReleasePage() {
   const getReleases = async (
     page: number = 1,
     limit: number = 10,
+    sort: string = "name",
+    orderDir: string = "asc",
     search: string = "",
   ) => {
     setIsLoading(true);
@@ -109,6 +118,8 @@ export default function ReleasePage() {
         page: page.toString(),
         search: search.toString(),
         limit: limit.toString(),
+        sort: sort.toString(),
+        order: orderDir.toString(),
       });
 
       const response = await api.get(
@@ -149,6 +160,19 @@ export default function ReleasePage() {
     }
   };
 
+  const handleSortChange = (sortBy: string, sortDir: string) => {
+    setSortBy(sortBy);
+    setSortOrderDir(sortDir);
+    setCurrentPage(1);
+
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("sort", sortBy);
+    newParams.set("order", sortDir);
+    newParams.set("page", "1");
+    setSearchParams(newParams);
+  };
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -168,11 +192,18 @@ export default function ReleasePage() {
         <TheLoader style="my-4" />
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
               {totalReleases} releases - page {currentPage}/{maxPage}
-            </p>
-            <SearchBar handleSearch={handleSearchSubmit} />
+            </div>
+            <div className="flex items-center gap-2">
+              <SearchBar handleSearch={handleSearchSubmit} />
+              <SortingReleasesButton
+                currentSort={sortBy}
+                currentDirection={sortOrderDir}
+                onSortChange={handleSortChange}
+              />
+            </div>
           </div>
           <div className="overflow-hidden rounded-md border">
             <Table>
