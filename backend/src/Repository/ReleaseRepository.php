@@ -3,17 +3,18 @@
 namespace App\Repository;
 
 use App\Entity\Release;
+use App\Service\Pagination\PaginationResult;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-use Knp\Component\Pager\PaginatorInterface;
-use Knp\Component\Pager\Pagination\PaginationInterface;
+
 
 /**
  * @extends ServiceEntityRepository<Release>
  */
 class ReleaseRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Release::class);
     }
@@ -26,9 +27,9 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function paginatedReleases(?int $page = 1, ?int $limit = 10, ?string $searchTerm = '', ?string $searchShelf = ''): PaginationInterface
+    public function paginatedReleases(?int $page = 1, ?int $limit = 10, string $sortBy = 'title', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = ''): PaginationResult
     {
-        $builder = $this->createQueryBuilder('r')
+        $queryBuilder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
             ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
@@ -37,27 +38,40 @@ class ReleaseRepository extends ServiceEntityRepository
 
         if (!empty($searchTerm)) {
             $searchTerm = '%' . trim($searchTerm) . '%';
-            $builder->andWhere('a.name LIKE :searchTerm OR r.title LIKE :searchTerm')
+            $queryBuilder->andWhere('a.name LIKE :searchTerm OR r.title LIKE :searchTerm')
                 ->setParameter('searchTerm', $searchTerm);
         }
 
         if (!empty($searchShelf)) {
             $searchShelf = (int) trim($searchShelf);
-            $builder->andWhere('s.id = :searchShelf')
+            $queryBuilder->andWhere('s.id = :searchShelf')
                 ->setParameter('searchShelf', $searchShelf);
         }
 
-        $builder->orderBy('r.createdAt', 'DESC');
+        // Validate and sanitize sort parameters
+        $allowedSortFields = ['title', 'createdAt'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? 'r.' . $sortBy : 'r.title';
+        $sortDir = strtoupper($sortDir) === 'DESC' ? 'DESC' : 'ASC';
 
-        return $this->paginator->paginate(
-            $builder,
-            $page,
-            $limit,
-            [
-                'distinct' => true,
-                'sortFieldAllowList' => ['r.id', 'r.title'],
-            ]
-        );
+        $queryBuilder->orderBy($sortBy, $sortDir);
+
+        // Create the main query for pagination
+        $query = $queryBuilder
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery();
+
+        // Use Doctrine Paginator
+        $paginator = new Paginator($query, true);
+        $totalItems = count($paginator);
+
+        // Get the items as array
+        $items = [];
+        foreach ($paginator as $item) {
+            $items[] = $item;
+        }
+
+        return new PaginationResult($items, $page, $limit, $totalItems);
     }
 
     public function getRelease(int $id): ?Release
