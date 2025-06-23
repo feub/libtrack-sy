@@ -7,15 +7,13 @@ use App\Service\Pagination\PaginationResult;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
-// use Knp\Component\Pager\PaginatorInterface;
-// use Knp\Component\Pager\Pagination\PaginationInterface;
 
 /**
  * @extends ServiceEntityRepository<Artist>
  */
 class ArtistRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry/* , private PaginatorInterface $paginator */)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Artist::class);
     }
@@ -55,33 +53,6 @@ class ArtistRepository extends ServiceEntityRepository
 
         return new PaginationResult($items, $page, $limit, $totalItems);
     }
-
-    // public function paginatedArtists(int $page = 1, int $limit = 10, string $sortBy = 'name', string $sortDir = 'ASC', ?string $searchArtistName = ''): PaginationInterface
-    // {
-    //     $builder = $this->createQueryBuilder('a')
-    //         ->select('a');
-
-    //     if (!empty($searchArtistName)) {
-    //         $builder->andWhere('a.name LIKE :artistName')
-    //             ->setParameter('artistName', '%' . trim($searchArtistName) . '%');
-    //     }
-
-    //     $builder->orderBy($sortBy, $sortDir);
-
-    //     return $this->paginator->paginate(
-    //         $builder,
-    //         $page,
-    //         $limit,
-    //         [
-    //             'distinct' => false,
-    //             'sortFieldAllowList' => ['a.name', 'a.createdAt'],
-    //             'sortFieldParameterName' => 'sort',
-    //             'sortDirectionParameterName' => 'order',
-    //             'defaultSortFieldName' => $sortBy,
-    //             'defaultSortDirection' => $sortDir
-    //         ]
-    //     );
-    // }
 
     /**
      * @return Artist[] Returns an array of Artist objects
