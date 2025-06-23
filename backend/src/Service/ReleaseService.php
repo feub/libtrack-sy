@@ -47,25 +47,24 @@ class ReleaseService
      *
      * @param int $page Current page number
      * @param int $limit Number of items per page
+     * @param string $sortBy Field to sort by
+     * @param string $sortDir Sort direction (ASC or DESC)
      * @param string $searchTerm Optional search term
-     * @return array Array containing releases data, total, max page and current page
+     * @return array Array containing releases data, total, max page, current page and pagination properties
      */
-    public function getPaginatedReleases(int $page = 1, int $limit = 20, ?string $searchTerm = '', ?string $searchShelf = ''): array
+    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $sortBy = 'title', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = ''): array
     {
-        $totalReleases = $this->releaseRepository->getTotalReleases();
-        $releases = $this->releaseRepository->paginatedReleases($page, $limit, $searchTerm, $searchShelf);
-
-        if (!empty($searchTerm) || !empty($searchShelf)) {
-            $totalReleases = $releases->count();
-        }
-
-        $maxpage = ceil($totalReleases / $limit);
+        $paginationResult = $this->releaseRepository->paginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf);
 
         return [
-            'releases' => $releases->getItems(),
-            'totalReleases' => $totalReleases,
-            'maxPage' => $maxpage,
-            'page' => $page
+            'releases' => $paginationResult->getItems(),
+            'totalReleases' => $paginationResult->getTotalItems(),
+            'maxPage' => $paginationResult->getTotalPages(),
+            'page' => $paginationResult->getCurrentPage(),
+            'hasNextPage' => $paginationResult->hasNextPage(),
+            'hasPreviousPage' => $paginationResult->hasPreviousPage(),
+            'nextPage' => $paginationResult->getNextPage(),
+            'previousPage' => $paginationResult->getPreviousPage()
         ];
     }
 

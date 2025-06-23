@@ -35,10 +35,12 @@ final class ApiReleaseController extends AbstractApiController
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
+        $sortBy = $request->query->get('sort', 'name');
+        $sortDir = $request->query->get('order', 'ASC');
         $searchTerm = $request->query->getString('search', '');
         $searchShelf = $request->query->getString('shelf', '');
 
-        $releasesData = $releaseService->getPaginatedReleases($page, $limit, $searchTerm, $searchShelf);
+        $releasesData = $releaseService->getPaginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf);
 
         return $this->apiResponseService->success(
             'Releases retrieved successfully',
