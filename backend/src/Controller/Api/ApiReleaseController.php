@@ -16,6 +16,7 @@ use App\Service\ApiResponseService;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/api/release', name: 'api.release.')]
 final class ApiReleaseController extends AbstractApiController
@@ -131,6 +132,28 @@ final class ApiReleaseController extends AbstractApiController
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" updated successfully'
         );
+    }
+
+    #[Route('/{id}/cover', name: 'cover', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function uploadImage(Request $request, Release $release, EntityManagerInterface $entityManager): Response
+    {
+        /** @var UploadedFile $uploadedFile */
+        $uploadedFile = $request->files->get('image');
+
+        if (!$uploadedFile) {
+            return $this->json(['error' => 'No file uploaded'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $release->setCoverFile($uploadedFile);
+        $entityManager->persist($release);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'imageName' => $release->getCover(),
+            'imageUrl' => '/images/covers/' . $release->getCover()
+        ]);
     }
 
     #[Route('/set-cover/{id}', name: 'set.cover', methods: ['PUT'])]

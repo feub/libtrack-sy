@@ -6,8 +6,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ReleaseRepository;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\HttpFoundation\File\File;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -15,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`release`')]
 #[UniqueEntity('slug')]
 #[UniqueEntity('barcode')]
+#[Vich\Uploadable]
 class Release
 {
     #[ORM\Id]
@@ -31,7 +34,7 @@ class Release
 
     #[ORM\Column(length: 150)]
     #[Assert\Length(min: 1)]
-    #[Assert\Length(maw: 150)]
+    #[Assert\Length(max: 150)]
     #[Assert\Regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', message: "This is not a valid slug.")]
     #[Groups(['api.release.list'])]
     private ?string $slug = null;
@@ -41,6 +44,9 @@ class Release
     #[Assert\GreaterThan(value: 1000)]
     #[Groups(['api.release.list'])]
     private ?int $release_date = null;
+
+    #[Vich\UploadableField(mapping: 'cover_images', fileNameProperty: 'cover')]
+    private ?File $coverFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['api.release.list'])]
@@ -113,6 +119,25 @@ class Release
         $this->release_date = $release_date;
 
         return $this;
+    }
+
+    /**
+     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $coverFile
+     */
+    public function setCoverFile(?File $coverFile = null): void
+    {
+        $this->coverFile = $coverFile;
+
+        if (null !== $coverFile) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getCoverFile(): ?File
+    {
+        return $this->coverFile;
     }
 
     public function getCover(): ?string

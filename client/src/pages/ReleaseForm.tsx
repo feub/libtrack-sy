@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,11 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Save, Loader, ChevronsLeft } from "lucide-react";
+import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
 import { SelectPills } from "@/components/SelectPills";
 import TheLoader from "@/components/TheLoader";
 
 const apiURL = import.meta.env.VITE_API_URL;
+const imagePath = import.meta.env.VITE_IMAGES_PATH + "/covers/";
 
 const formSchema = z.object({
   title: z
@@ -103,6 +104,8 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
   const [genres, setGenres] = useState<GenreType[] | null>(null);
   const [release, setRelease] = useState<ListReleasesType | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { id } = useParams();
 
@@ -412,6 +415,80 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     }
   }
 
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!release?.id) {
+      toast.error("Release ID is required for image upload");
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Check file size (max 4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("Image must be less than 4MB");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("access_token");
+      const headers: HeadersInit = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(
+        `${apiURL}/api/release/${release.id}/cover`,
+        {
+          method: "POST",
+          body: formData,
+          headers,
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Image upload failed");
+      }
+
+      const data = await response.json();
+
+      // Update the release data with the new image
+      if (data.imageName) {
+        setRelease({
+          ...release,
+          cover: data.imageName,
+        });
+        form.setValue("cover", data.imageName);
+        toast.success("Image uploaded successfully");
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploading(false);
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <>
       {isLoading ? (
@@ -425,229 +502,288 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
               <span>Add a release</span>
             )}
           </h2>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="overflow-hidden rounded-md border mt-4">
-                <div className="grid md:grid-cols-4 gap-4 p-4">
-                  <FormField
-                    control={form.control}
-                    name="artists"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-2">
-                        <FormLabel>Artist(s)</FormLabel>
-                        <FormControl>
-                          <SelectPills
-                            data={(artists || []).map((artist) => ({
-                              ...artist,
-                              id: artist.id.toString(),
-                            }))}
-                            value={field.value}
-                            // defaultValue={release?.artists?.map((artist) =>
-                            //   artist.name.toString(),
-                            // )}
-                            onValueChange={field.onChange}
-                            placeholder="Search for an artist..."
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="genres"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-2">
-                        <FormLabel>Genres(s)</FormLabel>
-                        <FormControl>
-                          <SelectPills
-                            data={(genres || []).map((genre) => ({
-                              ...genre,
-                              id: genre.id.toString(),
-                            }))}
-                            value={field.value}
-                            // defaultValue={release?.genres?.map((genre) =>
-                            //   genre.name.toString(),
-                            // )}
-                            onValueChange={field.onChange}
-                            placeholder="Search for a genre..."
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4">
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-2">
-                        <FormLabel>Slug</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value === null ? "" : field.value}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          The slug will be added automatically if you leave the
-                          field empty.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="barcode"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-2">
-                        <FormLabel>Barcode</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value === null ? "" : field.value}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="release_date"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-1">
-                        <FormLabel>Year</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cover"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-1">
-                        <FormLabel>Cover art</FormLabel>
-                        <FormControl>
-                          <Input {...field} disabled />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="shelf"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-1">
-                        <FormLabel>Shelf location</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange({ id: parseInt(value) })
-                            }
-                            value={field.value?.id?.toString() || ""}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a shelf location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {shelves &&
-                                shelves.map((shelf, idx) => (
-                                  <SelectItem
-                                    key={idx}
-                                    value={String(shelf.id)}
-                                  >
-                                    {shelf.location}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="format"
-                    render={({ field }) => (
-                      <FormItem className="col-span-4 md:col-span-1">
-                        <FormLabel>Format</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange({ id: parseInt(value) })
-                            }
-                            value={field.value?.id?.toString() || ""}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select a format" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {formats &&
-                                formats.map((format, idx) => (
-                                  <SelectItem
-                                    key={idx}
-                                    value={String(format.id)}
-                                  >
-                                    {format.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between mt-4">
-                <Button
-                  onClick={handleBackToReleases}
-                  className=""
-                  variant="outline"
-                >
-                  <ChevronsLeft /> back to releases
-                </Button>
-                <Button type="submit" className="w-[80px]" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader /> Saving...
-                    </>
+          <div className="overflow-hidden rounded-md border mt-4">
+            <div className="flex">
+              {isUpdateMode && (
+                <div className="w-[300px] p-4">
+                  {release?.cover ? (
+                    <img
+                      src={`${apiURL}/${imagePath}/${release.cover}`}
+                      alt={release.title}
+                      className="rounded-md w-full h-auto"
+                    />
                   ) : (
-                    <>
-                      <Save /> Save
-                    </>
+                    <div className="text-neutral-700 w-full h-[200px] bg-neutral-900 justify-center items-center flex rounded-md">
+                      No image
+                    </div>
                   )}
-                </Button>
+
+                  {release?.id && (
+                    <div className="mt-4">
+                      <Input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="image/*"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full"
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader className="mr-2 h-4 w-4 animate-spin" />{" "}
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-4 w-4" /> Upload Image
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex-1">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <div className="overflow-hidden rounded-md border mt-4">
+                      <div className="grid md:grid-cols-4 gap-4 p-4">
+                        <FormField
+                          control={form.control}
+                          name="artists"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-2">
+                              <FormLabel>Artist(s)</FormLabel>
+                              <FormControl>
+                                <SelectPills
+                                  data={(artists || []).map((artist) => ({
+                                    ...artist,
+                                    id: artist.id.toString(),
+                                  }))}
+                                  value={field.value}
+                                  // defaultValue={release?.artists?.map((artist) =>
+                                  //   artist.name.toString(),
+                                  // )}
+                                  onValueChange={field.onChange}
+                                  placeholder="Search for an artist..."
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="genres"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-2">
+                              <FormLabel>Genres(s)</FormLabel>
+                              <FormControl>
+                                <SelectPills
+                                  data={(genres || []).map((genre) => ({
+                                    ...genre,
+                                    id: genre.id.toString(),
+                                  }))}
+                                  value={field.value}
+                                  // defaultValue={release?.genres?.map((genre) =>
+                                  //   genre.name.toString(),
+                                  // )}
+                                  onValueChange={field.onChange}
+                                  placeholder="Search for a genre..."
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4">
+                              <FormLabel>Title</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="slug"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-2">
+                              <FormLabel>Slug</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  value={
+                                    field.value === null ? "" : field.value
+                                  }
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                The slug will be added automatically if you
+                                leave the field empty.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="barcode"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-2">
+                              <FormLabel>Barcode</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  value={
+                                    field.value === null ? "" : field.value
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="release_date"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-1">
+                              <FormLabel>Year</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="cover"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-1">
+                              <FormLabel>Cover art</FormLabel>
+                              <FormControl>
+                                <Input {...field} disabled />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="shelf"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-1">
+                              <FormLabel>Shelf location</FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={(value) =>
+                                    field.onChange({ id: parseInt(value) })
+                                  }
+                                  value={field.value?.id?.toString() || ""}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a shelf location" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {shelves &&
+                                      shelves.map((shelf, idx) => (
+                                        <SelectItem
+                                          key={idx}
+                                          value={String(shelf.id)}
+                                        >
+                                          {shelf.location}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="format"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4 md:col-span-1">
+                              <FormLabel>Format</FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={(value) =>
+                                    field.onChange({ id: parseInt(value) })
+                                  }
+                                  value={field.value?.id?.toString() || ""}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select a format" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {formats &&
+                                      formats.map((format, idx) => (
+                                        <SelectItem
+                                          key={idx}
+                                          value={String(format.id)}
+                                        >
+                                          {format.name}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between mt-4">
+                      <Button
+                        onClick={handleBackToReleases}
+                        className=""
+                        variant="outline"
+                      >
+                        <ChevronsLeft /> back to releases
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="w-[80px]"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader /> Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save /> Save
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
               </div>
-            </form>
-          </Form>
+            </div>
+          </div>
         </>
       )}
     </>

@@ -85,7 +85,7 @@ class DiscogsService
   }
 
   /**
-   * Undocumented function
+   * Search a release on Discogs
    *
    * @param string $by -> title,release_title,artist,genre,country,year,format,barcode
    * @param string $search
