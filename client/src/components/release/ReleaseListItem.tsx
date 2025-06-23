@@ -64,7 +64,17 @@ export default function ReleaseListItem({
         </TableCell>
         <TableCell className="max-w-[200px] truncate whitespace-normal break-words">
           {release.artists &&
-            release.artists.map((artist) => artist.name).join(", ")}
+            release.artists.map((artist) => {
+              return (
+                <Link
+                  key={artist.id}
+                  to={`/release?search=${artist.name}`}
+                  className="font-bold"
+                >
+                  {artist.name}
+                </Link>
+              );
+            })}
         </TableCell>
         <TableCell className="max-w-[200px] truncate whitespace-normal break-words">
           {release.genres &&
