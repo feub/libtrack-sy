@@ -27,7 +27,7 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function paginatedReleases(?int $page = 1, ?int $limit = 10, string $sortBy = 'title', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = ''): PaginationResult
+    public function paginatedReleases(?int $page = 1, ?int $limit = 10, string $sortBy = 'createdAt', string $sortDir = 'DESC', ?string $searchTerm = '', ?string $searchShelf = ''): PaginationResult
     {
         $queryBuilder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
