@@ -34,7 +34,11 @@ export default function ArtistListItem({
   return (
     <>
       <TableRow>
-        <TableCell className="font-medium">{artist.name}</TableCell>
+        <TableCell className="font-medium">
+          <Link to={`/release?search=${artist.name}`} className="font-bold">
+            {artist.name}
+          </Link>
+        </TableCell>
         <TableCell className="text-neutral-600 italic">{artist.slug}</TableCell>
         <TableCell className="w-[100px] h-[100px] text-center">
           {artist.thumbnail ? (
