@@ -35,10 +35,10 @@ export default function ReleasePage() {
   const [maxPage, setMaxPage] = useState<number>(1);
   const [limit] = useState<number>(10);
   const [sortBy, setSortBy] = useState<string>(
-    searchParams.get("sort") || "name",
+    searchParams.get("sort") || "createdAt",
   );
   const [sortOrderDir, setSortOrderDir] = useState<string>(
-    searchParams.get("order") || "asc",
+    searchParams.get("order") || "desc",
   );
   const [totalReleases, setTotalReleases] = useState<number>(0);
 
