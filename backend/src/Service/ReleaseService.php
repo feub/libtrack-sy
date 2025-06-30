@@ -52,9 +52,9 @@ class ReleaseService
      * @param string $searchTerm Optional search term
      * @return array Array containing releases data, total, max page, current page and pagination properties
      */
-    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $sortBy = 'createdAt', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = ''): array
+    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $sortBy = 'createdAt', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = '', ?bool $featured = null): array
     {
-        $paginationResult = $this->releaseRepository->paginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf);
+        $paginationResult = $this->releaseRepository->paginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf, $featured);
 
         return [
             'releases' => $paginationResult->getItems(),
