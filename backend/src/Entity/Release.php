@@ -87,6 +87,7 @@ class Release
     private Collection $genres;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['api.release.list'])]
     private bool $featured = false;
 
     public function __construct()

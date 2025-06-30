@@ -49,6 +49,9 @@ class ReleaseDto
      */
     public ?array $genres = null;
 
+    #[Assert\Type('boolean')]
+    public ?bool $featured = null;
+
     /**
      * Create a new ReleaseDto from request data
      */
@@ -64,6 +67,7 @@ class ReleaseDto
         $dto->format = $data['format'] ?? null;
         $dto->shelf = $data['shelf'] ?? null;
         $dto->genres = $data['genres'] ?? null;
+        $dto->featured = isset($data['featured']) ? filter_var($data['featured'], FILTER_VALIDATE_BOOLEAN) : null;
 
         return $dto;
     }

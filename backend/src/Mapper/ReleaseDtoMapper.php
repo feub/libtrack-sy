@@ -94,6 +94,10 @@ class ReleaseDtoMapper
             $release->setBarcode(null);
         }
 
+        if ($dto->featured !== null) {
+            $release->setFeatured($dto->featured);
+        }
+
         // Handle artists
         if ($dto->artists !== null) {
             $this->mapArtists($dto->artists, $release);
