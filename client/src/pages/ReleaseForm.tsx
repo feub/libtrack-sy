@@ -30,8 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SelectPills } from "@/components/SelectPills";
+import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
 import TheLoader from "@/components/TheLoader";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -79,6 +80,7 @@ const formSchema = z.object({
     .nullable()
     .optional(),
   genres: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
 });
 
 export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
@@ -127,6 +129,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
       shelf: null,
       format: null,
       genres: [] as string[],
+      featured: false,
     },
   });
 
@@ -329,6 +332,8 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         } else {
           form.setValue("format", null);
         }
+
+        form.setValue("featured", release.featured || false);
       }
     };
 
@@ -505,7 +510,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
           <div className="overflow-hidden rounded-md border mt-4">
             <div className="flex">
               {isUpdateMode && (
-                <div className="w-[300px] p-4">
+                <div className="w-[300px] p-4 text-center">
                   {release?.cover ? (
                     <img
                       src={`${apiURL}/${imagePath}/${release.cover}`}
@@ -517,7 +522,6 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                       No image
                     </div>
                   )}
-
                   {release?.id && (
                     <div className="mt-4">
                       <Input
@@ -549,7 +553,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                   )}
                 </div>
               )}
-              <div className="flex-1">
+              <div className="flex-1 mr-4">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="overflow-hidden rounded-md border mt-4">
@@ -633,8 +637,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                                 />
                               </FormControl>
                               <FormDescription>
-                                The slug will be added automatically if you
-                                leave the field empty.
+                                Added automatically if empty.
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -655,6 +658,9 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                                   }
                                 />
                               </FormControl>
+                              <FormDescription>
+                                The barcode might be empty.
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -668,20 +674,6 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                               <FormLabel>Year</FormLabel>
                               <FormControl>
                                 <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="cover"
-                          render={({ field }) => (
-                            <FormItem className="col-span-4 md:col-span-1">
-                              <FormLabel>Cover art</FormLabel>
-                              <FormControl>
-                                <Input {...field} disabled />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -753,16 +745,31 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                             </FormItem>
                           )}
                         />
+
+                        <FormField
+                          control={form.control}
+                          name="featured"
+                          render={({ field }) => {
+                            return (
+                              <FormItem className="flex flex-row items-center justify-center gap-2 mt-5 border rounded-md">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value || false}
+                                    onCheckedChange={(checked) => {
+                                      field.onChange(checked);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">
+                                  Featured?
+                                </FormLabel>
+                              </FormItem>
+                            );
+                          }}
+                        />
                       </div>
                     </div>
-                    <div className="flex justify-between mt-4">
-                      <Button
-                        onClick={handleBackToReleases}
-                        className=""
-                        variant="outline"
-                      >
-                        <ChevronsLeft /> back to releases
-                      </Button>
+                    <div className="flex justify-end gap-4 my-4">
                       <Button
                         type="submit"
                         className="w-[80px]"
@@ -778,11 +785,27 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                           </>
                         )}
                       </Button>
+                      <Button
+                        onClick={handleBackToReleases}
+                        className=""
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </form>
                 </Form>
               </div>
             </div>
+          </div>
+          <div className="flex justify-between mt-4">
+            <Button
+              onClick={handleBackToReleases}
+              className=""
+              variant="outline"
+            >
+              <ChevronsLeft /> Back to releases
+            </Button>
           </div>
         </>
       )}
