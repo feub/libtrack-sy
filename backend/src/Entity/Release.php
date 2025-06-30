@@ -86,6 +86,9 @@ class Release
     #[Groups(['api.release.list'])]
     private Collection $genres;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $featured = false;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
@@ -271,6 +274,18 @@ class Release
         if ($this->genres->removeElement($genre)) {
             $genre->removeRelease($this);
         }
+
+        return $this;
+    }
+
+    public function isFeatured(): bool
+    {
+        return $this->featured;
+    }
+
+    public function setFeatured(bool $featured): static
+    {
+        $this->featured = $featured;
 
         return $this;
     }
