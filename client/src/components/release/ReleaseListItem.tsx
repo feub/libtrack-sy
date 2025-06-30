@@ -62,6 +62,9 @@ export default function ReleaseListItem({
             </>
           )}
         </TableCell>
+        <TableCell>
+          {release.featured ? <p title="Featured release">👍</p> : null}
+        </TableCell>
         <TableCell className="max-w-[200px] truncate whitespace-normal break-words">
           {release.artists &&
             release.artists.map((artist) => {
