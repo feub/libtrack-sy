@@ -212,7 +212,7 @@ export default function ReleasePage() {
                   <TableRow>
                     <TableHead className="w-[100px]"></TableHead>
                     <TableHead>Title</TableHead>
-                    <TableHead></TableHead>
+                    <TableHead className="text-center"></TableHead>
                     <TableHead className="max-w-[200px] truncate whitespace-normal break-words">
                       Artist(s)
                     </TableHead>

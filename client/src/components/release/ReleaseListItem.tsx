@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Disc, Disc3, CircleX, FilePenLine } from "lucide-react";
+import { Disc, Disc3, CircleX, FilePenLine, Star } from "lucide-react";
 import NoCover from "@/components/release/NoCover";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -63,7 +63,7 @@ export default function ReleaseListItem({
           )}
         </TableCell>
         <TableCell>
-          {release.featured ? <p title="Featured release">👍</p> : null}
+          {release.featured ? <Star aria-label="Featured release" /> : null}
         </TableCell>
         <TableCell className="max-w-[200px] truncate whitespace-normal break-words">
           {release.artists &&
