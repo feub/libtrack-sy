@@ -17,6 +17,7 @@ import SearchBar from "@/components/release/SearchBar";
 import TheLoader from "@/components/TheLoader";
 import SortingReleasesButton from "@/components/release/SortingReleasesButton";
 import { CirclePlus } from "lucide-react";
+import ToggleFeaturedReleases from "@/components/release/ToggleFeaturedReleases";
 
 const apiURL = import.meta.env.VITE_API_URL;
 
@@ -46,16 +47,25 @@ export default function ReleasePage() {
     return searchParams.get("search") || "";
   });
 
+  const [isFeaturedToggled, setIsFeaturedToggled] = useState(() => {
+    return searchParams.get("featured") === "1";
+  });
+
+  const [featured, setFeatured] = useState<string>(() => {
+    return searchParams.get("featured") || "";
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    getReleases(currentPage, limit, sortBy, sortOrderDir, searchTerm);
-  }, [currentPage, limit, sortBy, sortOrderDir, searchTerm]);
+    getReleases(currentPage, limit, sortBy, sortOrderDir, searchTerm, featured);
+  }, [currentPage, limit, sortBy, sortOrderDir, searchTerm, featured]);
 
   // This effect runs when searchParams change (URL changes)
   useEffect(() => {
     const pageParam = searchParams.get("page");
     const searchParam = searchParams.get("search") || "";
+    const featuredParam = searchParams.get("featured") || "";
 
     const newPage = pageParam ? parseInt(pageParam, 10) : 1;
 
@@ -66,6 +76,11 @@ export default function ReleasePage() {
 
     if (searchParam !== searchTerm) {
       setSearchTerm(searchParam);
+    }
+
+    if (featuredParam !== featured) {
+      setFeatured(featuredParam);
+      setIsFeaturedToggled(featuredParam === "1");
     }
   }, [searchParams]);
 
@@ -81,6 +96,10 @@ export default function ReleasePage() {
       newSearchParams.set("search", searchTerm);
     }
 
+    if (featured) {
+      newSearchParams.set("featured", featured);
+    }
+
     // Avoid unnecessary URL updates by comparing with current
     const currentQueryString = searchParams.toString();
     const newQueryString = newSearchParams.toString();
@@ -88,7 +107,7 @@ export default function ReleasePage() {
     if (currentQueryString !== newQueryString) {
       setSearchParams(newSearchParams, { replace: true });
     }
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, featured]);
 
   const handleSearchSubmit = async (search: string) => {
     if (search !== searchTerm) {
@@ -111,6 +130,7 @@ export default function ReleasePage() {
     sort: string = "name",
     orderDir: string = "asc",
     search: string = "",
+    featured: string = "",
   ) => {
     setIsLoading(true);
     try {
@@ -121,6 +141,12 @@ export default function ReleasePage() {
         sort: sort.toString(),
         order: orderDir.toString(),
       });
+
+      if (featured) {
+        params.set("featured", featured);
+      }
+
+      console.log(`Fetching releases with params: ${params.toString()}`);
 
       const response = await api.get(
         `${apiURL}/api/release/?${params.toString()}`,
@@ -173,6 +199,13 @@ export default function ReleasePage() {
     setSearchParams(newParams);
   };
 
+  // Handler for the toggle change
+  const handleFeaturedToggle = (pressed: boolean) => {
+    setIsFeaturedToggled(pressed);
+    setFeatured(pressed ? "1" : "");
+    setCurrentPage(1); // Reset to first page when filtering changes
+  };
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -198,6 +231,10 @@ export default function ReleasePage() {
             </div>
             <div className="flex items-center gap-2">
               <SearchBar handleSearch={handleSearchSubmit} />
+              <ToggleFeaturedReleases
+                pressed={isFeaturedToggled}
+                onPressedChange={handleFeaturedToggle}
+              />
               <SortingReleasesButton
                 currentSort={sortBy}
                 currentDirection={sortOrderDir}
