@@ -84,65 +84,67 @@ export default function FormatPieChartCard() {
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
-        <Card className="flex flex-col w-full">
-          <CardHeader className="items-center pb-0">
-            <CardTitle>Releases by formats</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 pb-0">
-            <ChartContainer
-              config={chrtConfig}
-              className="mx-auto aspect-square format-pie-chart w-full"
-            >
-              <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie
-                  data={chrtData}
-                  dataKey="count"
-                  nameKey="format"
-                  innerRadius={60}
-                  strokeWidth={5}
-                >
-                  <Label
-                    content={({ viewBox }) => {
-                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                        return (
-                          <text
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                          >
-                            <tspan
+        <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs">
+          <Card className="flex flex-col w-full">
+            <CardHeader className="items-center pb-0">
+              <CardTitle>Releases by formats</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+              <ChartContainer
+                config={chrtConfig}
+                className="mx-auto aspect-square format-pie-chart w-full"
+              >
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Pie
+                    data={chrtData}
+                    dataKey="count"
+                    nameKey="format"
+                    innerRadius={60}
+                    strokeWidth={5}
+                  >
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
                               x={viewBox.cx}
                               y={viewBox.cy}
-                              className="fill-foreground text-3xl font-bold"
+                              textAnchor="middle"
+                              dominantBaseline="middle"
                             >
-                              {totalCount.toLocaleString()}
-                            </tspan>
-                            <tspan
-                              x={viewBox.cx}
-                              y={(viewBox.cy || 0) + 24}
-                              className="fill-muted-foreground"
-                            >
-                              releases
-                            </tspan>
-                          </text>
-                        );
-                      }
-                    }}
+                              <tspan
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                className="fill-foreground text-3xl font-bold"
+                              >
+                                {totalCount.toLocaleString()}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 24}
+                                className="fill-muted-foreground"
+                              >
+                                releases
+                              </tspan>
+                            </text>
+                          );
+                        }
+                      }}
+                    />
+                  </Pie>
+                  <ChartLegend
+                    content={<ChartLegendContent nameKey="format" />}
+                    className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
                   />
-                </Pie>
-                <ChartLegend
-                  content={<ChartLegendContent nameKey="format" />}
-                  className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-                />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </>
   );

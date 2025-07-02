@@ -98,63 +98,65 @@ export default function GenreBarChartCard() {
       {isLoading ? (
         <TheLoader style="my-4" />
       ) : (
-        <Card className="flex flex-col w-full">
-          <CardHeader className="items-center pb-0">
-            <CardTitle>Top 10 genres</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 pb-0">
-            <ChartContainer
-              config={chrtConfig}
-              className="mx-auto aspect-square genre-bar-chart w-full"
-            >
-              <BarChart
-                accessibilityLayer
-                data={chrtData}
-                layout="vertical"
-                margin={{
-                  right: 16,
-                }}
+        <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs">
+          <Card className="flex flex-col w-full">
+            <CardHeader className="items-center pb-0">
+              <CardTitle>Top 10 genres</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+              <ChartContainer
+                config={chrtConfig}
+                className="mx-auto aspect-square genre-bar-chart w-full"
               >
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="genre"
-                  type="category"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                  hide
-                />
-                <XAxis dataKey="count" type="number" hide />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="line" />}
-                />
-                <Bar
-                  dataKey="count"
+                <BarChart
+                  accessibilityLayer
+                  data={chrtData}
                   layout="vertical"
-                  fill="hsl(var(--chart-2))"
-                  radius={4}
+                  margin={{
+                    right: 16,
+                  }}
                 >
-                  <LabelList
+                  <CartesianGrid horizontal={false} />
+                  <YAxis
                     dataKey="genre"
-                    position="insideLeft"
-                    offset={8}
-                    className="fill-background"
-                    fontSize={10}
+                    type="category"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value.slice(0, 3)}
+                    hide
                   />
-                  <LabelList
+                  <XAxis dataKey="count" type="number" hide />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="line" />}
+                  />
+                  <Bar
                     dataKey="count"
-                    position="right"
-                    offset={8}
-                    className="fill-foreground"
-                    fontSize={14}
-                  />
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+                    layout="vertical"
+                    fill="hsl(var(--chart-2))"
+                    radius={4}
+                  >
+                    <LabelList
+                      dataKey="genre"
+                      position="insideLeft"
+                      offset={8}
+                      className="fill-background"
+                      fontSize={10}
+                    />
+                    <LabelList
+                      dataKey="count"
+                      position="right"
+                      offset={8}
+                      className="fill-foreground"
+                      fontSize={14}
+                    />
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </>
   );
