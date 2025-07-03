@@ -90,10 +90,17 @@ class Release
     #[Groups(['api.release.list'])]
     private bool $featured = false;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'releases')]
+    private Collection $users;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
         $this->genres = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -287,6 +294,30 @@ class Release
     public function setFeatured(bool $featured): static
     {
         $this->featured = $featured;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        $this->users->removeElement($user);
 
         return $this;
     }
