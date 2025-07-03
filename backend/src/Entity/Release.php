@@ -16,7 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ReleaseRepository::class)]
 #[ORM\Table(name: '`release`')]
 #[UniqueEntity('slug')]
-#[UniqueEntity('barcode')]
 #[Vich\Uploadable]
 class Release
 {
@@ -52,7 +51,7 @@ class Release
     #[Groups(['api.release.list'])]
     private ?string $cover = null;
 
-    #[ORM\Column(length: 100, unique: true, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true)]
     #[Groups(['api.release.list'])]
     private ?string $barcode = null;
 
