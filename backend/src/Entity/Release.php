@@ -96,6 +96,7 @@ class Release
     private Collection $users;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['api.release.list'])]
     private ?string $note = null;
 
     public function __construct()
