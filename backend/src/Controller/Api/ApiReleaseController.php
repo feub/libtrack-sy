@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Release;
+use App\Entity\User;
 use App\Service\DiscogsService;
 use App\Service\ReleaseService;
 use App\Dto\ReleaseDto;
@@ -34,6 +35,9 @@ final class ApiReleaseController extends AbstractApiController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function list(Request $request, ReleaseService $releaseService): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
         $sortBy = $request->query->get('sort', 'createdAt');
@@ -42,7 +46,7 @@ final class ApiReleaseController extends AbstractApiController
         $searchShelf = $request->query->getString('shelf', '');
         $featured = $request->query->get('featured', null);
 
-        $releasesData = $releaseService->getPaginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf, $featured);
+        $releasesData = $releaseService->getPaginatedReleases($user, $page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf, $featured);
 
         return $this->apiResponseService->success(
             'Releases retrieved successfully',
@@ -61,6 +65,9 @@ final class ApiReleaseController extends AbstractApiController
         ReleaseService $releaseService,
         ValidatorInterface $validator
     ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+
         // Parse request data
         $data = json_decode($request->getContent(), true);
 
@@ -81,8 +88,8 @@ final class ApiReleaseController extends AbstractApiController
             );
         }
 
-        // Create the release
-        $release = $releaseService->createFromDto($releaseDto);
+        // Create the release for the current user
+        $release = $releaseService->createFromDto($releaseDto, $user);
 
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" created successfully'
@@ -97,10 +104,16 @@ final class ApiReleaseController extends AbstractApiController
         ReleaseService $releaseService,
         ValidatorInterface $validator
     ): Response {
-        $releaseOrResponse = $this->findOr404(Release::class, $id);
+        /** @var User $user */
+        $user = $this->getUser();
 
-        if ($releaseOrResponse instanceof Response) {
-            return $releaseOrResponse;
+        $release = $this->entityManager->getRepository(Release::class)->getRelease($id, $user);
+
+        if (!$release) {
+            return $this->apiResponseService->error(
+                'Release not found',
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         // Parse request data
@@ -128,7 +141,7 @@ final class ApiReleaseController extends AbstractApiController
             );
         }
 
-        $release = $releaseService->updateFromDto($releaseOrResponse, $releaseDto);
+        $release = $releaseService->updateFromDto($release, $releaseDto, $user);
 
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" updated successfully'
@@ -137,8 +150,20 @@ final class ApiReleaseController extends AbstractApiController
 
     #[Route('/{id}/cover', name: 'cover', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function uploadImage(Request $request, Release $release, EntityManagerInterface $entityManager): Response
+    public function uploadImage(int $id, Request $request, Release $release, EntityManagerInterface $entityManager): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $release = $this->entityManager->getRepository(Release::class)->getRelease($id, $user);
+
+        if (!$release) {
+            return $this->apiResponseService->error(
+                'Release not found',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
         /** @var UploadedFile $uploadedFile */
         $uploadedFile = $request->files->get('image');
 
@@ -164,10 +189,16 @@ final class ApiReleaseController extends AbstractApiController
         Request $request,
         ReleaseService $releaseService,
     ): Response {
-        $releaseOrResponse = $this->findOr404(Release::class, $id);
+        /** @var User $user */
+        $user = $this->getUser();
 
-        if ($releaseOrResponse instanceof Response) {
-            return $releaseOrResponse;
+        $release = $this->entityManager->getRepository(Release::class)->getRelease($id, $user);
+
+        if (!$release) {
+            return $this->apiResponseService->error(
+                'Release not found',
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         // Parse request data
@@ -265,6 +296,9 @@ final class ApiReleaseController extends AbstractApiController
         Request $request,
         ReleaseService $releaseService
     ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+
         // Get the JSON payload
         $data = json_decode($request->getContent(), true);
         $releaseId = $data['release_id'] ?? null;
@@ -279,7 +313,15 @@ final class ApiReleaseController extends AbstractApiController
         }
 
         // ApiExceptionSubscriber handles exceptions
-        $release = $releaseService->addScannedRelease($releaseId, $barcode, $shelf);
+        $release = $releaseService->addScannedRelease($user, $releaseId, $barcode, $shelf);
+
+        if (!$release) {
+            return $this->apiResponseService->error(
+                'Failed to add release',
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+
         return $this->apiResponseService->success(
             'Release "' . $release->getTitle() . '" added successfully'
         );
@@ -289,16 +331,20 @@ final class ApiReleaseController extends AbstractApiController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(int $id, ReleaseService $releaseService): Response
     {
-        // Use findOr404 method to find the entity or return a 404
-        $releaseOrResponse = $this->findOr404(Release::class, $id);
+        /** @var User $user */
+        $user = $this->getUser();
 
-        // If a response is returned (404), return it
-        if ($releaseOrResponse instanceof Response) {
-            return $releaseOrResponse;
+        $release = $this->entityManager->getRepository(Release::class)->getRelease($id, $user);
+
+        if (!$release) {
+            return $this->apiResponseService->error(
+                'Release not found',
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         // ApiExceptionSubscriber will handle exceptions
-        $releaseService->deleteRelease($releaseOrResponse);
+        $releaseService->deleteRelease($release);
 
         return $this->apiResponseService->success('Release successfully deleted');
     }
@@ -307,8 +353,11 @@ final class ApiReleaseController extends AbstractApiController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function view(int $id, ReleaseService $releaseService): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+
         try {
-            $releaseData = $releaseService->getReleaseFormatted($id);
+            $releaseData = $releaseService->getReleaseFormatted($id, $user);
 
             return $this->apiResponseService->success(
                 'Release details retrieved successfully',
