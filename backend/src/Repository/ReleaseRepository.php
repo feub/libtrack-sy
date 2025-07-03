@@ -124,4 +124,23 @@ class ReleaseRepository extends ServiceEntityRepository
 
         return $stats;
     }
+
+    /**
+     * Find a release by barcode for a specific user
+     *
+     * @param string $barcode
+     * @param User $user
+     * @return Release|null
+     */
+    public function findByBarcodeAndUser(string $barcode, User $user): ?Release
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.users', 'u')
+            ->where('r.barcode = :barcode')
+            ->andWhere('u.id = :userId')
+            ->setParameter('barcode', $barcode)
+            ->setParameter('userId', $user->getId())
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

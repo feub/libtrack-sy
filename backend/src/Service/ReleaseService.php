@@ -107,13 +107,18 @@ class ReleaseService
      */
     public function createFromDto(ReleaseDto $dto, User $user): Release
     {
-        // TODO: Check if the barcode already exists for that user
-        // if (!empty($dto->barcode) && $dto->barcode !== null) {
-        //     if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
-        //         $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
-        //         throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
-        //     }
-        // }
+        // Check if the barcode already exists for that user
+        if (!empty($dto->barcode) && $dto->barcode !== null) {
+            $existingRelease = $this->releaseRepository->findByBarcodeAndUser(
+                $dto->barcode,
+                $user
+            );
+
+            if ($existingRelease) {
+                $this->logger->error('Barcode "' . $dto->barcode . '" already exists for user ' . $user->getId());
+                throw new ConflictHttpException('Barcode ' . $dto->barcode . ' already exists in your collection.');
+            }
+        }
 
         // Create a new release entity from the DTO
         $release = $this->releaseDtoMapper->createEntityFromDto($dto);
