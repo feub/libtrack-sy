@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectPills } from "@/components/SelectPills";
 import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
@@ -81,6 +82,7 @@ const formSchema = z.object({
     .optional(),
   genres: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
+  note: z.string().optional(),
 });
 
 export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
@@ -130,6 +132,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
       format: null,
       genres: [] as string[],
       featured: false,
+      note: "",
     },
   });
 
@@ -334,6 +337,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
         }
 
         form.setValue("featured", release.featured || false);
+        form.setValue("note", release.note || "");
       }
     };
 
@@ -766,6 +770,20 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                               </FormItem>
                             );
                           }}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="note"
+                          render={({ field }) => (
+                            <FormItem className="col-span-4">
+                              <FormLabel>Note</FormLabel>
+                              <FormControl>
+                                <Textarea {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
                     </div>

@@ -12,7 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Disc, Disc3, CircleX, FilePenLine, Star } from "lucide-react";
+import {
+  Disc,
+  Disc3,
+  CircleX,
+  FilePenLine,
+  Star,
+  MessageCircleQuestion,
+} from "lucide-react";
 import NoCover from "@/components/release/NoCover";
 
 const apiURL = import.meta.env.VITE_API_URL;
@@ -27,6 +34,7 @@ export default function ReleaseListItem({
 }) {
   const location = useLocation();
   const [open, setOpen] = useState<boolean>(false);
+  const [toggleNote, setToggleNote] = useState<boolean>(false);
 
   const handleDeleteAndClose = (id: number) => {
     handleDelete(id);
@@ -52,7 +60,21 @@ export default function ReleaseListItem({
           )}
         </TableCell>
         <TableCell className="font-medium">
-          {release.title}
+          <div className="flex items-center gap-2">
+            {release.title}{" "}
+            {release.note && (
+              <>
+                <MessageCircleQuestion
+                  onClick={() => setToggleNote(!toggleNote)}
+                  className="w-4 h-4 text-neutral-500"
+                  aria-label="Toggle note"
+                />
+              </>
+            )}
+          </div>
+          {toggleNote && (
+            <div className="text-neutral-500">Note: {release.note}</div>
+          )}
           {release.shelf && (
             <>
               <br />

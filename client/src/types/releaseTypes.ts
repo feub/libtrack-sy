@@ -36,6 +36,7 @@ export type ListReleasesType = {
   shelf?: ShelfType;
   genres?: GenreType[];
   featured?: boolean;
+  note?: string;
 };
 
 export type ScannedFormatType = {

@@ -146,8 +146,6 @@ export default function ReleasePage() {
         params.set("featured", featured);
       }
 
-      console.log(`Fetching releases with params: ${params.toString()}`);
-
       const response = await api.get(
         `${apiURL}/api/release/?${params.toString()}`,
       );

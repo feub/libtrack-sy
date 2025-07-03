@@ -95,6 +95,10 @@ class Release
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'releases')]
     private Collection $users;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['api.release.list'])]
+    private ?string $note = null;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
@@ -317,6 +321,18 @@ class Release
     public function removeUser(User $user): static
     {
         $this->users->removeElement($user);
+
+        return $this;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): static
+    {
+        $this->note = $note;
 
         return $this;
     }
