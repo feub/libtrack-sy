@@ -98,6 +98,10 @@ class ReleaseDtoMapper
             $release->setFeatured($dto->featured);
         }
 
+        if ($dto->note !== null) {
+            $release->setNote($dto->note);
+        }
+
         // Handle artists
         if ($dto->artists !== null) {
             $this->mapArtists($dto->artists, $release);
