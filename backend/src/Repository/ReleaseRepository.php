@@ -2,11 +2,12 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Release;
-use App\Service\Pagination\PaginationResult;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Service\Pagination\PaginationResult;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
 /**
@@ -27,13 +28,16 @@ class ReleaseRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function paginatedReleases(?int $page = 1, ?int $limit = 10, string $sortBy = 'createdAt', string $sortDir = 'DESC', ?string $searchTerm = '', ?string $searchShelf = '', ?bool $featured = null): PaginationResult
+    public function paginatedReleases(User $user, ?int $page = 1, ?int $limit = 10, string $sortBy = 'createdAt', string $sortDir = 'DESC', ?string $searchTerm = '', ?string $searchShelf = '', ?bool $featured = null): PaginationResult
     {
         $queryBuilder = $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
             ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
             ->leftJoin('r.format', 'f')
+            ->leftJoin('r.users', 'u')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $user->getId())
             ->select('r', 'a', 's', 'g', 'f');
 
         if (!empty($searchTerm)) {
@@ -79,16 +83,19 @@ class ReleaseRepository extends ServiceEntityRepository
         return new PaginationResult($items, $page, $limit, $totalItems);
     }
 
-    public function getRelease(int $id): ?Release
+    public function getRelease(int $id, User $user): ?Release
     {
         return $this->createQueryBuilder('r')
             ->leftJoin('r.artists', 'a')
             ->leftJoin('r.genres', 'g')
             ->leftJoin('r.shelf', 's')
             ->leftJoin('r.format', 'f')
-            ->select('r', 'a', 's', 'f', 'g')
+            ->leftJoin('r.users', 'u')
             ->where('r.id = :id')
+            ->andWhere('u.id = :userId')
             ->setParameter('id', $id)
+            ->setParameter('userId', $user->getId())
+            ->select('r', 'a', 's', 'f', 'g')
             ->getQuery()
             ->getOneOrNullResult();
     }

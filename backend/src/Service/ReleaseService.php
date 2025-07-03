@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\User;
 use App\Entity\Genre;
 use App\Entity\Artist;
 use App\Dto\ReleaseDto;
@@ -45,6 +46,7 @@ class ReleaseService
     /**
      * Get paginated releases
      *
+     * @param User $user User requesting the releases
      * @param int $page Current page number
      * @param int $limit Number of items per page
      * @param string $sortBy Field to sort by
@@ -52,9 +54,9 @@ class ReleaseService
      * @param string $searchTerm Optional search term
      * @return array Array containing releases data, total, max page, current page and pagination properties
      */
-    public function getPaginatedReleases(int $page = 1, int $limit = 20, string $sortBy = 'createdAt', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = '', ?bool $featured = null): array
+    public function getPaginatedReleases(User $user, int $page = 1, int $limit = 20, string $sortBy = 'createdAt', string $sortDir = 'ASC', ?string $searchTerm = '', ?string $searchShelf = '', ?bool $featured = null): array
     {
-        $paginationResult = $this->releaseRepository->paginatedReleases($page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf, $featured);
+        $paginationResult = $this->releaseRepository->paginatedReleases($user, $page, $limit, $sortBy, $sortDir, $searchTerm, $searchShelf, $featured);
 
         return [
             'releases' => $paginationResult->getItems(),
@@ -72,12 +74,13 @@ class ReleaseService
      * Get formated release data
      *
      * @param int $id Release ID
+     * @param User $user User requesting the release
      * @return array Formated release data
      * @throws NotFoundHttpException If the release does not exist
      */
-    public function getReleaseFormatted(int $id): array
+    public function getReleaseFormatted(int $id, User $user): array
     {
-        $release = $this->releaseRepository->getRelease($id);
+        $release = $this->releaseRepository->getRelease($id, $user);
 
         if (!$release) {
             throw new NotFoundHttpException('Release not found');
@@ -95,19 +98,28 @@ class ReleaseService
         );
     }
 
-    // Create release from DTO
-    public function createFromDto(ReleaseDto $dto): Release
+    /**
+     * Create release from DTO
+     *
+     * @param ReleaseDto $dto
+     * @param User $user
+     * @return Release
+     */
+    public function createFromDto(ReleaseDto $dto, User $user): Release
     {
-        // Check if the release already exists
-        if (!empty($dto->barcode) && $dto->barcode !== null) {
-            if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
-                $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
-                throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
-            }
-        }
+        // TODO: Check if the barcode already exists for that user
+        // if (!empty($dto->barcode) && $dto->barcode !== null) {
+        //     if ($this->releaseRepository->findOneBy(['barcode' => $dto->barcode])) {
+        //         $this->logger->error('Barcode "' . $dto->barcode . '" already exists.');
+        //         throw new BadRequestHttpException('Barcode "' . $dto->barcode . '" already exists.');
+        //     }
+        // }
 
         // Create a new release entity from the DTO
         $release = $this->releaseDtoMapper->createEntityFromDto($dto);
+
+        // Associate the release with the user
+        $release->addUser($user);
 
         // Persist and flush
         $this->em->persist($release);
@@ -116,10 +128,16 @@ class ReleaseService
         return $release;
     }
 
-    // Update from DTO
-    public function updateFromDto(Release $release, ReleaseDto $dto): Release
+    /**
+     * Update the release from the DTO
+     *
+     * @param Release $release
+     * @param ReleaseDto $dto
+     * @param User $user
+     * @return Release
+     */
+    public function updateFromDto(Release $release, ReleaseDto $dto, User $user): Release
     {
-        // Update the release from the DTO
         $this->releaseDtoMapper->updateEntityFromDto($dto, $release);
 
         $this->em->flush();
@@ -127,6 +145,13 @@ class ReleaseService
         return $release;
     }
 
+    /**
+     * Download cover art image from Discogs service and save it to the cover directory
+     *
+     * @param string $coverUrl
+     * @param string $id
+     * @return string
+     */
     public function downloadCovertArt(string $coverUrl, string $id): string
     {
         if (!is_dir($this->coverDir)) {
@@ -155,6 +180,13 @@ class ReleaseService
         return $id . '.jpg';
     }
 
+    /**
+     * Save cover file name to the release entity
+     *
+     * @param integer $id
+     * @param string|null $cover
+     * @return void
+     */
     public function setCover(int $id, ?string $cover): void
     {
         $release = $this->releaseRepository->find($id);
@@ -185,7 +217,17 @@ class ReleaseService
         }
     }
 
+    /**
+     * Add a scanned release to the user's collection
+     *
+     * @param User $user
+     * @param string $releaseId
+     * @param string|null $barcode
+     * @param integer|null $shelf
+     * @return void
+     */
     public function addScannedRelease(
+        User $user,
         string $releaseId,
         ?string $barcode,
         ?int $shelf
@@ -226,11 +268,17 @@ class ReleaseService
         }
 
         // Create the release
-        $release = $this->createFromDto($releaseDto);
+        $release = $this->createFromDto($releaseDto, $user);
 
         return $release;
     }
 
+    /**
+     * Clean artist name by removing the trailing number in parentheses Discogs is adding to some artist names
+     *
+     * @param string $artistName
+     * @return string
+     */
     private function stripArtistName(string $artistName): string
     {
         return preg_replace('/\s*\(\d+\)$/', '', $artistName);
@@ -294,6 +342,12 @@ class ReleaseService
         return $genre->getId();
     }
 
+    /**
+     * Delete a user's release
+     *
+     * @param Release $release
+     * @return void
+     */
     public function deleteRelease(Release $release): void
     {
         if (!$release) {
@@ -320,12 +374,13 @@ class ReleaseService
     /**
      * Get a single release
      *
+     * @param User $user User requesting the release
      * @param int $id ID of the release
      * @return ?Release Release containing the release data or null
      */
-    public function getRelease(int $id): ?Release
+    public function getRelease(User $user, int $id): ?Release
     {
-        $release = $this->releaseRepository->getRelease($id);
+        $release = $this->releaseRepository->getRelease($id, $user);
 
         return $release;
     }
