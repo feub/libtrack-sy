@@ -86,14 +86,14 @@ class MistralAiService
         $genreNames = array_map(fn($genre) => $genre['name'] ?? '', $releaseData['genres'] ?? []);
 
         $prompt = sprintf(
-            'Generate a brief, engaging description for this music release:\n\n' .
+            'Generate an engaging description for this music release:\n\n' .
                 'Title: %s\n' .
                 'Artist(s): %s\n' .
                 'Release Year: %s\n' .
                 'Format: %s\n' .
                 'Genres: %s\n\n' .
-                'Write a 2-3 sentence description that would be suitable for a music collection catalog. ' .
-                'Focus on the musical style and significance of the release.',
+                'Focus on the musical style and significance of the release.' .
+                'Can you write it with no Markdown and with no intro or outro comment (no "Certainly" or ending remarks), please. Thank you!',
             $releaseData['title'] ?? 'Unknown',
             implode(', ', $artistNames) ?: 'Unknown Artist',
             $releaseData['release_date'] ?? 'Unknown',
