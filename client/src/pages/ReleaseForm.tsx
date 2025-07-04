@@ -33,8 +33,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SelectPills } from "@/components/SelectPills";
-import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
+import AiCompletion from "@/components/release/AiCompletion";
 import TheLoader from "@/components/TheLoader";
+import { Save, Loader, ChevronsLeft, Upload } from "lucide-react";
 
 const apiURL = import.meta.env.VITE_API_URL;
 const imagePath = import.meta.env.VITE_IMAGES_PATH + "/covers/";
@@ -84,6 +85,15 @@ const formSchema = z.object({
   featured: z.boolean().optional(),
   note: z.string().optional(),
 });
+
+type AlbumInfoForAi = {
+  id: number;
+  title: string;
+  artist: string;
+  year: number;
+  description?: string;
+  genre?: string;
+};
 
 export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
   const location = useLocation();
@@ -450,6 +460,7 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     }
 
     setIsUploading(true);
+
     try {
       const formData = new FormData();
       formData.append("image", file);
@@ -498,6 +509,21 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
     }
   };
 
+  const handleAiInfoChange = (info: string) => {
+    const currentNote = form.getValues("note") || "";
+    const newNote = currentNote ? `${currentNote}\n\n${info}` : info;
+    form.setValue("note", newNote);
+  };
+
+  const releaseInfo: AlbumInfoForAi = {
+    id: release?.id || 0,
+    title: form.getValues("title"),
+    artist: form.getValues("artists")[0] || "Unknown Artist",
+    year: form.getValues("release_date") || new Date().getFullYear(),
+    description: "",
+    genre: form.getValues("genres")?.[0] || "Unknown Genre",
+  };
+
   return (
     <>
       {isLoading ? (
@@ -505,8 +531,10 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
       ) : (
         <>
           <h2 className="font-bold text-3xl">
-            {isLoading ? (
-              <span>Edit "{release?.title}"</span>
+            {isUpdateMode ? (
+              <div className="flex items-center gap-2">
+                <span>Edit "{release?.title}"</span>
+              </div>
             ) : (
               <span>Add a release</span>
             )}
@@ -777,7 +805,13 @@ export default function ReleaseForm({ mode }: { mode: "create" | "update" }) {
                           name="note"
                           render={({ field }) => (
                             <FormItem className="col-span-4">
-                              <FormLabel>Note</FormLabel>
+                              <FormLabel>
+                                Note
+                                <AiCompletion
+                                  albumInfo={releaseInfo}
+                                  onInfoChange={handleAiInfoChange}
+                                />
+                              </FormLabel>
                               <FormControl>
                                 <Textarea {...field} />
                               </FormControl>
