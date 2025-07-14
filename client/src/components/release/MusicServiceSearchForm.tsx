@@ -44,7 +44,9 @@ export default function MusicServiceSearchForm({
   return (
     <Form {...form}>
       <div className="my-4">
-        <Label htmlFor="search">Search for a barcode or a title</Label>
+        <Label htmlFor="search">
+          Search for a barcode, a title or a Discogs release ID
+        </Label>
       </div>
       <form onSubmit={form.handleSubmit(onSubmit)} className="my-2 flex">
         <FormField
@@ -84,10 +86,10 @@ export default function MusicServiceSearchForm({
       <p className="mb-6 text-neutral-500 text-sm">
         Ex.:
         <br />
-        5020157105125 (Anathema "Pentecost III" CD)
-        <br /> 016861923822 (Death "Human" CD)
+        5020157105125 (Anathema "Pentecost III" CD - barcode)
+        <br /> 016861923822 (Death "Human" CD - barcode)
         <br />
-        075678235825 (Tori Amos "Little Earthquake" CD)
+        3263919 (Elend "Winds Devouring Men" CD - release ID)
         <br />
       </p>
     </Form>
