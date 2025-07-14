@@ -86,6 +86,8 @@ class DiscogsService
 
   /**
    * Search a release on Discogs
+   * 
+   * Since version 0.2.2, it is possible to directly search with a Discogs release_id.
    *
    * @param string $by -> title,release_title,artist,genre,country,year,format,barcode
    * @param string $search
@@ -93,6 +95,29 @@ class DiscogsService
    */
   public function searchRelease(string $by, string $search, int $per_page = 5, int $page = 1): array
   {
+    // First, let's try to search by release ID if the search term looks like an integer
+    if (ctype_digit($search)) {
+      try {
+        $releaseData = $this->getReleaseById($search);
+
+        if ($releaseData !== null) {
+          return [
+            "releases" => [$releaseData],
+            "per_page" => 1,
+            "page" => 1,
+            "pages" => 1,
+            "items" => 1,
+          ];
+        }
+      } catch (\Throwable $th) {
+        // If it fails, continue with regular search
+      }
+    }
+
+    // Fall back to regular search if:
+    // - search term is not numeric
+    // - getReleaseById returned null
+    // - getReleaseById threw an exception
     try {
       $response = $this->httpClient->request('GET', $this->endpoint . 'database/search', [
         'query' => [
