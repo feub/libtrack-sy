@@ -1,6 +1,6 @@
 import { ScannedReleaseType } from "@/types/releaseTypes";
 import { Card, CardContent } from "@/components/ui/card";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Link } from "lucide-react";
 
 export default function ScanResultCard({
   scannedRelease,
@@ -57,6 +57,17 @@ export default function ScanResultCard({
                 )}
               </span>
             </div>
+            {scannedRelease.uri && (
+              <div>
+                <a
+                  href={scannedRelease.uri}
+                  target="_blank"
+                  className="flex flex-row justify-start items-center gap-1 text-neutral-400"
+                >
+                  <Link className="w-4 h-4" /> Discogs URL
+                </a>
+              </div>
+            )}
           </div>
         </div>
         <div className="ml-auto">
